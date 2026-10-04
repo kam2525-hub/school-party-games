@@ -5,6 +5,20 @@ function getTopSafeY() {
   return Math.max(76, safeTop + 54);
 }
 
+// 対面P1（上側プレイヤー）向けに180度反転してテキストを描画するヘルパー
+function drawP1Text(ctx, text, x, y, font = 'bold 20px sans-serif', color = '#ef4444', align = 'left') {
+  ctx.save();
+  const w = ctx.canvas.width;
+  ctx.translate(w - x, y);
+  ctx.rotate(Math.PI);
+  if (font) ctx.font = font;
+  if (color) ctx.fillStyle = color;
+  ctx.textAlign = align;
+  ctx.textBaseline = 'middle';
+  ctx.fillText(text, 0, 0);
+  ctx.restore();
+}
+
 // アプリ全体のステート管理とゲームロジック
 
 let currentScreen = 'screen-menu';
@@ -897,7 +911,7 @@ function twisterRenderLoop() {
   ctx.fillStyle = 'rgba(239, 68, 68, 0.7)';
   ctx.textAlign = 'center';
   ctx.font = 'bold 15px sans-serif';
-  ctx.fillText('🔴 P1 エリア (指を離すな！)', w / 2, getTopSafeY());
+  drawP1Text(ctx, '🔴 P1 エリア (指を離すな！)', w / 2, getTopSafeY(), 'bold 20px sans-serif', '#ef4444', 'center');
 
   ctx.fillStyle = 'rgba(59, 130, 246, 0.7)';
   ctx.font = 'bold 15px sans-serif';
@@ -936,11 +950,15 @@ function twisterRenderLoop() {
     ctx.stroke();
 
     // ラベル
-    ctx.fillStyle = '#ffffff';
-    ctx.font = 'bold 14px sans-serif';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText(`P${tg.player} 指`, tg.x, tg.y);
+    if (tg.player === 1) {
+      drawP1Text(ctx, 'P1 指', w - tg.x, tg.y, 'bold 14px sans-serif', '#ffffff', 'center');
+    } else {
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 14px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('P2 指', tg.x, tg.y);
+    }
   });
 
   // 失敗判定
@@ -1134,14 +1152,25 @@ function hockeyLoop() {
   ctx.fillStyle = 'rgba(59, 130, 246, 0.3)';
   ctx.fillRect(goalLeft, h - 12, goalWidth, 12);
 
-  // スコア表示
+  // スコア表示（P1は対面向きに180度回転、P2は通常向き）
+  ctx.save();
+  ctx.translate(w - 40, h / 2 - 35);
+  ctx.rotate(Math.PI);
   ctx.font = 'bold 36px sans-serif';
   ctx.fillStyle = 'rgba(239, 68, 68, 0.7)';
   ctx.textAlign = 'center';
-  ctx.fillText(hockeyScore1, 40, h / 2 - 30);
+  ctx.textBaseline = 'middle';
+  ctx.fillText(hockeyScore1, 0, 0);
+  ctx.restore();
 
+  ctx.save();
+  ctx.translate(40, h / 2 + 35);
+  ctx.font = 'bold 36px sans-serif';
   ctx.fillStyle = 'rgba(59, 130, 246, 0.7)';
-  ctx.fillText(hockeyScore2, 40, h / 2 + 55);
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(hockeyScore2, 0, 0);
+  ctx.restore();
 
   // パドル P1 (赤)
   ctx.beginPath();
@@ -1366,12 +1395,11 @@ function knifeLoop() {
   ctx.fillRect(0, 0, w, h);
 
   // プレイヤー残弾表示
-  ctx.font = 'bold 20px sans-serif';
-  ctx.fillStyle = '#ef4444';
-  ctx.textAlign = 'left';
-  ctx.fillText(`P1 残り: ${knifeKnivesP1}本`, 58, getTopSafeY());
+  drawP1Text(ctx, `P1 残り: ${knifeKnivesP1}本`, 58, getTopSafeY(), 'bold 20px sans-serif', '#ef4444');
 
+  ctx.font = 'bold 20px sans-serif';
   ctx.fillStyle = '#3b82f6';
+  ctx.textAlign = 'left';
   ctx.fillText(`P2 残り: ${knifeKnivesP2}本`, 20, h - 24);
 
   // 的 (木製風の円)
@@ -1774,12 +1802,46 @@ function pongLoop() {
   ctx.stroke();
   ctx.setLineDash([]);
 
-  // スコア
+  // スコア（P1は対面向きに180度回転、P2は通常向き）
+  ctx.save();
+  ctx.translate(w / 2, h / 2 - 36);
+  ctx.rotate(Math.PI);
   ctx.font = 'bold 36px sans-serif';
-  ctx.fillStyle = 'rgba(239, 68, 68, 0.6)';
-  ctx.fillText(pongScore1, 30, h / 2 - 20);
-  ctx.fillStyle = 'rgba(59, 130, 246, 0.6)';
-  ctx.fillText(pongScore2, 30, h / 2 + 50);
+  ctx.fillStyle = 'rgba(239, 68, 68, 0.7)';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(`P1: ${pongScore1}`, 0, 0);
+  ctx.restore();
+
+  ctx.save();
+  ctx.translate(w / 2, h / 2 + 36);
+  ctx.font = 'bold 36px sans-serif';
+  ctx.fillStyle = 'rgba(59, 130, 246, 0.7)';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(`P2: ${pongScore2}`, 0, 0);
+  ctx.restore();
+
+  // スタート時のガイド
+  if (pongScore1 === 0 && pongScore2 === 0) {
+    ctx.save();
+    ctx.translate(w / 2, p1Y + pongP1.height + 26);
+    ctx.rotate(Math.PI);
+    ctx.font = '13px sans-serif';
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('🔴 スライドして打ち返せ！', 0, 0);
+    ctx.restore();
+
+    ctx.save();
+    ctx.font = '13px sans-serif';
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('🔵 スライドして打ち返せ！', w / 2, p2Y - 18);
+    ctx.restore();
+  }
 
   // パドル描画
   ctx.fillStyle = '#ef4444';
@@ -2045,12 +2107,11 @@ function racerLoop() {
   ctx.stroke();
 
   // ラップ表示
-  ctx.font = 'bold 22px sans-serif';
-  ctx.fillStyle = '#ef4444';
-  ctx.textAlign = 'left';
-  ctx.fillText(`P1: ${racerCar1.lap}/3 周`, 58, getTopSafeY());
+  drawP1Text(ctx, `P1: ${racerCar1.lap}/3 周`, 58, getTopSafeY(), 'bold 22px sans-serif', '#ef4444');
 
+  ctx.font = 'bold 22px sans-serif';
   ctx.fillStyle = '#3b82f6';
+  ctx.textAlign = 'left';
   ctx.fillText(`P2: ${racerCar2.lap}/3 周`, 20, h - 24);
 
   // 車1 (赤)
@@ -2191,10 +2252,10 @@ function lumberLoop() {
   ctx.fillRect(midX - 25, 0, 50, h);
 
   // スコア
+  drawP1Text(ctx, `P1: ${lumberScore1}/20`, 58, getTopSafeY(), 'bold 22px sans-serif', '#ef4444');
   ctx.font = 'bold 22px sans-serif';
-  ctx.fillStyle = '#ef4444';
-  ctx.fillText(`P1: ${lumberScore1}/20`, 58, getTopSafeY());
   ctx.fillStyle = '#3b82f6';
+  ctx.textAlign = 'left';
   ctx.fillText(`P2: ${lumberScore2}/20`, 30, h - 30);
 
   // 枝の描画
@@ -2236,20 +2297,23 @@ function initJumpGame() {
   jumpCanvas.width = jumpCanvas.clientWidth;
   jumpCanvas.height = jumpCanvas.clientHeight;
 
-  const h = jumpCanvas.height;
-  jumpBall1 = { y: h * 0.25, vy: 0, isJumping: false };
-  jumpBall2 = { y: h * 0.75, vy: 0, isJumping: false };
+  const trackH = jumpCanvas.height / 2;
+  const groundY = trackH - 55;
+
+  jumpBall1 = { y: groundY, vy: 0, isJumping: false };
+  jumpBall2 = { y: groundY, vy: 0, isJumping: false };
   jumpTraps1 = [];
   jumpTraps2 = [];
   isJumpRunning = true;
 
   jumpCanvas.onpointerdown = (e) => {
-    const y = e.clientY - jumpCanvas.getBoundingClientRect().top;
-    if (y < h / 2 && !jumpBall1.isJumping) {
+    const rect = jumpCanvas.getBoundingClientRect();
+    const y = e.clientY - rect.top;
+    if (y < trackH && !jumpBall1.isJumping) {
       jumpBall1.vy = -12;
       jumpBall1.isJumping = true;
       window.sounds.playJump();
-    } else if (y >= h / 2 && !jumpBall2.isJumping) {
+    } else if (y >= trackH && !jumpBall2.isJumping) {
       jumpBall2.vy = -12;
       jumpBall2.isJumping = true;
       window.sounds.playJump();
@@ -2265,73 +2329,130 @@ function jumpLoop() {
   const ctx = jumpCtx;
   const w = jumpCanvas.width;
   const h = jumpCanvas.height;
-  const ground1 = h * 0.35;
-  const ground2 = h * 0.85;
+  const trackH = h / 2;
+  const groundY = trackH - 55;
 
   // 重力
   jumpBall1.vy += 0.8;
   jumpBall1.y += jumpBall1.vy;
-  if (jumpBall1.y >= ground1) {
-    jumpBall1.y = ground1;
+  if (jumpBall1.y >= groundY) {
+    jumpBall1.y = groundY;
     jumpBall1.vy = 0;
     jumpBall1.isJumping = false;
   }
 
   jumpBall2.vy += 0.8;
   jumpBall2.y += jumpBall2.vy;
-  if (jumpBall2.y >= ground2) {
-    jumpBall2.y = ground2;
+  if (jumpBall2.y >= groundY) {
+    jumpBall2.y = groundY;
     jumpBall2.vy = 0;
     jumpBall2.isJumping = false;
   }
 
   // トゲ障害物生成
   if (Math.random() < 0.02) {
-    jumpTraps1.push({ x: w + 20, y: ground1 });
-    jumpTraps2.push({ x: w + 20, y: ground2 });
+    jumpTraps1.push({ x: w + 20 });
+    jumpTraps2.push({ x: w + 20 });
   }
 
-  // 描画
+  // 描画クリア
   ctx.fillStyle = '#0f172a';
   ctx.fillRect(0, 0, w, h);
 
-  // 床
-  ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
-  ctx.lineWidth = 3;
+  // センター仕切り線
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+  ctx.lineWidth = 2;
   ctx.beginPath();
-  ctx.moveTo(0, ground1 + 10); ctx.lineTo(w, ground1 + 10);
-  ctx.moveTo(0, ground2 + 10); ctx.lineTo(w, ground2 + 10);
+  ctx.moveTo(0, trackH);
+  ctx.lineTo(w, trackH);
   ctx.stroke();
 
-  // プレイヤーボール
+  // --- P1 エリア (上半分: 対面P1向きに180度反転描画) ---
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(0, 0, w, trackH);
+  ctx.clip();
+  ctx.translate(w / 2, trackH / 2);
+  ctx.rotate(Math.PI);
+  ctx.translate(-w / 2, -trackH / 2);
+
+  // P1 床
+  ctx.strokeStyle = 'rgba(239, 68, 68, 0.5)';
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.moveTo(0, groundY); ctx.lineTo(w, groundY);
+  ctx.stroke();
+
+  // P1 ボール
   ctx.fillStyle = '#ef4444';
   ctx.beginPath();
   ctx.arc(60, jumpBall1.y, 14, 0, Math.PI * 2);
   ctx.fill();
 
+  // P1 トゲ
+  ctx.fillStyle = '#f43f5e';
+  jumpTraps1.forEach(t => {
+    ctx.beginPath();
+    ctx.moveTo(t.x, groundY);
+    ctx.lineTo(t.x + 12, groundY - 24);
+    ctx.lineTo(t.x + 24, groundY);
+    ctx.fill();
+  });
+
+  // P1 ラベル (対面向き)
+  ctx.font = 'bold 15px sans-serif';
+  ctx.fillStyle = '#ef4444';
+  ctx.textAlign = 'left';
+  ctx.fillText('🔴 P1: タップでジャンプ', 20, groundY + 35);
+  ctx.restore();
+
+  // --- P2 エリア (下半分: 通常向き描画) ---
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(0, trackH, w, trackH);
+  ctx.clip();
+
+  const p2Ground = trackH + groundY;
+  // P2 床
+  ctx.strokeStyle = 'rgba(59, 130, 246, 0.5)';
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.moveTo(0, p2Ground); ctx.lineTo(w, p2Ground);
+  ctx.stroke();
+
+  // P2 ボール
   ctx.fillStyle = '#3b82f6';
   ctx.beginPath();
-  ctx.arc(60, jumpBall2.y, 14, 0, Math.PI * 2);
+  ctx.arc(60, trackH + jumpBall2.y, 14, 0, Math.PI * 2);
   ctx.fill();
 
-  // 障害物移動と衝突判定
+  // P2 トゲ
+  ctx.fillStyle = '#f43f5e';
+  jumpTraps2.forEach(t => {
+    ctx.beginPath();
+    ctx.moveTo(t.x, p2Ground);
+    ctx.lineTo(t.x + 12, p2Ground - 24);
+    ctx.lineTo(t.x + 24, p2Ground);
+    ctx.fill();
+  });
+
+  // P2 ラベル (通常向き)
+  ctx.font = 'bold 15px sans-serif';
+  ctx.fillStyle = '#3b82f6';
+  ctx.textAlign = 'left';
+  ctx.fillText('🔵 P2: タップでジャンプ', 20, p2Ground + 35);
+  ctx.restore();
+
+  // トゲ移動と衝突判定
   let hit1 = false, hit2 = false;
   [jumpTraps1, jumpTraps2].forEach((traps, pIdx) => {
+    const ball = pIdx === 0 ? jumpBall1 : jumpBall2;
     for (let i = traps.length - 1; i >= 0; i--) {
       const t = traps[i];
       t.x -= 5.5;
 
-      ctx.fillStyle = '#f43f5e';
-      ctx.beginPath();
-      ctx.moveTo(t.x, t.y + 10);
-      ctx.lineTo(t.x + 12, t.y - 15);
-      ctx.lineTo(t.x + 24, t.y + 10);
-      ctx.fill();
-
-      // 衝突
-      const ball = pIdx === 0 ? jumpBall1 : jumpBall2;
-      const dist = Math.hypot(60 - (t.x + 12), ball.y - t.y);
-      if (dist < 18) {
+      // 衝突判定: ボールがX軸で重なり、かつジャンプしていなければ衝突
+      if (Math.abs(60 - (t.x + 12)) < 16 && (groundY - ball.y < 20)) {
         if (pIdx === 0) hit1 = true; else hit2 = true;
       }
 
@@ -2583,7 +2704,7 @@ function slashLoop() {
   ctx.font = 'bold 22px sans-serif';
   ctx.fillStyle = '#ef4444';
   ctx.textAlign = 'left';
-  ctx.fillText(`P1: ${slashScore1} 切断`, 58, getTopSafeY());
+  drawP1Text(ctx, `P1: ${slashScore1} 切断`, 58, getTopSafeY());
 
   ctx.fillStyle = '#3b82f6';
   ctx.fillText(`P2: ${slashScore2} 切断`, 20, h - 24);
@@ -2874,7 +2995,7 @@ function basketLoop() {
   // スコア
   ctx.font = 'bold 22px sans-serif';
   ctx.fillStyle = '#ef4444';
-  ctx.fillText(`P1: ${basketScore1}/3`, 58, getTopSafeY());
+  drawP1Text(ctx, `P1: ${basketScore1}/3`, 58, getTopSafeY());
   ctx.fillStyle = '#3b82f6';
   ctx.fillText(`P2: ${basketScore2}/3`, 30, h - 30);
 
@@ -3001,7 +3122,7 @@ function dartsLoop() {
   // スコア・残弾
   ctx.font = 'bold 20px sans-serif';
   ctx.fillStyle = '#ef4444';
-  ctx.fillText(`P1: ${dartsScore1}点 (残${dartsThrowsP1})`, 58, getTopSafeY());
+  drawP1Text(ctx, `P1: ${dartsScore1}点 (残${dartsThrowsP1})`, 58, getTopSafeY());
   ctx.fillStyle = '#3b82f6';
   ctx.fillText(`P2: ${dartsScore2}点 (残${dartsThrowsP2})`, 25, h - 30);
 
@@ -3338,7 +3459,7 @@ function ufoLoop() {
   // スコア
   ctx.font = 'bold 20px sans-serif';
   ctx.fillStyle = '#ef4444';
-  ctx.fillText(`P1: ${ufoScore1}/3`, 58, getTopSafeY());
+  drawP1Text(ctx, `P1: ${ufoScore1}/3`, 58, getTopSafeY());
   ctx.fillStyle = '#3b82f6';
   ctx.fillText(`P2: ${ufoScore2}/3`, 30, h - 30);
 
@@ -3439,7 +3560,7 @@ function boxingLoop() {
 
   ctx.font = 'bold 22px sans-serif';
   ctx.fillStyle = '#ef4444';
-  ctx.fillText(`P1: ${boxingScore1}/3`, 58, getTopSafeY());
+  drawP1Text(ctx, `P1: ${boxingScore1}/3`, 58, getTopSafeY());
   ctx.fillStyle = '#3b82f6';
   ctx.fillText(`P2: ${boxingScore2}/3`, 30, h - 30);
 
@@ -3634,7 +3755,7 @@ function rhythmLoop() {
   // スコア
   ctx.font = 'bold 20px sans-serif';
   ctx.fillStyle = '#ef4444';
-  ctx.fillText(`P1: ${rhythmScore1}`, 58, getTopSafeY());
+  drawP1Text(ctx, `P1: ${rhythmScore1}`, 58, getTopSafeY());
   ctx.fillStyle = '#3b82f6';
   ctx.fillText(`P2: ${rhythmScore2}`, 30, h - 20);
 
@@ -3815,7 +3936,7 @@ function archeryLoop() {
   // スコア
   ctx.fillStyle = '#ef4444';
   ctx.textAlign = 'left';
-  ctx.fillText(`P1: ${archeryScore1}/100`, 58, getTopSafeY());
+  drawP1Text(ctx, `P1: ${archeryScore1}/100`, 58, getTopSafeY());
   ctx.fillStyle = '#3b82f6';
   ctx.fillText(`P2: ${archeryScore2}/100`, 30, h - 30);
 
@@ -3925,10 +4046,10 @@ function cricketLoop() {
   ctx.stroke();
 
   // スコア
+  drawP1Text(ctx, `P1: ${cricketScore1} (残${cricketHitsP1})`, 58, getTopSafeY(), 'bold 20px sans-serif', '#ef4444');
   ctx.font = 'bold 20px sans-serif';
-  ctx.fillStyle = '#ef4444';
-  ctx.fillText(`P1: ${cricketScore1} (残${cricketHitsP1})`, 58, getTopSafeY());
   ctx.fillStyle = '#3b82f6';
+  ctx.textAlign = 'left';
   ctx.fillText(`P2: ${cricketScore2} (残${cricketHitsP2})`, 30, h - 25);
 
   // ボール移動＆描画
@@ -4008,51 +4129,103 @@ function hurdleLoop() {
   const ctx = hurdleCtx;
   const w = hurdleCanvas.width;
   const h = hurdleCanvas.height;
+  const trackH = h / 2;
+  const laneGround = trackH - 55;
 
   ctx.fillStyle = '#0f172a';
   ctx.fillRect(0, 0, w, h);
 
-  // トラックレーン
-  const lane1Y = h * 0.3;
-  const lane2Y = h * 0.7;
-
-  ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
-  ctx.lineWidth = 4;
+  // センター仕切り線
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+  ctx.lineWidth = 2;
   ctx.beginPath();
-  ctx.moveTo(0, lane1Y + 20); ctx.lineTo(w, lane1Y + 20);
-  ctx.moveTo(0, lane2Y + 20); ctx.lineTo(w, lane2Y + 20);
+  ctx.moveTo(0, trackH);
+  ctx.lineTo(w, trackH);
   ctx.stroke();
 
-  // ハードル
+  // ハードル障害物との衝突ペナルティ
   hurdleObstacles.forEach(ob => {
     const ob1X = ob - hurdlePos1 + 60;
     const ob2X = ob - hurdlePos2 + 60;
-
-    ctx.fillStyle = '#facc15';
-    if (ob1X > 0 && ob1X < w) ctx.fillRect(ob1X, lane1Y, 10, 20);
-    if (ob2X > 0 && ob2X < w) ctx.fillRect(ob2X, lane2Y, 10, 20);
-
-    // 衝突ペナルティ (ジャンプしてなければ減速)
     if (Math.abs(ob1X - 60) < 14 && !hurdleJump1) hurdlePos1 -= 8;
     if (Math.abs(ob2X - 60) < 14 && !hurdleJump2) hurdlePos2 -= 8;
   });
 
-  // ランナー P1 & P2
+  // --- P1 レーン (上半分: 対面P1向きに180度反転描画) ---
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(0, 0, w, trackH);
+  ctx.clip();
+  ctx.translate(w / 2, trackH / 2);
+  ctx.rotate(Math.PI);
+  ctx.translate(-w / 2, -trackH / 2);
+
+  // P1 トラック
+  ctx.strokeStyle = 'rgba(239, 68, 68, 0.4)';
+  ctx.lineWidth = 4;
+  ctx.beginPath();
+  ctx.moveTo(0, laneGround); ctx.lineTo(w, laneGround);
+  ctx.stroke();
+
+  // P1 ハードル
+  hurdleObstacles.forEach(ob => {
+    const ob1X = ob - hurdlePos1 + 60;
+    if (ob1X > 0 && ob1X < w) {
+      ctx.fillStyle = '#facc15';
+      ctx.fillRect(ob1X, laneGround - 20, 10, 20);
+    }
+  });
+
+  // P1 ランナー (赤)
   ctx.fillStyle = '#ef4444';
   ctx.beginPath();
-  ctx.arc(60, hurdleJump1 ? lane1Y - 20 : lane1Y, 14, 0, Math.PI * 2);
+  ctx.arc(60, hurdleJump1 ? laneGround - 34 : laneGround - 14, 14, 0, Math.PI * 2);
   ctx.fill();
 
+  // P1 進捗バー & ラベル
+  ctx.fillStyle = '#ef4444';
+  ctx.fillRect(20, laneGround + 20, (hurdlePos1 / 1100) * (w - 40), 6);
+  ctx.font = 'bold 13px sans-serif';
+  ctx.textAlign = 'left';
+  ctx.fillText('🔴 P1: 連打でダッシュ！', 20, laneGround + 40);
+  ctx.restore();
+
+  // --- P2 レーン (下半分: 通常向き描画) ---
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(0, trackH, w, trackH);
+  ctx.clip();
+
+  const p2Ground = trackH + laneGround;
+  // P2 トラック
+  ctx.strokeStyle = 'rgba(59, 130, 246, 0.4)';
+  ctx.lineWidth = 4;
+  ctx.beginPath();
+  ctx.moveTo(0, p2Ground); ctx.lineTo(w, p2Ground);
+  ctx.stroke();
+
+  // P2 ハードル
+  hurdleObstacles.forEach(ob => {
+    const ob2X = ob - hurdlePos2 + 60;
+    if (ob2X > 0 && ob2X < w) {
+      ctx.fillStyle = '#facc15';
+      ctx.fillRect(ob2X, p2Ground - 20, 10, 20);
+    }
+  });
+
+  // P2 ランナー (青)
   ctx.fillStyle = '#3b82f6';
   ctx.beginPath();
-  ctx.arc(60, hurdleJump2 ? lane2Y - 20 : lane2Y, 14, 0, Math.PI * 2);
+  ctx.arc(60, hurdleJump2 ? p2Ground - 34 : p2Ground - 14, 14, 0, Math.PI * 2);
   ctx.fill();
 
-  // 進捗バー
-  ctx.fillStyle = '#ef4444';
-  ctx.fillRect(58, getTopSafeY(), (hurdlePos1 / 1100) * (w - 116), 6);
+  // P2 進捗バー & ラベル
   ctx.fillStyle = '#3b82f6';
-  ctx.fillRect(20, h - 20, (hurdlePos2 / 1100) * (w - 40), 6);
+  ctx.fillRect(20, p2Ground + 20, (hurdlePos2 / 1100) * (w - 40), 6);
+  ctx.font = 'bold 13px sans-serif';
+  ctx.textAlign = 'left';
+  ctx.fillText('🔵 P2: 連打でダッシュ！', 20, p2Ground + 40);
+  ctx.restore();
 
   requestAnimationFrame(hurdleLoop);
 }
@@ -4232,7 +4405,7 @@ function invadersLoop() {
   // スコア
   ctx.font = 'bold 20px sans-serif';
   ctx.fillStyle = '#ef4444';
-  ctx.fillText(`P1: ${invaderScore1}/5`, 58, getTopSafeY());
+  drawP1Text(ctx, `P1: ${invaderScore1}/5`, 58, getTopSafeY());
   ctx.fillStyle = '#3b82f6';
   ctx.fillText(`P2: ${invaderScore2}/5`, 30, h - 25);
 
@@ -4723,7 +4896,7 @@ function seesawLoop() {
   // スコア
   ctx.font = 'bold 20px sans-serif';
   ctx.fillStyle = '#ef4444';
-  ctx.fillText(`P1: ${seesawScore1}/5`, 58, getTopSafeY());
+  drawP1Text(ctx, `P1: ${seesawScore1}/5`, 58, getTopSafeY());
   ctx.fillStyle = '#3b82f6';
   ctx.fillText(`P2: ${seesawScore2}/5`, 30, h - 25);
 
@@ -4867,7 +5040,7 @@ function bowlingLoop() {
   // スコア
   ctx.font = 'bold 20px sans-serif';
   ctx.fillStyle = '#ef4444';
-  ctx.fillText(`P1: ${bowlingScore1}/6`, 58, getTopSafeY());
+  drawP1Text(ctx, `P1: ${bowlingScore1}/6`, 58, getTopSafeY());
   ctx.fillStyle = '#3b82f6';
   ctx.fillText(`P2: ${bowlingScore2}/6`, 30, h - 25);
 
@@ -5143,7 +5316,7 @@ function axeLoop() {
   // スコア
   ctx.font = 'bold 20px sans-serif';
   ctx.fillStyle = '#ef4444';
-  ctx.fillText(`P1: ${axeScore1}/100`, 58, getTopSafeY());
+  drawP1Text(ctx, `P1: ${axeScore1}/100`, 58, getTopSafeY());
   ctx.fillStyle = '#3b82f6';
   ctx.fillText(`P2: ${axeScore2}/100`, 30, h - 25);
 
@@ -5216,7 +5389,7 @@ function balloonLoop() {
 
   ctx.font = 'bold 20px sans-serif';
   ctx.fillStyle = '#ef4444';
-  ctx.fillText(`P1: ${balloonScore1}/8`, 58, getTopSafeY());
+  drawP1Text(ctx, `P1: ${balloonScore1}/8`, 58, getTopSafeY());
   ctx.fillStyle = '#3b82f6';
   ctx.fillText(`P2: ${balloonScore2}/8`, 30, h - 25);
 
@@ -5370,7 +5543,7 @@ function pitstopLoop() {
   ctx.fillStyle = '#ef4444';
   ctx.textAlign = 'center';
   ctx.font = 'bold 16px sans-serif';
-  ctx.fillText(`P1 残りボルト: ${pitstopBolts1}個`, w / 2, getTopSafeY());
+  drawP1Text(ctx, `P1 残りボルト: ${pitstopBolts1}個`, w / 2, getTopSafeY(), 'bold 20px sans-serif', '#ef4444', 'center');
 
   ctx.fillStyle = '#3b82f6';
   ctx.font = 'bold 16px sans-serif';
@@ -5490,7 +5663,7 @@ function pogoLoop() {
 
   ctx.font = 'bold 20px sans-serif';
   ctx.fillStyle = '#ef4444';
-  ctx.fillText(`P1: ${pogoScore1}/10`, 58, getTopSafeY());
+  drawP1Text(ctx, `P1: ${pogoScore1}/10`, 58, getTopSafeY());
   ctx.fillStyle = '#3b82f6';
   ctx.fillText(`P2: ${pogoScore2}/10`, 30, h - 25);
 
@@ -5720,9 +5893,15 @@ function stealthlunchLoop() {
   ctx.fillStyle = '#f87171';
   ctx.font = 'bold 18px sans-serif';
   ctx.textAlign = 'left';
-  ctx.fillText('P1 (長押しで早弁)', 58, getTopSafeY() + 22);
+  drawP1Text(ctx, 'P1 (長押しで早弁)', 58, getTopSafeY() + 22);
+  ctx.save();
+  ctx.translate(w / 2, h * 0.25);
+  ctx.rotate(Math.PI);
   ctx.font = '36px sans-serif';
-  ctx.fillText(p1Holding ? '😋 🍱🥢' : '🤫 🍱', w / 2 - 40, h * 0.25);
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(p1Holding ? '😋 🍱🥢' : '🤫 🍱', 0, 0);
+  ctx.restore();
   // P1 Progress bar
   ctx.fillStyle = '#475569';
   ctx.fillRect(35, h * 0.35, w - 70, 16);
@@ -6033,7 +6212,7 @@ function edgeStopperLoop() {
 
   ctx.font = 'bold 18px sans-serif';
   ctx.fillStyle = '#f87171';
-  ctx.fillText('P1: タップでブレーキ！', 58, getTopSafeY());
+  drawP1Text(ctx, 'P1: タップでブレーキ！', 58, getTopSafeY());
   ctx.fillStyle = '#60a5fa';
   ctx.fillText('P2: タップでブレーキ！', 30, h - 30);
 
@@ -6125,7 +6304,7 @@ function whackAMoleLoop() {
   ctx.font = 'bold 22px sans-serif';
   ctx.fillStyle = '#f87171';
   ctx.textAlign = 'left';
-  ctx.fillText(`P1: ${moleScore1}/10`, 58, getTopSafeY());
+  drawP1Text(ctx, `P1: ${moleScore1}/10`, 58, getTopSafeY());
   ctx.fillStyle = '#60a5fa';
   ctx.fillText(`P2: ${moleScore2}/10`, 30, h - 30);
 
@@ -6228,7 +6407,7 @@ function stopwatchLoop() {
   ctx.font = 'bold 20px sans-serif';
   ctx.fillStyle = stopP1Time !== null ? '#4ade80' : '#f87171';
   ctx.font = 'bold 15px sans-serif';
-  ctx.fillText(stopP1Time !== null ? `P1: 確定！` : 'P1: 10秒でタップ！', w / 2, getTopSafeY());
+  drawP1Text(ctx, stopP1Time !== null ? `P1: 確定！` : 'P1: 10秒でタップ！', w / 2, getTopSafeY(), 'bold 22px sans-serif', '#ef4444', 'center');
 
   // P2 zone
   ctx.fillStyle = stopP2Time !== null ? '#4ade80' : '#60a5fa';
@@ -6332,7 +6511,7 @@ function zombieLoop() {
   ctx.font = 'bold 18px sans-serif';
   ctx.fillStyle = '#f87171';
   ctx.textAlign = 'left';
-  ctx.fillText(`P1 防衛ライフ: ${'❤️'.repeat(zombieScore1)}`, 58, getTopSafeY());
+  drawP1Text(ctx, `P1 防衛ライフ: ${'❤️'.repeat(zombieScore1)}`, 58, getTopSafeY());
   ctx.fillStyle = '#60a5fa';
   ctx.fillText(`P2 防衛ライフ: ${'❤️'.repeat(zombieScore2)}`, 20, h - 20);
 
@@ -6437,7 +6616,7 @@ function coinTossLoop() {
   // Scores
   ctx.fillStyle = '#f87171';
   ctx.textAlign = 'left';
-  ctx.fillText(`P1: ${coinScore1}点`, 58, getTopSafeY());
+  drawP1Text(ctx, `P1: ${coinScore1}点`, 58, getTopSafeY());
   ctx.fillStyle = '#60a5fa';
   ctx.fillText(`P2: ${coinScore2}点`, 30, h - 30);
 
@@ -6562,7 +6741,7 @@ function craneLoop() {
   ctx.font = 'bold 18px sans-serif';
   ctx.fillStyle = '#f87171';
   ctx.textAlign = 'left';
-  ctx.fillText(`P1: ${craneScore1}/300点`, 58, getTopSafeY());
+  drawP1Text(ctx, `P1: ${craneScore1}/300点`, 58, getTopSafeY());
   ctx.fillStyle = '#60a5fa';
   ctx.fillText(`P2: ${craneScore2}/300点`, 20, h - 15);
 
@@ -6780,7 +6959,7 @@ function suikaDropLoop() {
   ctx.font = 'bold 18px sans-serif';
   ctx.fillStyle = '#f87171';
   ctx.textAlign = 'left';
-  ctx.fillText(`P1: ${suikaScore1}点`, 58, getTopSafeY());
+  drawP1Text(ctx, `P1: ${suikaScore1}点`, 58, getTopSafeY());
   ctx.fillStyle = '#60a5fa';
   ctx.fillText(`P2: ${suikaScore2}点`, 25, h / 2 + 30);
 
@@ -6882,14 +7061,19 @@ function snoozeLoop() {
   ctx.font = 'bold 18px sans-serif';
   ctx.textAlign = 'left';
   const snoozeY = getTopSafeY();
-  ctx.fillText(`P1 覚醒度: ${Math.round(snoozeP1Energy)}%`, 58, snoozeY);
+  drawP1Text(ctx, `P1 覚醒度: ${Math.round(snoozeP1Energy)}%`, 58, snoozeY);
   ctx.fillStyle = '#475569';
   ctx.fillRect(25, snoozeY + 12, w - 50, 16);
   ctx.fillStyle = '#ef4444';
   ctx.fillRect(25, snoozeY + 12, (w - 50) * (snoozeP1Energy / 100), 16);
+  ctx.save();
+  ctx.translate(w / 2, h * 0.25);
+  ctx.rotate(Math.PI);
   ctx.font = '48px sans-serif';
   ctx.textAlign = 'center';
-  ctx.fillText(snoozeP1Energy > 50 ? '😳' : '🥱', w / 2, h * 0.25);
+  ctx.textBaseline = 'middle';
+  ctx.fillText(snoozeP1Energy > 50 ? '😳' : '🥱', 0, 0);
+  ctx.restore();
 
   // P2 Eye (Bottom)
   ctx.fillStyle = '#60a5fa';
@@ -7106,7 +7290,7 @@ function flipbookLoop() {
   ctx.fillRect(40, flipY - 10, w - 80, h / 2 - (flipY + 10));
   ctx.font = 'bold 18px sans-serif';
   ctx.fillStyle = '#ef4444';
-  ctx.fillText(`P1: ${flipP1Page}/100 ページ`, 58, flipY + 15);
+  drawP1Text(ctx, `P1: ${flipP1Page}/100 ページ`, 58, flipY + 15);
 
   // Animated stickman running
   const frame1 = Math.floor(flipP1Page / 5) % 4;
@@ -7232,7 +7416,7 @@ function paperPlaneLoop() {
   ctx.font = 'bold 18px sans-serif';
   ctx.fillStyle = '#ffffff';
   ctx.textAlign = 'left';
-  ctx.fillText(`P1: ${Math.round(plane1.dist)}m ${plane1.flying ? '🚀' : ''}`, 58, getTopSafeY());
+  drawP1Text(ctx, `P1: ${Math.round(plane1.dist)}m ${plane1.flying ? '🚀' : ''}`, 58, getTopSafeY());
   ctx.fillText(`P2: ${Math.round(plane2.dist)}m ${plane2.flying ? '🚀' : ''}`, 25, h / 2 + 30);
 
   requestAnimationFrame(paperPlaneLoop);
@@ -7341,10 +7525,23 @@ function thumbSumoLoop() {
     ctx.fillText('相手の親指の上に飛び乗れ！', w / 2, h / 2);
   }
 
-  // Draw thumbs
+  // Draw thumbs (P1 thumbs face downward towards P2)
+  ctx.save();
+  ctx.translate(thumbP1.x, thumbP1.y);
+  ctx.rotate(Math.PI);
   ctx.font = '54px sans-serif';
-  ctx.fillText('👍', thumbP1.x, thumbP1.y);
-  ctx.fillText('👍', thumbP2.x, thumbP2.y);
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('👍', 0, 0);
+  ctx.restore();
+
+  ctx.save();
+  ctx.translate(thumbP2.x, thumbP2.y);
+  ctx.font = '54px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('👍', 0, 0);
+  ctx.restore();
 
   requestAnimationFrame(thumbSumoLoop);
 }
@@ -7462,7 +7659,7 @@ function cupShuffleLoop() {
   ctx.font = 'bold 20px sans-serif';
   ctx.fillStyle = '#f87171';
   ctx.textAlign = 'left';
-  ctx.fillText(`P1: ${cupScore1}/3点`, 58, getTopSafeY());
+  drawP1Text(ctx, `P1: ${cupScore1}/3点`, 58, getTopSafeY());
   ctx.fillStyle = '#60a5fa';
   ctx.fillText(`P2: ${cupScore2}/3点`, 30, h - 30);
 
@@ -7564,7 +7761,7 @@ function ufoRescueLoop() {
   ctx.font = 'bold 18px sans-serif';
   ctx.fillStyle = '#f87171';
   ctx.textAlign = 'left';
-  ctx.fillText(`P1: ${ufo1Score}/500点`, 58, getTopSafeY());
+  drawP1Text(ctx, `P1: ${ufo1Score}/500点`, 58, getTopSafeY());
   ctx.fillStyle = '#60a5fa';
   ctx.fillText(`P2: ${ufo2Score}/500点`, 30, h - 30);
 
@@ -7685,7 +7882,7 @@ function pinballLoop() {
   ctx.font = 'bold 20px sans-serif';
   ctx.fillStyle = '#f87171';
   ctx.textAlign = 'left';
-  ctx.fillText(`P1: ${pinScore1}/3点`, 58, getTopSafeY());
+  drawP1Text(ctx, `P1: ${pinScore1}/3点`, 58, getTopSafeY());
   ctx.fillStyle = '#60a5fa';
   ctx.fillText(`P2: ${pinScore2}/3点`, 30, h - 30);
 
@@ -7771,7 +7968,7 @@ function hockeyShotLoop() {
   ctx.font = 'bold 18px sans-serif';
   ctx.fillStyle = '#ffffff';
   ctx.textAlign = 'left';
-  ctx.fillText(`P1: ${shotScore1}点`, 58, getTopSafeY());
+  drawP1Text(ctx, `P1: ${shotScore1}点`, 58, getTopSafeY());
   ctx.fillText(`P2: ${shotScore2}点`, 25, h - 30);
 
   requestAnimationFrame(hockeyShotLoop);
@@ -7870,7 +8067,7 @@ function goldfishLoop() {
   ctx.font = 'bold 16px sans-serif';
   ctx.fillStyle = '#ffffff';
   ctx.textAlign = 'left';
-  ctx.fillText(`P1: ${goldP1Score}匹 (${Math.max(0, goldP1Durability)}%)`, 58, getTopSafeY());
+  drawP1Text(ctx, `P1: ${goldP1Score}匹 (${Math.max(0, goldP1Durability)}%)`, 58, getTopSafeY());
   ctx.fillText(`P2: ${goldP2Score}匹 (${Math.max(0, goldP2Durability)}%)`, 25, h - 20);
 
   // Draw Fishes
@@ -7953,7 +8150,7 @@ function chalkDustLoop() {
   ctx.fillStyle = '#f87171';
   ctx.textAlign = 'left';
   const chalkCleanY = getTopSafeY();
-  ctx.fillText(`P1 粉: ${dustP1}%`, 58, chalkCleanY);
+  drawP1Text(ctx, `P1 粉: ${dustP1}%`, 58, chalkCleanY);
   ctx.fillStyle = `rgba(255, 255, 255, ${dustP1 / 120})`;
   ctx.fillRect(30, chalkCleanY + 12, w - 60, h / 2 - (chalkCleanY + 25));
   ctx.font = '48px sans-serif';
@@ -8041,7 +8238,7 @@ function rubberBandLoop() {
   ctx.font = 'bold 18px sans-serif';
   ctx.fillStyle = '#f87171';
   ctx.textAlign = 'left';
-  ctx.fillText(`P1: ${rubberP1Score}/3点`, 58, getTopSafeY());
+  drawP1Text(ctx, `P1: ${rubberP1Score}/3点`, 58, getTopSafeY());
   ctx.fillStyle = '#60a5fa';
   ctx.fillText(`P2: ${rubberP2Score}/3点`, 25, h - 30);
 
@@ -8133,7 +8330,7 @@ function bookTowerLoop() {
   ctx.font = 'bold 18px sans-serif';
   ctx.fillStyle = '#f87171';
   ctx.textAlign = 'left';
-  ctx.fillText(`P1: ${bookFloor1}/5冊`, 58, getTopSafeY());
+  drawP1Text(ctx, `P1: ${bookFloor1}/5冊`, 58, getTopSafeY());
   ctx.fillStyle = '#60a5fa';
   ctx.fillText(`P2: ${bookFloor2}/5冊`, 25, h - 30);
 
@@ -8219,7 +8416,7 @@ function penSpinLoop() {
   ctx.font = 'bold 18px sans-serif';
   ctx.fillStyle = '#f87171';
   ctx.textAlign = 'left';
-  ctx.fillText(`P1: ${penSpin1}/20回転`, 58, getTopSafeY());
+  drawP1Text(ctx, `P1: ${penSpin1}/20回転`, 58, getTopSafeY());
   ctx.fillStyle = '#60a5fa';
   ctx.fillText(`P2: ${penSpin2}/20回転`, 25, h - 30);
 
@@ -8377,7 +8574,7 @@ function calculatorLoop() {
   ctx.font = 'bold 18px sans-serif';
   ctx.fillStyle = '#f87171';
   ctx.textAlign = 'left';
-  ctx.fillText(`P1: ${calcP1Score}/3問`, 58, getTopSafeY());
+  drawP1Text(ctx, `P1: ${calcP1Score}/3問`, 58, getTopSafeY());
   ctx.fillStyle = '#60a5fa';
   ctx.fillText(`P2: ${calcP2Score}/3問`, 25, h - 30);
 
@@ -8474,7 +8671,7 @@ function lunchBreadLoop() {
   ctx.font = 'bold 18px sans-serif';
   ctx.fillStyle = '#f87171';
   ctx.textAlign = 'left';
-  ctx.fillText(`P1: ${breadP1Score}/3本`, 58, getTopSafeY());
+  drawP1Text(ctx, `P1: ${breadP1Score}/3本`, 58, getTopSafeY());
   ctx.fillStyle = '#60a5fa';
   ctx.fillText(`P2: ${breadP2Score}/3本`, 25, h - 30);
 
@@ -8552,7 +8749,7 @@ function eyeDropsLoop() {
   ctx.font = 'bold 18px sans-serif';
   ctx.fillStyle = '#f87171';
   ctx.textAlign = 'left';
-  ctx.fillText(`P1: ${eyeScore1}/3滴`, 58, getTopSafeY());
+  drawP1Text(ctx, `P1: ${eyeScore1}/3滴`, 58, getTopSafeY());
   ctx.fillStyle = '#60a5fa';
   ctx.fillText(`P2: ${eyeScore2}/3滴`, 25, h - 30);
 
@@ -8631,7 +8828,7 @@ function doubleDutchLoop() {
   ctx.font = 'bold 18px sans-serif';
   ctx.fillStyle = '#f87171';
   ctx.textAlign = 'left';
-  ctx.fillText(`P1: ${dutchScore1}/10回`, 58, getTopSafeY());
+  drawP1Text(ctx, `P1: ${dutchScore1}/10回`, 58, getTopSafeY());
   ctx.fillStyle = '#60a5fa';
   ctx.fillText(`P2: ${dutchScore2}/10回`, 25, h - 30);
 
@@ -8713,7 +8910,7 @@ function rocketLaunchLoop() {
   ctx.font = 'bold 18px sans-serif';
   ctx.fillStyle = '#f87171';
   ctx.textAlign = 'left';
-  ctx.fillText(`P1: ${rockAlt1}km / 500km`, 58, getTopSafeY());
+  drawP1Text(ctx, `P1: ${rockAlt1}km / 500km`, 58, getTopSafeY());
   ctx.fillStyle = '#60a5fa';
   ctx.fillText(`P2: ${rockAlt2}km / 500km`, 25, h - 30);
 

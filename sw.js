@@ -1,9 +1,9 @@
-const CACHE_NAME = 'school-party-v1';
+const CACHE_NAME = 'school-party-v2';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
-  './style.css',
-  './app.js',
+  './style.css?v=2',
+  './app.js?v=2',
   './audio.js',
   './words.js',
   './manifest.json',

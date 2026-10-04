@@ -112,6 +112,10 @@ html, body {
   background: radial-gradient(circle at 50% 10%, #1e293b, #0f172a 70%);
 }
 
+#screen-menu.active {
+  display: block;
+}
+
 .app-title {
   text-align: center;
   margin-bottom: 20px;
@@ -171,14 +175,18 @@ html, body {
 
 .card-info {
   flex: 1;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .card-info h3 {
-  font-size: 18px;
+  font-size: 17px;
   font-weight: 700;
   display: flex;
   align-items: center;
-  gap: 8px;
+  flex-wrap: wrap;
+  gap: 6px;
+  word-break: break-word;
 }
 
 .card-badge {
@@ -186,6 +194,7 @@ html, body {
   padding: 2px 8px;
   border-radius: 20px;
   font-weight: 600;
+  white-space: nowrap;
 }
 
 .badge-2p { background: rgba(59, 130, 246, 0.25); color: #60a5fa; }
@@ -196,6 +205,8 @@ html, body {
   color: var(--text-secondary);
   margin-top: 4px;
   line-height: 1.35;
+  word-break: break-word;
+  overflow-wrap: break-word;
 }
 
 /* 2人対戦レイアウト（画面上下分割） */
@@ -535,10 +546,14 @@ canvas {
   display: flex;
   gap: 8px;
   overflow-x: auto;
-  padding: 4px 4px 16px;
-  margin-bottom: 8px;
+  padding: 6px 4px 16px;
+  margin: 0 auto 8px auto;
+  max-width: 500px;
+  width: 100%;
   scrollbar-width: none;
   -webkit-overflow-scrolling: touch;
+  flex-shrink: 0;
+  box-sizing: border-box;
 }
 
 .category-tabs::-webkit-scrollbar {
@@ -556,6 +571,13 @@ canvas {
   white-space: nowrap;
   cursor: pointer;
   transition: all 0.2s;
+  flex-shrink: 0;
+  height: 38px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  line-height: 1;
 }
 
 .tab-btn.active {
