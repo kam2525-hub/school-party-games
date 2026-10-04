@@ -93,6 +93,26 @@ function startGame(gameKey) {
       showScreen('screen-twister');
       initTwisterGame();
       break;
+    case 'hockey':
+      showScreen('screen-hockey');
+      initHockeyGame();
+      break;
+    case 'rps':
+      showScreen('screen-rps');
+      initRpsGame();
+      break;
+    case 'knife':
+      showScreen('screen-knife');
+      initKnifeGame();
+      break;
+    case 'color':
+      showScreen('screen-color');
+      initColorGame();
+      break;
+    case 'space':
+      showScreen('screen-space');
+      initSpaceGame();
+      break;
   }
 }
 
@@ -638,4 +658,684 @@ window.addEventListener('resize', () => {
     twisterCanvas.width = twisterCanvas.clientWidth;
     twisterCanvas.height = twisterCanvas.clientHeight;
   }
+  if (hockeyCanvas) {
+    hockeyCanvas.width = hockeyCanvas.clientWidth;
+    hockeyCanvas.height = hockeyCanvas.clientHeight;
+  }
+  if (knifeCanvas) {
+    knifeCanvas.width = knifeCanvas.clientWidth;
+    knifeCanvas.height = knifeCanvas.clientHeight;
+  }
+  if (spaceCanvas) {
+    spaceCanvas.width = spaceCanvas.clientWidth;
+    spaceCanvas.height = spaceCanvas.clientHeight;
+  }
 });
+
+/* ============================================================
+   6. エアホッケー (Air Hockey)
+   ============================================================ */
+let hockeyCanvas, hockeyCtx;
+let hockeyScore1 = 0, hockeyScore2 = 0;
+let hockeyP1 = { x: 0, y: 0, radius: 28 };
+let hockeyP2 = { x: 0, y: 0, radius: 28 };
+let hockeyPuck = { x: 0, y: 0, vx: 0, vy: 0, radius: 18 };
+let isHockeyRunning = false;
+
+function initHockeyGame() {
+  hockeyCanvas = document.getElementById('hockey-canvas');
+  hockeyCtx = hockeyCanvas.getContext('2d');
+  hockeyCanvas.width = hockeyCanvas.clientWidth;
+  hockeyCanvas.height = hockeyCanvas.clientHeight;
+
+  hockeyScore1 = 0;
+  hockeyScore2 = 0;
+  isHockeyRunning = true;
+
+  resetHockeyPositions();
+
+  hockeyCanvas.ontouchstart = handleHockeyTouch;
+  hockeyCanvas.ontouchmove = handleHockeyTouch;
+
+  requestAnimationFrame(hockeyLoop);
+}
+
+function resetHockeyPositions() {
+  const w = hockeyCanvas.width;
+  const h = hockeyCanvas.height;
+
+  hockeyP1 = { x: w / 2, y: h * 0.2, radius: 30 };
+  hockeyP2 = { x: w / 2, y: h * 0.8, radius: 30 };
+  hockeyPuck = { x: w / 2, y: h / 2, vx: (Math.random() - 0.5) * 4, vy: Math.random() > 0.5 ? 4 : -4, radius: 18 };
+}
+
+function handleHockeyTouch(e) {
+  e.preventDefault();
+  if (!isHockeyRunning) return;
+
+  const rect = hockeyCanvas.getBoundingClientRect();
+  const midY = hockeyCanvas.height / 2;
+
+  for (let i = 0; i < e.touches.length; i++) {
+    const t = e.touches[i];
+    const tx = t.clientX - rect.left;
+    const ty = t.clientY - rect.top;
+
+    if (ty < midY) {
+      // P1側
+      hockeyP1.x = Math.max(hockeyP1.radius, Math.min(hockeyCanvas.width - hockeyP1.radius, tx));
+      hockeyP1.y = Math.max(hockeyP1.radius, Math.min(midY - hockeyP1.radius, ty));
+    } else {
+      // P2側
+      hockeyP2.x = Math.max(hockeyP2.radius, Math.min(hockeyCanvas.width - hockeyP2.radius, tx));
+      hockeyP2.y = Math.max(midY + hockeyP2.radius, Math.min(hockeyCanvas.height - hockeyP2.radius, ty));
+    }
+  }
+}
+
+function hockeyLoop() {
+  if (currentScreen !== 'screen-hockey' || !isHockeyRunning) return;
+
+  const ctx = hockeyCtx;
+  const w = hockeyCanvas.width;
+  const h = hockeyCanvas.height;
+  const goalWidth = w * 0.45;
+  const goalLeft = (w - goalWidth) / 2;
+  const goalRight = goalLeft + goalWidth;
+
+  // 移動・減衰
+  hockeyPuck.x += hockeyPuck.vx;
+  hockeyPuck.y += hockeyPuck.vy;
+  hockeyPuck.vx *= 0.992;
+  hockeyPuck.vy *= 0.992;
+
+  // 左右壁反射
+  if (hockeyPuck.x - hockeyPuck.radius <= 0) {
+    hockeyPuck.x = hockeyPuck.radius;
+    hockeyPuck.vx = -hockeyPuck.vx;
+    window.sounds.playTap();
+  } else if (hockeyPuck.x + hockeyPuck.radius >= w) {
+    hockeyPuck.x = w - hockeyPuck.radius;
+    hockeyPuck.vx = -hockeyPuck.vx;
+    window.sounds.playTap();
+  }
+
+  // 上下壁 & ゴール判定
+  if (hockeyPuck.y - hockeyPuck.radius <= 0) {
+    if (hockeyPuck.x >= goalLeft && hockeyPuck.x <= goalRight) {
+      // P2のゴール（P1陣地に突入）！
+      hockeyScore2++;
+      window.sounds.playSuccess();
+      checkHockeyWinner();
+      resetHockeyPositions();
+    } else {
+      hockeyPuck.y = hockeyPuck.radius;
+      hockeyPuck.vy = -hockeyPuck.vy;
+      window.sounds.playTap();
+    }
+  } else if (hockeyPuck.y + hockeyPuck.radius >= h) {
+    if (hockeyPuck.x >= goalLeft && hockeyPuck.x <= goalRight) {
+      // P1のゴール（P2陣地に突入）！
+      hockeyScore1++;
+      window.sounds.playSuccess();
+      checkHockeyWinner();
+      resetHockeyPositions();
+    } else {
+      hockeyPuck.y = h - hockeyPuck.radius;
+      hockeyPuck.vy = -hockeyPuck.vy;
+      window.sounds.playTap();
+    }
+  }
+
+  // パドルとの衝突
+  [hockeyP1, hockeyP2].forEach(p => {
+    const dx = hockeyPuck.x - p.x;
+    const dy = hockeyPuck.y - p.y;
+    const dist = Math.hypot(dx, dy);
+    const minDist = hockeyPuck.radius + p.radius;
+
+    if (dist < minDist) {
+      const angle = Math.atan2(dy, dx);
+      hockeyPuck.x = p.x + Math.cos(angle) * minDist;
+      hockeyPuck.y = p.y + Math.sin(angle) * minDist;
+
+      const speed = Math.max(8, Math.min(18, Math.hypot(hockeyPuck.vx, hockeyPuck.vy) * 1.1 + 4));
+      hockeyPuck.vx = Math.cos(angle) * speed;
+      hockeyPuck.vy = Math.sin(angle) * speed;
+      window.sounds.playTap();
+    }
+  });
+
+  // 描画
+  ctx.fillStyle = '#0f172a';
+  ctx.fillRect(0, 0, w, h);
+
+  // センターライン・サークル
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.moveTo(0, h / 2);
+  ctx.lineTo(w, h / 2);
+  ctx.stroke();
+
+  ctx.beginPath();
+  ctx.arc(w / 2, h / 2, 60, 0, Math.PI * 2);
+  ctx.stroke();
+
+  // ゴールエリア
+  ctx.fillStyle = 'rgba(239, 68, 68, 0.3)';
+  ctx.fillRect(goalLeft, 0, goalWidth, 12);
+  ctx.fillStyle = 'rgba(59, 130, 246, 0.3)';
+  ctx.fillRect(goalLeft, h - 12, goalWidth, 12);
+
+  // スコア表示
+  ctx.font = 'bold 36px sans-serif';
+  ctx.fillStyle = 'rgba(239, 68, 68, 0.7)';
+  ctx.textAlign = 'center';
+  ctx.fillText(hockeyScore1, 40, h / 2 - 30);
+
+  ctx.fillStyle = 'rgba(59, 130, 246, 0.7)';
+  ctx.fillText(hockeyScore2, 40, h / 2 + 55);
+
+  // パドル P1 (赤)
+  ctx.beginPath();
+  ctx.arc(hockeyP1.x, hockeyP1.y, hockeyP1.radius, 0, Math.PI * 2);
+  ctx.fillStyle = '#ef4444';
+  ctx.fill();
+  ctx.lineWidth = 4;
+  ctx.strokeStyle = '#ffffff';
+  ctx.stroke();
+
+  // パドル P2 (青)
+  ctx.beginPath();
+  ctx.arc(hockeyP2.x, hockeyP2.y, hockeyP2.radius, 0, Math.PI * 2);
+  ctx.fillStyle = '#3b82f6';
+  ctx.fill();
+  ctx.stroke();
+
+  // パック (黄色)
+  ctx.beginPath();
+  ctx.arc(hockeyPuck.x, hockeyPuck.y, hockeyPuck.radius, 0, Math.PI * 2);
+  ctx.fillStyle = '#fbbf24';
+  ctx.fill();
+  ctx.lineWidth = 3;
+  ctx.strokeStyle = '#ffffff';
+  ctx.stroke();
+
+  requestAnimationFrame(hockeyLoop);
+}
+
+function checkHockeyWinner() {
+  if (hockeyScore1 >= 3 || hockeyScore2 >= 3) {
+    isHockeyRunning = false;
+    const winner = hockeyScore1 >= 3 ? 'プレイヤー 1' : 'プレイヤー 2';
+    showModal(`🎉 ${winner} の勝利！`, `3点先取でエアホッケーを制しました！`, () => {
+      initHockeyGame();
+    });
+  }
+}
+
+/* ============================================================
+   7. スピードじゃんけん (Speed RPS)
+   ============================================================ */
+let rpsScore1 = 0, rpsScore2 = 0;
+let rpsTargetHand = 'rock'; // 'rock', 'scissors', 'paper'
+let rpsInstruction = 'win'; // 'win' (勝て), 'lose' (負けろ)
+let rpsRoundResolved = false;
+
+const RPS_EMOJI = { rock: '✊', scissors: '✌️', paper: '🖐️' };
+const RPS_WINS_AGAINST = { rock: 'scissors', scissors: 'paper', paper: 'rock' };
+const RPS_LOSES_AGAINST = { rock: 'paper', scissors: 'rock', paper: 'scissors' };
+
+function initRpsGame() {
+  rpsScore1 = 0;
+  rpsScore2 = 0;
+  updateRpsUI();
+  nextRpsRound();
+}
+
+function updateRpsUI() {
+  document.getElementById('rps-score-p1').textContent = rpsScore1;
+  document.getElementById('rps-score-p2').textContent = rpsScore2;
+}
+
+function nextRpsRound() {
+  rpsRoundResolved = false;
+  const hands = ['rock', 'scissors', 'paper'];
+  rpsTargetHand = hands[Math.floor(Math.random() * hands.length)];
+  rpsInstruction = Math.random() < 0.5 ? 'win' : 'lose';
+
+  document.getElementById('rps-target-hand').textContent = RPS_EMOJI[rpsTargetHand];
+  const instElem = document.getElementById('rps-instruction');
+  instElem.textContent = rpsInstruction === 'win' ? '勝て！🔥' : '負けろ！🌀';
+  instElem.style.color = rpsInstruction === 'win' ? '#ef4444' : '#3b82f6';
+}
+
+function handleRpsChoice(player, chosenHand) {
+  if (rpsRoundResolved) return;
+
+  const correctHand = rpsInstruction === 'win' 
+    ? RPS_LOSES_AGAINST[rpsTargetHand] // 相手の手(target)に勝つ手
+    : RPS_WINS_AGAINST[rpsTargetHand]; // 相手の手(target)に負ける手
+
+  if (chosenHand === correctHand) {
+    // 正解！
+    rpsRoundResolved = true;
+    window.sounds.playSuccess();
+    if (player === 1) rpsScore1++; else rpsScore2++;
+    updateRpsUI();
+
+    if (rpsScore1 >= 5 || rpsScore2 >= 5) {
+      const winner = rpsScore1 >= 5 ? 'プレイヤー 1' : 'プレイヤー 2';
+      setTimeout(() => {
+        showModal(`🏆 ${winner} の勝利！`, `圧倒的な瞬発力でじゃんけんバトルを制覇！`, () => {
+          initRpsGame();
+        });
+      }, 500);
+    } else {
+      setTimeout(nextRpsRound, 800);
+    }
+  } else {
+    // 不正解！
+    window.sounds.playError();
+    const other = player === 1 ? 2 : 1;
+    if (other === 1) rpsScore1++; else rpsScore2++;
+    updateRpsUI();
+    rpsRoundResolved = true;
+    setTimeout(nextRpsRound, 800);
+  }
+}
+
+/* ============================================================
+   8. ナイフスロー (Knife Hit Battle)
+   ============================================================ */
+let knifeCanvas, knifeCtx;
+let knifeTargetAngle = 0;
+let knifeKnives = []; // { angle, player }
+let knifeFlying = null; // { x, y, vy, player }
+let knifeKnivesP1 = 5;
+let knifeKnivesP2 = 5;
+let isKnifeRunning = false;
+
+function initKnifeGame() {
+  knifeCanvas = document.getElementById('knife-canvas');
+  knifeCtx = knifeCanvas.getContext('2d');
+  knifeCanvas.width = knifeCanvas.clientWidth;
+  knifeCanvas.height = knifeCanvas.clientHeight;
+
+  knifeTargetAngle = 0;
+  knifeKnives = [];
+  knifeFlying = null;
+  knifeKnivesP1 = 5;
+  knifeKnivesP2 = 5;
+  isKnifeRunning = true;
+
+  knifeCanvas.onpointerdown = handleKnifeShoot;
+  requestAnimationFrame(knifeLoop);
+}
+
+function handleKnifeShoot(e) {
+  e.preventDefault();
+  if (!isKnifeRunning || knifeFlying) return;
+
+  const rect = knifeCanvas.getBoundingClientRect();
+  const y = (e.clientY - rect.top);
+  const midY = knifeCanvas.height / 2;
+
+  if (y < midY && knifeKnivesP1 > 0) {
+    // P1 (上から下へ発射)
+    knifeKnivesP1--;
+    knifeFlying = { x: knifeCanvas.width / 2, y: 60, vy: 18, player: 1 };
+    window.sounds.playTap();
+  } else if (y >= midY && knifeKnivesP2 > 0) {
+    // P2 (下から上へ発射)
+    knifeKnivesP2--;
+    knifeFlying = { x: knifeCanvas.width / 2, y: knifeCanvas.height - 60, vy: -18, player: 2 };
+    window.sounds.playTap();
+  }
+}
+
+function knifeLoop() {
+  if (currentScreen !== 'screen-knife' || !isKnifeRunning) return;
+
+  const ctx = knifeCtx;
+  const w = knifeCanvas.width;
+  const h = knifeCanvas.height;
+  const targetRadius = 55;
+  const centerX = w / 2;
+  const centerY = h / 2;
+
+  // 的の回転
+  knifeTargetAngle += 0.035;
+
+  // 飛行中ナイフの処理
+  if (knifeFlying) {
+    knifeFlying.y += knifeFlying.vy;
+
+    const dist = Math.abs(knifeFlying.y - centerY);
+    if (dist <= targetRadius + 10) {
+      // 的に到達！
+      const hitAngle = (knifeFlying.player === 1 ? -Math.PI / 2 : Math.PI / 2) - knifeTargetAngle;
+
+      // 既存のナイフと衝突していないかチェック
+      let collision = false;
+      for (const k of knifeKnives) {
+        const diff = Math.abs((k.angle - hitAngle + Math.PI * 4) % (Math.PI * 2));
+        if (diff < 0.22 || diff > Math.PI * 2 - 0.22) {
+          collision = true;
+          break;
+        }
+      }
+
+      if (collision) {
+        // 刃に激突！負け！
+        isKnifeRunning = false;
+        window.sounds.playGunshot();
+        const winner = knifeFlying.player === 1 ? 'プレイヤー 2' : 'プレイヤー 1';
+        showModal(`💥 ナイフが弾かれた！`, `${winner} の勝利！刃に直撃してしまいました！`, () => {
+          initKnifeGame();
+        });
+        return;
+      } else {
+        // 成功！突き刺さる
+        knifeKnives.push({ angle: hitAngle, player: knifeFlying.player });
+        window.sounds.playTap();
+        knifeFlying = null;
+
+        // 全弾刺し終えたかチェック
+        if (knifeKnivesP1 === 0 && knifeKnivesP2 === 0) {
+          isKnifeRunning = false;
+          window.sounds.playSuccess();
+          showModal('🎉 引き分け！見事な命中率！', '両者ともすべてのナイフを刺しきりました！', () => {
+            initKnifeGame();
+          });
+          return;
+        }
+      }
+    }
+  }
+
+  // 描画
+  ctx.fillStyle = '#0f172a';
+  ctx.fillRect(0, 0, w, h);
+
+  // プレイヤー残弾表示
+  ctx.font = 'bold 20px sans-serif';
+  ctx.fillStyle = '#ef4444';
+  ctx.textAlign = 'left';
+  ctx.fillText(`P1 残り: ${knifeKnivesP1}本`, 20, 36);
+
+  ctx.fillStyle = '#3b82f6';
+  ctx.fillText(`P2 残り: ${knifeKnivesP2}本`, 20, h - 24);
+
+  // 的 (木製風の円)
+  ctx.save();
+  ctx.translate(centerX, centerY);
+  ctx.rotate(knifeTargetAngle);
+
+  ctx.beginPath();
+  ctx.arc(0, 0, targetRadius, 0, Math.PI * 2);
+  ctx.fillStyle = '#b45309';
+  ctx.fill();
+  ctx.lineWidth = 6;
+  ctx.strokeStyle = '#78350f';
+  ctx.stroke();
+
+  // 的の内側の年輪
+  ctx.beginPath();
+  ctx.arc(0, 0, targetRadius * 0.6, 0, Math.PI * 2);
+  ctx.stroke();
+
+  // 刺さったナイフの描画
+  knifeKnives.forEach(k => {
+    ctx.save();
+    ctx.rotate(k.angle);
+    ctx.fillStyle = k.player === 1 ? '#ef4444' : '#3b82f6';
+    ctx.fillRect(-4, targetRadius, 8, 30);
+    ctx.restore();
+  });
+
+  ctx.restore();
+
+  // 飛行中ナイフ
+  if (knifeFlying) {
+    ctx.fillStyle = knifeFlying.player === 1 ? '#ef4444' : '#3b82f6';
+    ctx.fillRect(knifeFlying.x - 4, knifeFlying.y - 15, 8, 30);
+  }
+
+  requestAnimationFrame(knifeLoop);
+}
+
+/* ============================================================
+   9. カラーブレイン (Color Stroop Duel)
+   ============================================================ */
+let colorScore1 = 0, colorScore2 = 0;
+let colorRoundResolved = false;
+let colorCurrentMatch = false;
+
+const COLOR_SET = [
+  { name: 'あか', code: '#ef4444' },
+  { name: 'あお', code: '#3b82f6' },
+  { name: 'きいろ', code: '#eab308' },
+  { name: 'みどり', code: '#10b981' }
+];
+
+function initColorGame() {
+  colorScore1 = 0;
+  colorScore2 = 0;
+  updateColorUI();
+  nextColorRound();
+}
+
+function updateColorUI() {
+  document.getElementById('color-score-p1').textContent = colorScore1;
+  document.getElementById('color-score-p2').textContent = colorScore2;
+}
+
+function nextColorRound() {
+  colorRoundResolved = false;
+  colorCurrentMatch = Math.random() < 0.5;
+
+  const wordItem = COLOR_SET[Math.floor(Math.random() * COLOR_SET.length)];
+  let colorItem;
+  if (colorCurrentMatch) {
+    colorItem = wordItem;
+  } else {
+    const others = COLOR_SET.filter(c => c.name !== wordItem.name);
+    colorItem = others[Math.floor(Math.random() * others.length)];
+  }
+
+  const wordElem = document.getElementById('color-word');
+  wordElem.textContent = wordItem.name;
+  wordElem.style.color = colorItem.code;
+}
+
+function handleColorAnswer(player, answer) {
+  if (colorRoundResolved) return;
+
+  if (answer === colorCurrentMatch) {
+    // 正解！
+    colorRoundResolved = true;
+    window.sounds.playSuccess();
+    if (player === 1) colorScore1++; else colorScore2++;
+    updateColorUI();
+
+    if (colorScore1 >= 4 || colorScore2 >= 4) {
+      const winner = colorScore1 >= 4 ? 'プレイヤー 1' : 'プレイヤー 2';
+      setTimeout(() => {
+        showModal(`🧠 ${winner} の勝利！`, `見事な脳の回転でカラーマッチを制しました！`, () => {
+          initColorGame();
+        });
+      }, 500);
+    } else {
+      setTimeout(nextColorRound, 700);
+    }
+  } else {
+    // 間違い！
+    window.sounds.playError();
+    colorRoundResolved = true;
+    const other = player === 1 ? 2 : 1;
+    if (other === 1) colorScore1++; else colorScore2++;
+    updateColorUI();
+    setTimeout(nextColorRound, 700);
+  }
+}
+
+/* ============================================================
+   10. スペースドッジ (Space Asteroid Dodge)
+   ============================================================ */
+let spaceCanvas, spaceCtx;
+let spaceShip1 = { x: 0, y: 0, radius: 20 };
+let spaceShip2 = { x: 0, y: 0, radius: 20 };
+let spaceAsteroids = [];
+let isSpaceRunning = false;
+let spaceSpeed = 3.5;
+
+function initSpaceGame() {
+  spaceCanvas = document.getElementById('space-canvas');
+  spaceCtx = spaceCanvas.getContext('2d');
+  spaceCanvas.width = spaceCanvas.clientWidth;
+  spaceCanvas.height = spaceCanvas.clientHeight;
+
+  const w = spaceCanvas.width;
+  const h = spaceCanvas.height;
+
+  // 左半分がP1、右半分がP2
+  spaceShip1 = { x: w * 0.25, y: h - 60, radius: 22 };
+  spaceShip2 = { x: w * 0.75, y: h - 60, radius: 22 };
+  spaceAsteroids = [];
+  spaceSpeed = 3.5;
+  isSpaceRunning = true;
+
+  spaceCanvas.ontouchstart = handleSpaceTouch;
+  spaceCanvas.ontouchmove = handleSpaceTouch;
+
+  requestAnimationFrame(spaceLoop);
+}
+
+function handleSpaceTouch(e) {
+  e.preventDefault();
+  if (!isSpaceRunning) return;
+
+  const rect = spaceCanvas.getBoundingClientRect();
+  const midX = spaceCanvas.width / 2;
+
+  for (let i = 0; i < e.touches.length; i++) {
+    const t = e.touches[i];
+    const tx = t.clientX - rect.left;
+    if (tx < midX) {
+      spaceShip1.x = Math.max(spaceShip1.radius, Math.min(midX - spaceShip1.radius, tx));
+    } else {
+      spaceShip2.x = Math.max(midX + spaceShip2.radius, Math.min(spaceCanvas.width - spaceShip2.radius, tx));
+    }
+  }
+}
+
+function spaceLoop() {
+  if (currentScreen !== 'screen-space' || !isSpaceRunning) return;
+
+  const ctx = spaceCtx;
+  const w = spaceCanvas.width;
+  const h = spaceCanvas.height;
+  const midX = w / 2;
+
+  spaceSpeed += 0.001; // 徐々にスピードアップ
+
+  // 隕石の定期生成
+  if (Math.random() < 0.08) {
+    // P1側
+    spaceAsteroids.push({
+      x: 20 + Math.random() * (midX - 40),
+      y: -20,
+      radius: 14 + Math.random() * 12,
+      vy: spaceSpeed + Math.random() * 2
+    });
+    // P2側
+    spaceAsteroids.push({
+      x: midX + 20 + Math.random() * (midX - 40),
+      y: -20,
+      radius: 14 + Math.random() * 12,
+      vy: spaceSpeed + Math.random() * 2
+    });
+  }
+
+  // 描画
+  ctx.fillStyle = '#090d16';
+  ctx.fillRect(0, 0, w, h);
+
+  // 中央の仕切り
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.moveTo(midX, 0);
+  ctx.lineTo(midX, h);
+  ctx.stroke();
+
+  // ラベル
+  ctx.font = 'bold 16px sans-serif';
+  ctx.fillStyle = '#ef4444';
+  ctx.textAlign = 'center';
+  ctx.fillText('🔴 プレイヤー 1', midX / 2, 30);
+
+  ctx.fillStyle = '#3b82f6';
+  ctx.fillText('🔵 プレイヤー 2', midX + midX / 2, 30);
+
+  // 隕石の更新と判定
+  let hitPlayer = null;
+  for (let i = spaceAsteroids.length - 1; i >= 0; i--) {
+    const a = spaceAsteroids[i];
+    a.y += a.vy;
+
+    // 衝突判定
+    const targetShip = a.x < midX ? spaceShip1 : spaceShip2;
+    const playerNum = a.x < midX ? 1 : 2;
+    const dist = Math.hypot(a.x - targetShip.x, a.y - targetShip.y);
+
+    if (dist < a.radius + targetShip.radius) {
+      hitPlayer = playerNum;
+    }
+
+    // 描画
+    ctx.beginPath();
+    ctx.arc(a.x, a.y, a.radius, 0, Math.PI * 2);
+    ctx.fillStyle = '#64748b';
+    ctx.fill();
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = '#94a3b8';
+    ctx.stroke();
+
+    if (a.y > h + 30) {
+      spaceAsteroids.splice(i, 1);
+    }
+  }
+
+  // 自機描画 (三角宇宙船)
+  [ { ship: spaceShip1, color: '#ef4444' }, { ship: spaceShip2, color: '#3b82f6' } ].forEach(({ ship, color }) => {
+    ctx.save();
+    ctx.translate(ship.x, ship.y);
+    ctx.beginPath();
+    ctx.moveTo(0, -ship.radius);
+    ctx.lineTo(-ship.radius * 0.8, ship.radius);
+    ctx.lineTo(ship.radius * 0.8, ship.radius);
+    ctx.closePath();
+    ctx.fillStyle = color;
+    ctx.fill();
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = '#ffffff';
+    ctx.stroke();
+    ctx.restore();
+  });
+
+  if (hitPlayer && isSpaceRunning) {
+    isSpaceRunning = false;
+    window.sounds.playExplosion();
+    const winner = hitPlayer === 1 ? 'プレイヤー 2' : 'プレイヤー 1';
+    showModal(`💥 撃墜！`, `${winner} の勝利！小惑星を最後まで回避しきりました！`, () => {
+      initSpaceGame();
+    });
+    return;
+  }
+
+  requestAnimationFrame(spaceLoop);
+}
+

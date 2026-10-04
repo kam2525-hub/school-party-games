@@ -70,6 +70,51 @@
             <p>画面に出る円に指を置き続けろ！指が離れたら脱落！</p>
           </div>
         </div>
+
+        <!-- ゲーム6: エアホッケー -->
+        <div class="game-card" onclick="startGame('hockey')">
+          <div class="card-icon" style="background: rgba(6, 182, 212, 0.15); color: #22d3ee;">🏓</div>
+          <div class="card-info">
+            <h3>エアホッケー <span class="card-badge badge-2p">2人対戦</span></h3>
+            <p>マレットを指でスライド！相手ゴールにパックを打ち込め！</p>
+          </div>
+        </div>
+
+        <!-- ゲーム7: 後出しじゃんけん -->
+        <div class="game-card" onclick="startGame('rps')">
+          <div class="card-icon" style="background: rgba(244, 63, 94, 0.15); color: #fb7185;">🪨</div>
+          <div class="card-info">
+            <h3>スピードじゃんけん <span class="card-badge badge-2p">2人対面</span></h3>
+            <p>「勝て！」「負けろ！」の指示通りに瞬時に手を出せ！</p>
+          </div>
+        </div>
+
+        <!-- ゲーム8: ナイフスロー -->
+        <div class="game-card" onclick="startGame('knife')">
+          <div class="card-icon" style="background: rgba(139, 92, 246, 0.15); color: #a78bfa;">🎯</div>
+          <div class="card-info">
+            <h3>ナイフスロー <span class="card-badge badge-2p">2人対面</span></h3>
+            <p>回転する的にナイフを刺せ！刃に当たるとアウト！</p>
+          </div>
+        </div>
+
+        <!-- ゲーム9: カラーブレイン -->
+        <div class="game-card" onclick="startGame('color')">
+          <div class="card-icon" style="background: rgba(234, 179, 8, 0.15); color: #fde047;">🧠</div>
+          <div class="card-info">
+            <h3>カラーブレイン <span class="card-badge badge-2p">2人対面</span></h3>
+            <p>文字の意味と色は一致している？YESかNOを瞬時に判断！</p>
+          </div>
+        </div>
+
+        <!-- ゲーム10: スペースドッジ -->
+        <div class="game-card" onclick="startGame('space')">
+          <div class="card-icon" style="background: rgba(99, 102, 241, 0.15); color: #818cf8;">🚀</div>
+          <div class="card-info">
+            <h3>スペースドッジ <span class="card-badge badge-2p">2人対戦</span></h3>
+            <p>自機を操作して迫り来る小惑星を避け続けろ！最後まで生き残れ！</p>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -190,6 +235,70 @@
     <!-- 6. フィンガーツイスター画面 -->
     <div id="screen-twister" class="screen">
       <canvas id="twister-canvas"></canvas>
+    </div>
+
+    <!-- 7. エアホッケー画面 -->
+    <div id="screen-hockey" class="screen">
+      <canvas id="hockey-canvas"></canvas>
+    </div>
+
+    <!-- 8. スピードじゃんけん画面 -->
+    <div id="screen-rps" class="screen">
+      <div class="split-battle">
+        <div id="rps-p1-zone" class="player-zone top-player" style="justify-content: space-around; padding: 20px 0;">
+          <div class="zone-score" id="rps-score-p1">0</div>
+          <div class="rps-buttons">
+            <button class="rps-btn" onclick="handleRpsChoice(1, 'rock')">✊</button>
+            <button class="rps-btn" onclick="handleRpsChoice(1, 'scissors')">✌️</button>
+            <button class="rps-btn" onclick="handleRpsChoice(1, 'paper')">🖐️</button>
+          </div>
+        </div>
+        <div class="rps-center-command" id="rps-command-box">
+          <div id="rps-target-hand" style="font-size: 40px; margin-bottom: 4px;">✊</div>
+          <div id="rps-instruction" style="font-size: 18px; font-weight: 900; color: #f43f5e;">勝て！</div>
+        </div>
+        <div id="rps-p2-zone" class="player-zone bottom-player" style="justify-content: space-around; padding: 20px 0;">
+          <div class="rps-buttons">
+            <button class="rps-btn" onclick="handleRpsChoice(2, 'rock')">✊</button>
+            <button class="rps-btn" onclick="handleRpsChoice(2, 'scissors')">✌️</button>
+            <button class="rps-btn" onclick="handleRpsChoice(2, 'paper')">🖐️</button>
+          </div>
+          <div class="zone-score" id="rps-score-p2">0</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 9. ナイフスロー画面 -->
+    <div id="screen-knife" class="screen">
+      <canvas id="knife-canvas"></canvas>
+    </div>
+
+    <!-- 10. カラーブレイン画面 -->
+    <div id="screen-color" class="screen">
+      <div class="split-battle">
+        <div class="player-zone top-player" style="justify-content: space-around;">
+          <div class="zone-score" id="color-score-p1">0</div>
+          <div style="display: flex; gap: 20px;">
+            <button class="btn-primary" style="background: #10b981; font-size: 22px; padding: 14px 30px;" onclick="handleColorAnswer(1, true)">⭕ 一致</button>
+            <button class="btn-primary" style="background: #ef4444; font-size: 22px; padding: 14px 30px;" onclick="handleColorAnswer(1, false)">❌ 違う</button>
+          </div>
+        </div>
+        <div class="color-center-box" id="color-center-box">
+          <div id="color-word" style="font-size: 38px; font-weight: 900;">あか</div>
+        </div>
+        <div class="player-zone bottom-player" style="justify-content: space-around;">
+          <div style="display: flex; gap: 20px;">
+            <button class="btn-primary" style="background: #10b981; font-size: 22px; padding: 14px 30px;" onclick="handleColorAnswer(2, true)">⭕ 一致</button>
+            <button class="btn-primary" style="background: #ef4444; font-size: 22px; padding: 14px 30px;" onclick="handleColorAnswer(2, false)">❌ 違う</button>
+          </div>
+          <div class="zone-score" id="color-score-p2">0</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 11. スペースドッジ画面 -->
+    <div id="screen-space" class="screen">
+      <canvas id="space-canvas"></canvas>
     </div>
 
     <!-- 結果・通知モーダル -->
