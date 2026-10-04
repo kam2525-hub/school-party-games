@@ -1,9 +1,9 @@
-const CACHE_NAME = 'school-party-v2';
+const CACHE_NAME = 'school-party-v4';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
-  './style.css?v=2',
-  './app.js?v=2',
+  './style.css?v=4',
+  './app.js?v=4',
   './audio.js',
   './words.js',
   './manifest.json',
@@ -12,10 +12,11 @@ const ASSETS_TO_CACHE = [
 ];
 
 self.addEventListener('install', (event) => {
+  self.skipWaiting();
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
       return cache.addAll(ASSETS_TO_CACHE);
-    }).then(() => self.skipWaiting())
+    })
   );
 });
 
@@ -34,7 +35,7 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
-  // Network first, fall back to cache
+  // Always network first for navigation / scripts / css
   event.respondWith(
     fetch(event.request)
       .then((networkResponse) => {

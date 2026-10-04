@@ -1519,11 +1519,10 @@ function handleColorAnswer(player, answer) {
    10. スペースドッジ (Space Asteroid Dodge)
    ============================================================ */
 let spaceCanvas, spaceCtx;
-let spaceShip1 = { x: 0, y: 0, radius: 20 };
-let spaceShip2 = { x: 0, y: 0, radius: 20 };
-let spaceAsteroids = [];
+let spaceShip1, spaceShip2;
+let spaceAsteroids1 = [], spaceAsteroids2 = [];
+let spaceSpeed = 3.2;
 let isSpaceRunning = false;
-let spaceSpeed = 3.5;
 
 function initSpaceGame() {
   spaceCanvas = document.getElementById('space-canvas');
@@ -1533,36 +1532,41 @@ function initSpaceGame() {
 
   const w = spaceCanvas.width;
   const h = spaceCanvas.height;
+  const topY = getTopSafeY();
 
-  // 左半分がP1、右半分がP2
-  spaceShip1 = { x: w * 0.25, y: h - 60, radius: 22 };
-  spaceShip2 = { x: w * 0.75, y: h - 60, radius: 22 };
-  spaceAsteroids = [];
-  spaceSpeed = 3.5;
+  // 対面配置: P1は上部(下向き)、P2は下部(上向き)
+  spaceShip1 = { x: w / 2, y: topY + 45, radius: 22 };
+  spaceShip2 = { x: w / 2, y: h - 55, radius: 22 };
+  spaceAsteroids1 = [];
+  spaceAsteroids2 = [];
+  spaceSpeed = 3.2;
   isSpaceRunning = true;
 
-  spaceCanvas.ontouchstart = handleSpaceTouch;
-  spaceCanvas.ontouchmove = handleSpaceTouch;
+  const handleSpaceMultiTouch = (e) => {
+    e.preventDefault();
+    if (!isSpaceRunning) return;
+    const rect = spaceCanvas.getBoundingClientRect();
+    const touches = e.touches ? Array.from(e.touches) : [e];
+    for (let i = 0; i < touches.length; i++) {
+      const t = touches[i];
+      const tx = t.clientX - rect.left;
+      const ty = t.clientY - rect.top;
+      if (ty < h / 2) {
+        // P1: 上半分 (左右反転: P1から見て直感的)
+        spaceShip1.x = Math.max(spaceShip1.radius + 10, Math.min(w - spaceShip1.radius - 10, tx));
+      } else {
+        // P2: 下半分
+        spaceShip2.x = Math.max(spaceShip2.radius + 10, Math.min(w - spaceShip2.radius - 10, tx));
+      }
+    }
+  };
+
+  spaceCanvas.onpointerdown = handleSpaceMultiTouch;
+  spaceCanvas.onpointermove = handleSpaceMultiTouch;
+  spaceCanvas.ontouchstart = handleSpaceMultiTouch;
+  spaceCanvas.ontouchmove = handleSpaceMultiTouch;
 
   requestAnimationFrame(spaceLoop);
-}
-
-function handleSpaceTouch(e) {
-  e.preventDefault();
-  if (!isSpaceRunning) return;
-
-  const rect = spaceCanvas.getBoundingClientRect();
-  const midX = spaceCanvas.width / 2;
-
-  for (let i = 0; i < e.touches.length; i++) {
-    const t = e.touches[i];
-    const tx = t.clientX - rect.left;
-    if (tx < midX) {
-      spaceShip1.x = Math.max(spaceShip1.radius, Math.min(midX - spaceShip1.radius, tx));
-    } else {
-      spaceShip2.x = Math.max(midX + spaceShip2.radius, Math.min(spaceCanvas.width - spaceShip2.radius, tx));
-    }
-  }
 }
 
 function spaceLoop() {
@@ -1571,25 +1575,26 @@ function spaceLoop() {
   const ctx = spaceCtx;
   const w = spaceCanvas.width;
   const h = spaceCanvas.height;
-  const midX = w / 2;
+  const midY = h / 2;
+  const topY = getTopSafeY();
 
-  spaceSpeed += 0.001; // 徐々にスピードアップ
+  spaceSpeed += 0.0015;
 
-  // 隕石の定期生成
+  // 隕石生成: 中央から外側へ迫る
   if (Math.random() < 0.08) {
-    // P1側
-    spaceAsteroids.push({
-      x: 20 + Math.random() * (midX - 40),
-      y: -20,
-      radius: 14 + Math.random() * 12,
-      vy: spaceSpeed + Math.random() * 2
+    // P1側: 中央から上へ迫る
+    spaceAsteroids1.push({
+      x: 25 + Math.random() * (w - 50),
+      y: midY - 10,
+      radius: 13 + Math.random() * 11,
+      vy: -(spaceSpeed + Math.random() * 1.8)
     });
-    // P2側
-    spaceAsteroids.push({
-      x: midX + 20 + Math.random() * (midX - 40),
-      y: -20,
-      radius: 14 + Math.random() * 12,
-      vy: spaceSpeed + Math.random() * 2
+    // P2側: 中央から下へ迫る
+    spaceAsteroids2.push({
+      x: 25 + Math.random() * (w - 50),
+      y: midY + 10,
+      radius: 13 + Math.random() * 11,
+      vy: spaceSpeed + Math.random() * 1.8
     });
   }
 
@@ -1598,67 +1603,88 @@ function spaceLoop() {
   ctx.fillRect(0, 0, w, h);
 
   // 中央の仕切り
-  ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
-  ctx.lineWidth = 3;
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
+  ctx.setLineDash([6, 6]);
+  ctx.lineWidth = 2;
   ctx.beginPath();
-  ctx.moveTo(midX, 0);
-  ctx.lineTo(midX, h);
+  ctx.moveTo(0, midY);
+  ctx.lineTo(w, midY);
   ctx.stroke();
+  ctx.setLineDash([]);
 
-  // ラベル
-  ctx.font = 'bold 16px sans-serif';
-  ctx.fillStyle = '#ef4444';
-  ctx.textAlign = 'center';
-  ctx.fillText('🔴 プレイヤー 1', midX / 2, getTopSafeY());
-
+  // 対面ラベル
+  drawP1Text(ctx, '🔴 P1: スライドして小惑星を回避！', w / 2, topY + 16, 'bold 14px sans-serif', '#ef4444', 'center');
+  ctx.font = 'bold 14px sans-serif';
   ctx.fillStyle = '#3b82f6';
-  ctx.fillText('🔵 プレイヤー 2', midX + midX / 2, getTopSafeY());
+  ctx.textAlign = 'center';
+  ctx.fillText('🔵 P2: スライドして小惑星を回避！', w / 2, h - 30);
 
-  // 隕石の更新と判定
   let hitPlayer = null;
-  for (let i = spaceAsteroids.length - 1; i >= 0; i--) {
-    const a = spaceAsteroids[i];
+
+  // P1 隕石更新
+  for (let i = spaceAsteroids1.length - 1; i >= 0; i--) {
+    const a = spaceAsteroids1[i];
     a.y += a.vy;
-
-    // 衝突判定
-    const targetShip = a.x < midX ? spaceShip1 : spaceShip2;
-    const playerNum = a.x < midX ? 1 : 2;
-    const dist = Math.hypot(a.x - targetShip.x, a.y - targetShip.y);
-
-    if (dist < a.radius + targetShip.radius) {
-      hitPlayer = playerNum;
+    if (Math.hypot(a.x - spaceShip1.x, a.y - spaceShip1.y) < a.radius + spaceShip1.radius) {
+      hitPlayer = 1;
     }
-
-    // 描画
     ctx.beginPath();
     ctx.arc(a.x, a.y, a.radius, 0, Math.PI * 2);
-    ctx.fillStyle = '#64748b';
+    ctx.fillStyle = '#94a3b8';
     ctx.fill();
-    ctx.lineWidth = 2;
-    ctx.strokeStyle = '#94a3b8';
+    ctx.strokeStyle = '#ef4444';
+    ctx.lineWidth = 1.5;
     ctx.stroke();
-
-    if (a.y > h + 30) {
-      spaceAsteroids.splice(i, 1);
-    }
+    if (a.y < topY - 30) spaceAsteroids1.splice(i, 1);
   }
 
-  // 自機描画 (三角宇宙船)
-  [ { ship: spaceShip1, color: '#ef4444' }, { ship: spaceShip2, color: '#3b82f6' } ].forEach(({ ship, color }) => {
-    ctx.save();
-    ctx.translate(ship.x, ship.y);
+  // P2 隕石更新
+  for (let i = spaceAsteroids2.length - 1; i >= 0; i--) {
+    const a = spaceAsteroids2[i];
+    a.y += a.vy;
+    if (Math.hypot(a.x - spaceShip2.x, a.y - spaceShip2.y) < a.radius + spaceShip2.radius) {
+      hitPlayer = 2;
+    }
     ctx.beginPath();
-    ctx.moveTo(0, -ship.radius);
-    ctx.lineTo(-ship.radius * 0.8, ship.radius);
-    ctx.lineTo(ship.radius * 0.8, ship.radius);
-    ctx.closePath();
-    ctx.fillStyle = color;
+    ctx.arc(a.x, a.y, a.radius, 0, Math.PI * 2);
+    ctx.fillStyle = '#94a3b8';
     ctx.fill();
-    ctx.lineWidth = 2;
-    ctx.strokeStyle = '#ffffff';
+    ctx.strokeStyle = '#3b82f6';
+    ctx.lineWidth = 1.5;
     ctx.stroke();
-    ctx.restore();
-  });
+    if (a.y > h + 30) spaceAsteroids2.splice(i, 1);
+  }
+
+  // P1 自機 (下向きに回転)
+  ctx.save();
+  ctx.translate(spaceShip1.x, spaceShip1.y);
+  ctx.rotate(Math.PI);
+  ctx.beginPath();
+  ctx.moveTo(0, -spaceShip1.radius);
+  ctx.lineTo(-spaceShip1.radius * 0.8, spaceShip1.radius);
+  ctx.lineTo(spaceShip1.radius * 0.8, spaceShip1.radius);
+  ctx.closePath();
+  ctx.fillStyle = '#ef4444';
+  ctx.fill();
+  ctx.lineWidth = 2;
+  ctx.strokeStyle = '#ffffff';
+  ctx.stroke();
+  ctx.restore();
+
+  // P2 自機 (上向き)
+  ctx.save();
+  ctx.translate(spaceShip2.x, spaceShip2.y);
+  ctx.beginPath();
+  ctx.moveTo(0, -spaceShip2.radius);
+  ctx.lineTo(-spaceShip2.radius * 0.8, spaceShip2.radius);
+  ctx.lineTo(spaceShip2.radius * 0.8, spaceShip2.radius);
+  ctx.closePath();
+  ctx.fillStyle = '#3b82f6';
+  ctx.fill();
+  ctx.lineWidth = 2;
+  ctx.strokeStyle = '#ffffff';
+  ctx.stroke();
+  ctx.restore();
 
   if (hitPlayer && isSpaceRunning) {
     isSpaceRunning = false;
@@ -1874,11 +1900,10 @@ function checkPongWinner() {
    ============================================================ */
 let penaltyCanvas, penaltyCtx;
 let penaltyRound = 1;
-let penaltyTurn = 1; // 1: P1キッカー/P2キーパー, 2: P2キッカー/P1キーパー
+let penaltyTurn = 1; // 1: P1キッカー vs P2キーパー, 2: P2キッカー vs P1キーパー
 let penaltyScore1 = 0, penaltyScore2 = 0;
-let penaltyState = 'aiming'; // 'aiming', 'shooting', 'result'
-let pKickerAim = null; // 'left', 'center', 'right'
-let pKeeperAim = null;
+let penaltyState = 'aiming'; // 'aiming' | 'result'
+let pKickerAim = null, pKeeperAim = null;
 let isPenaltyRunning = false;
 
 function initPenaltyGame() {
@@ -1912,25 +1937,28 @@ function handlePenaltyTouch(e) {
   const w = penaltyCanvas.width;
   const h = penaltyCanvas.height;
 
-  // コース判定 (3等分)
-  const zone = x < w / 3 ? 'left' : (x < w * 2 / 3 ? 'center' : 'right');
-
-  if (penaltyTurn === 1) {
-    // P1がキッカー (画面下半分からタップ)、P2がキーパー (画面上半分からタップ)
-    if (y > h / 2 && !pKickerAim) {
-      pKickerAim = zone;
+  // 上半分はP1ゾーン、下半分はP2ゾーン
+  if (y < h / 2) {
+    // P1の操作: P1から見て左・中・右 (P1は対面なので x の大小が反転)
+    if (!pKickerAim && penaltyTurn === 1) {
+      // P1がキッカー
+      pKickerAim = x > w * 2 / 3 ? 'left' : (x < w / 3 ? 'right' : 'center');
       window.sounds.playTap();
-    } else if (y <= h / 2 && !pKeeperAim) {
-      pKeeperAim = zone;
+    } else if (!pKeeperAim && penaltyTurn === 2) {
+      // P1がキーパー
+      pKeeperAim = x > w * 2 / 3 ? 'left' : (x < w / 3 ? 'right' : 'center');
       window.sounds.playTap();
     }
   } else {
-    // P2がキッカー、P1がキーパー
-    if (y > h / 2 && !pKeeperAim) {
-      pKeeperAim = zone;
-      window.sounds.playTap();
-    } else if (y <= h / 2 && !pKickerAim) {
+    // P2の操作: P2から見て左・中・右
+    const zone = x < w / 3 ? 'left' : (x < w * 2 / 3 ? 'center' : 'right');
+    if (!pKickerAim && penaltyTurn === 2) {
+      // P2がキッカー
       pKickerAim = zone;
+      window.sounds.playTap();
+    } else if (!pKeeperAim && penaltyTurn === 1) {
+      // P2がキーパー
+      pKeeperAim = zone;
       window.sounds.playTap();
     }
   }
@@ -1977,34 +2005,26 @@ function penaltyLoop() {
   const ctx = penaltyCtx;
   const w = penaltyCanvas.width;
   const h = penaltyCanvas.height;
+  const topY = getTopSafeY();
 
   ctx.fillStyle = '#15803d'; // サッカー芝生
   ctx.fillRect(0, 0, w, h);
 
-  // ゴール枠
-  ctx.strokeStyle = '#ffffff';
-  ctx.lineWidth = 6;
-  ctx.strokeRect(w * 0.15, h * 0.1, w * 0.7, h * 0.3);
+  // 中央仕切り線
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(0, h / 2);
+  ctx.lineTo(w, h / 2);
+  ctx.stroke();
 
-  // スコア表示
-  ctx.font = 'bold 20px sans-serif';
-  ctx.fillStyle = '#ffffff';
-  ctx.textAlign = 'center';
-  ctx.fillText(`Round ${penaltyRound}/3 | P1 [${penaltyScore1}] - [${penaltyScore2}] P2`, w / 2, getTopSafeY());
+  // 中央円
+  ctx.beginPath();
+  ctx.arc(w / 2, h / 2, 40, 0, Math.PI * 2);
+  ctx.stroke();
 
-  // 指示
-  ctx.font = 'bold 16px sans-serif';
-  const kicker = penaltyTurn === 1 ? 'P1' : 'P2';
-  const keeper = penaltyTurn === 1 ? 'P2' : 'P1';
-
-  ctx.fillStyle = '#facc15';
-  ctx.font = 'bold 14px sans-serif';
-    ctx.fillText(`キーパー (${keeper}): 守る位置をタップ`, w / 2, h * 0.45);
-  ctx.font = 'bold 14px sans-serif';
-    ctx.fillText(`キッカー (${kicker}): 蹴るコースをタップ`, w / 2, h * 0.55);
-
-  // 3分割ガイド
-  ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
+  // 3コース境界ガイド
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
   ctx.setLineDash([4, 4]);
   ctx.beginPath();
   ctx.moveTo(w / 3, 0); ctx.lineTo(w / 3, h);
@@ -2012,12 +2032,26 @@ function penaltyLoop() {
   ctx.stroke();
   ctx.setLineDash([]);
 
+  // P1 ガイド (180度反転)
+  const p1Role = penaltyTurn === 1 ? '⚽ キッカー (コースをタップ！)' : '🧤 キーパー (守るコースをタップ！)';
+  const p1Status = (penaltyTurn === 1 ? pKickerAim : pKeeperAim) ? '✅ 選択済み！' : p1Role;
+  drawP1Text(ctx, `🔴 P1: [スコア ${penaltyScore1}] ${p1Status}`, w / 2, topY + 18, 'bold 15px sans-serif', '#ef4444', 'center');
+
+  // P2 ガイド
+  const p2Role = penaltyTurn === 2 ? '⚽ キッカー (コースをタップ！)' : '🧤 キーパー (守るコースをタップ！)';
+  const p2Status = (penaltyTurn === 2 ? pKickerAim : pKeeperAim) ? '✅ 選択済み！' : p2Role;
+  ctx.font = 'bold 15px sans-serif';
+  ctx.fillStyle = '#3b82f6';
+  ctx.textAlign = 'center';
+  ctx.fillText(`🔵 P2: [スコア ${penaltyScore2}] ${p2Status}`, w / 2, h - 30);
+
   // 結果演出
   if (penaltyState === 'result') {
     const isGoal = pKickerAim !== pKeeperAim;
-    ctx.font = 'bold 44px sans-serif';
+    ctx.font = 'bold 36px sans-serif';
     ctx.fillStyle = isGoal ? '#facc15' : '#ef4444';
-    ctx.fillText(isGoal ? 'GOAAAL! ⚽🔥' : 'SAVED! 🧤🚫', w / 2, h * 0.28);
+    ctx.textAlign = 'center';
+    ctx.fillText(isGoal ? 'GOAAAL! ⚽🔥' : 'SAVED! 🧤🚫', w / 2, h / 2 + 12);
   }
 
   requestAnimationFrame(penaltyLoop);
@@ -2537,10 +2571,10 @@ function handleNumberClick(player, num, cell) {
 }
 
 /* ============================================================
-   17. さかな釣りバトル (Fishing Hook Timing)
+   17. 魚釣りバトル (Fishing Hook Timing)
    ============================================================ */
 let fishingCanvas, fishingCtx;
-let fishingState = 'waiting'; // 'waiting', 'bite', 'pulled'
+let fishingState = 'waiting'; // 'waiting' | 'bite'
 let isFishingRunning = false;
 
 function initFishingGame() {
@@ -2552,7 +2586,7 @@ function initFishingGame() {
   fishingState = 'waiting';
   isFishingRunning = true;
 
-  const waitTime = 2000 + Math.random() * 3500;
+  const waitTime = 1800 + Math.random() * 3200;
   window.activeGameTimeout = setTimeout(() => {
     if (currentScreen !== 'screen-fishing' || !isFishingRunning) return;
     fishingState = 'bite';
@@ -2571,10 +2605,10 @@ function handleFishingTouch(e) {
   if (fishingState === 'waiting') {
     // お手つき！
     isFishingRunning = false;
-    clearTimeout(window.activeGameTimeout);
     window.sounds.playError();
+    const loser = player === 1 ? 'プレイヤー 1' : 'プレイヤー 2';
     const winner = player === 1 ? 'プレイヤー 2' : 'プレイヤー 1';
-    showModal(`❌ フライング！`, `魚が食いつく前に引いてしまいました！${winner} の勝ち！`, () => {
+    showModal(`⚠️ お手つき！`, `${loser} のフライング！\n${winner} の勝利！`, () => {
       initFishingGame();
     });
   } else if (fishingState === 'bite') {
@@ -2582,7 +2616,7 @@ function handleFishingTouch(e) {
     isFishingRunning = false;
     window.sounds.playSuccess();
     const winner = player === 1 ? 'プレイヤー 1' : 'プレイヤー 2';
-    showModal(`🎣 大物ヒット！`, `${winner} が見事に魚を釣り上げました！`, () => {
+    showModal(`🐟 大物GET！`, `${winner} が見事に釣り上げました！`, () => {
       initFishingGame();
     });
   }
@@ -2594,36 +2628,50 @@ function fishingLoop() {
   const ctx = fishingCtx;
   const w = fishingCanvas.width;
   const h = fishingCanvas.height;
-  const midX = w / 2;
-  const midY = h / 2;
+  const topY = getTopSafeY();
 
-  // 水面描画
+  // 水面背景
   ctx.fillStyle = '#0284c7';
   ctx.fillRect(0, 0, w, h);
 
-  // 仕切り
-  ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
-  ctx.strokeRect(0, 0, w, h);
-
-  // ウキ (浮標)
+  // 波のエフェクト
+  ctx.fillStyle = '#0369a1';
   ctx.beginPath();
-  const floatY = fishingState === 'bite' ? midY + 18 : midY + Math.sin(performance.now() * 0.005) * 6;
-  ctx.arc(midX, floatY, 26, 0, Math.PI * 2);
-  ctx.fillStyle = fishingState === 'bite' ? '#ef4444' : '#f8fafc';
+  for (let i = 0; i < w; i += 20) {
+    ctx.arc(i + 10, h / 2, 8, 0, Math.PI);
+  }
   ctx.fill();
-  ctx.lineWidth = 4;
-  ctx.strokeStyle = '#ef4444';
+
+  // 中央仕切り
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(0, h / 2);
+  ctx.lineTo(w, h / 2);
   ctx.stroke();
 
-  // テキスト
-  ctx.font = 'bold 28px sans-serif';
-  ctx.fillStyle = '#ffffff';
+  // P1 浮き (上部) & P2 浮き (下部)
+  const bobP1 = fishingState === 'bite' ? (Math.random() - 0.5) * 12 : Math.sin(performance.now() * 0.005) * 5;
+  const bobP2 = fishingState === 'bite' ? (Math.random() - 0.5) * 12 : Math.sin(performance.now() * 0.005 + 1) * 5;
+
+  ctx.font = '50px sans-serif';
   ctx.textAlign = 'center';
+  ctx.fillText('🔴', w / 2, h * 0.28 + bobP1);
+  ctx.fillText('🔵', w / 2, h * 0.72 + bobP2);
+
+  // 180度反転 P1 ガイド
   if (fishingState === 'waiting') {
-    ctx.fillText('魚をじっと待て……', midX, midY - 60);
+    drawP1Text(ctx, '🔴 P1: 浮きが沈んだらタップ！(お手つき厳禁)', w / 2, topY + 16, 'bold 15px sans-serif', '#ffffff', 'center');
+    ctx.font = 'bold 15px sans-serif';
+    ctx.fillStyle = '#ffffff';
+    ctx.textAlign = 'center';
+    ctx.fillText('🔵 P2: 浮きが沈んだらタップ！(お手つき厳禁)', w / 2, h - 30);
   } else {
-    ctx.fillStyle = '#fde047';
-    ctx.fillText('💥 HIT!! 引けぇぇ！', midX, midY - 60);
+    drawP1Text(ctx, '🎣 HIT!! 今すぐタップ！', w / 2, h * 0.2, 'bold 26px sans-serif', '#facc15', 'center');
+    ctx.font = 'bold 26px sans-serif';
+    ctx.fillStyle = '#facc15';
+    ctx.textAlign = 'center';
+    ctx.fillText('🎣 HIT!! 今すぐタップ！', w / 2, h * 0.82);
   }
 
   requestAnimationFrame(fishingLoop);
@@ -2791,9 +2839,7 @@ function handleHighLowGuess(player, guess) {
    20. 戦車デュエル (Tank 1v1 Battle)
    ============================================================ */
 let tankCanvas, tankCtx;
-let tank1 = { x: 0, y: 0, angle: 0, radius: 18 };
-let tank2 = { x: 0, y: 0, angle: Math.PI, radius: 18 };
-let tankBullets = [];
+let tank1, tank2, tankBullets = [];
 let isTankRunning = false;
 
 function initTankGame() {
@@ -2804,20 +2850,23 @@ function initTankGame() {
 
   const w = tankCanvas.width;
   const h = tankCanvas.height;
+  const topY = getTopSafeY();
 
-  tank1 = { x: w / 2, y: h * 0.2, angle: Math.PI / 2, radius: 20 };
-  tank2 = { x: w / 2, y: h * 0.8, angle: -Math.PI / 2, radius: 20 };
+  tank1 = { x: w / 2, y: topY + 60, angle: Math.PI / 2, radius: 20 };
+  tank2 = { x: w / 2, y: h - 70, angle: -Math.PI / 2, radius: 20 };
   tankBullets = [];
   isTankRunning = true;
 
-  // タップで旋回＆前進、指を離した瞬間に砲撃！
+  // タップで旋回、指を離した瞬間に砲撃！
   tankCanvas.onpointerdown = (e) => {
+    if (!isTankRunning) return;
     const y = e.clientY - tankCanvas.getBoundingClientRect().top;
-    if (y < h / 2) tank1.angle += 0.4;
-    else tank2.angle += 0.4;
+    if (y < h / 2) tank1.angle += 0.45;
+    else tank2.angle += 0.45;
   };
 
   tankCanvas.onpointerup = (e) => {
+    if (!isTankRunning) return;
     const y = e.clientY - tankCanvas.getBoundingClientRect().top;
     if (y < h / 2) {
       shootTankBullet(1);
@@ -2832,8 +2881,8 @@ function initTankGame() {
 function shootTankBullet(player) {
   const tank = player === 1 ? tank1 : tank2;
   tankBullets.push({
-    x: tank.x + Math.cos(tank.angle) * 25,
-    y: tank.y + Math.sin(tank.angle) * 25,
+    x: tank.x + Math.cos(tank.angle) * 26,
+    y: tank.y + Math.sin(tank.angle) * 26,
     vx: Math.cos(tank.angle) * 8,
     vy: Math.sin(tank.angle) * 8,
     player: player
@@ -2847,6 +2896,7 @@ function tankLoop() {
   const ctx = tankCtx;
   const w = tankCanvas.width;
   const h = tankCanvas.height;
+  const topY = getTopSafeY();
 
   // 砲弾移動
   let hitPlayer = null;
@@ -2870,27 +2920,42 @@ function tankLoop() {
   ctx.fillStyle = '#0f172a';
   ctx.fillRect(0, 0, w, h);
 
+  // 中央境界線
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
+  ctx.setLineDash([6, 6]);
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(0, h / 2);
+  ctx.lineTo(w, h / 2);
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  // 対面ラベル
+  drawP1Text(ctx, '🔴 P1: タップで旋回 / 離して砲撃！', w / 2, topY + 16, 'bold 15px sans-serif', '#ef4444', 'center');
+  ctx.font = 'bold 15px sans-serif';
+  ctx.fillStyle = '#3b82f6';
+  ctx.textAlign = 'center';
+  ctx.fillText('🔵 P2: タップで旋回 / 離して砲撃！', w / 2, h - 30);
+
   // 砲弾
-  ctx.fillStyle = '#fbbf24';
+  ctx.fillStyle = '#facc15';
   tankBullets.forEach(b => {
     ctx.beginPath();
-    ctx.arc(b.x, b.y, 6, 0, Math.PI * 2);
+    ctx.arc(b.x, b.y, 5, 0, Math.PI * 2);
     ctx.fill();
   });
 
   // 戦車描画
-  [ { t: tank1, color: '#ef4444' }, { t: tank2, color: '#3b82f6' } ].forEach(({ t, color }) => {
+  [ { tank: tank1, color: '#ef4444' }, { tank: tank2, color: '#3b82f6' } ].forEach(({ tank, color }) => {
     ctx.save();
-    ctx.translate(t.x, t.y);
-    ctx.rotate(t.angle);
-
+    ctx.translate(tank.x, tank.y);
+    ctx.rotate(tank.angle);
     // 車体
     ctx.fillStyle = color;
-    ctx.fillRect(-t.radius, -t.radius * 0.7, t.radius * 2, t.radius * 1.4);
+    ctx.fillRect(-18, -14, 36, 28);
     // 砲身
     ctx.fillStyle = '#ffffff';
-    ctx.fillRect(0, -4, t.radius + 10, 8);
-
+    ctx.fillRect(0, -4, 25, 8);
     ctx.restore();
   });
 
@@ -2898,7 +2963,7 @@ function tankLoop() {
     isTankRunning = false;
     window.sounds.playExplosion();
     const winner = hitPlayer === 1 ? 'プレイヤー 2' : 'プレイヤー 1';
-    showModal(`💥 直撃撃破！`, `${winner} の勝利！相手の戦車を砲撃で打ち砕きました！`, () => {
+    showModal(`💥 命中！`, `${winner} の砲撃が決まりました！`, () => {
       initTankGame();
     });
     return;
@@ -3161,6 +3226,7 @@ function initRopeGame() {
   isRopeRunning = true;
 
   ropeCanvas.onpointerdown = (e) => {
+    if (!isRopeRunning) return;
     const y = e.clientY - ropeCanvas.getBoundingClientRect().top;
     if (y < ropeCanvas.height / 2 && !isRopeJumping1) {
       isRopeJumping1 = true;
@@ -3184,6 +3250,7 @@ function ropeLoop() {
   const h = ropeCanvas.height;
   const midX = w / 2;
   const midY = h / 2;
+  const topY = getTopSafeY();
 
   ropeAngle += 0.065;
   const ropeY = midY + Math.sin(ropeAngle) * 90;
@@ -3191,6 +3258,21 @@ function ropeLoop() {
 
   ctx.fillStyle = '#0f172a';
   ctx.fillRect(0, 0, w, h);
+
+  // 対面ラベル
+  drawP1Text(ctx, '🔴 P1: タイミングよくタップしてジャンプ！', w / 2, topY + 16, 'bold 15px sans-serif', '#ef4444', 'center');
+  ctx.font = 'bold 15px sans-serif';
+  ctx.fillStyle = '#3b82f6';
+  ctx.textAlign = 'center';
+  ctx.fillText('🔵 P2: タイミングよくタップしてジャンプ！', w / 2, h - 30);
+
+  // 中央仕切り線
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
+  ctx.setLineDash([4, 4]);
+  ctx.beginPath();
+  ctx.moveTo(0, midY); ctx.lineTo(w, midY);
+  ctx.stroke();
+  ctx.setLineDash([]);
 
   // 縄の描画 (放物線)
   ctx.beginPath();
@@ -3200,14 +3282,14 @@ function ropeLoop() {
   ctx.strokeStyle = '#facc15';
   ctx.stroke();
 
-  // キャラクター P1 (上) & P2 (下)
-  const char1Y = isRopeJumping1 ? midY - 45 : midY;
+  // キャラクター P1 (赤) & P2 (青)
+  const char1Y = isRopeJumping1 ? midY - 48 : midY;
   ctx.fillStyle = '#ef4444';
   ctx.beginPath();
   ctx.arc(midX - 45, char1Y, 18, 0, Math.PI * 2);
   ctx.fill();
 
-  const char2Y = isRopeJumping2 ? midY - 45 : midY;
+  const char2Y = isRopeJumping2 ? midY - 48 : midY;
   ctx.fillStyle = '#3b82f6';
   ctx.beginPath();
   ctx.arc(midX + 45, char2Y, 18, 0, Math.PI * 2);
@@ -3215,18 +3297,24 @@ function ropeLoop() {
 
   // 判定
   if (isRopeAtBottom) {
-    if (!isRopeJumping1) {
+    if (!isRopeJumping1 && !isRopeJumping2) {
       isRopeRunning = false;
       window.sounds.playError();
-      showModal(`💥 引っかかった！`, `プレイヤー 2 の勝利！P1が縄に足を取られました！`, () => {
+      showModal(`💥 相討ち！`, `二人同時に引っかかりました！引き分け！`, () => {
         initRopeGame();
       });
       return;
-    }
-    if (!isRopeJumping2) {
+    } else if (!isRopeJumping1) {
       isRopeRunning = false;
       window.sounds.playError();
-      showModal(`💥 引っかかった！`, `プレイヤー 1 の勝利！P2が縄に足を取られました！`, () => {
+      showModal(`💥 引っかかった！`, `プレイヤー 2 の勝利！P1が縄に当たりました！`, () => {
+        initRopeGame();
+      });
+      return;
+    } else if (!isRopeJumping2) {
+      isRopeRunning = false;
+      window.sounds.playError();
+      showModal(`💥 引っかかった！`, `プレイヤー 1 の勝利！P2が縄に当たりました！`, () => {
         initRopeGame();
       });
       return;
@@ -3237,12 +3325,12 @@ function ropeLoop() {
 }
 
 /* ============================================================
-   24. ブロック崩しクラッシュ (Breakout Clash)
+   24. ブロッククラッシュ (Breakout Clash)
    ============================================================ */
 let breakoutCanvas, breakoutCtx;
-let breakoutBlocks = [];
-let breakoutBall = { x: 0, y: 0, vx: 3.5, vy: 4.5, radius: 9 };
 let breakoutPaddle1 = 0, breakoutPaddle2 = 0;
+let breakoutBall = { x: 0, y: 0, vx: 3.5, vy: 4.5, radius: 9 };
+let breakoutBlocks = [];
 let isBreakoutRunning = false;
 
 function initBreakoutGame() {
@@ -3276,17 +3364,27 @@ function initBreakoutGame() {
     }
   }
 
-  breakoutCanvas.ontouchmove = (e) => {
+  const handleBreakoutTouch = (e) => {
     e.preventDefault();
+    if (!isBreakoutRunning) return;
     const rect = breakoutCanvas.getBoundingClientRect();
-    for (let i = 0; i < e.touches.length; i++) {
-      const t = e.touches[i];
+    const touches = e.touches ? Array.from(e.touches) : [e];
+    for (let i = 0; i < touches.length; i++) {
+      const t = touches[i];
       const tx = t.clientX - rect.left;
       const ty = t.clientY - rect.top;
-      if (ty < h / 2) breakoutPaddle1 = Math.max(0, Math.min(w - 70, tx - 35));
-      else breakoutPaddle2 = Math.max(0, Math.min(w - 70, tx - 35));
+      if (ty < h / 2) {
+        breakoutPaddle1 = Math.max(0, Math.min(w - 70, tx - 35));
+      } else {
+        breakoutPaddle2 = Math.max(0, Math.min(w - 70, tx - 35));
+      }
     }
   };
+
+  breakoutCanvas.onpointerdown = handleBreakoutTouch;
+  breakoutCanvas.onpointermove = handleBreakoutTouch;
+  breakoutCanvas.ontouchstart = handleBreakoutTouch;
+  breakoutCanvas.ontouchmove = handleBreakoutTouch;
 
   requestAnimationFrame(breakoutLoop);
 }
@@ -3297,6 +3395,7 @@ function breakoutLoop() {
   const ctx = breakoutCtx;
   const w = breakoutCanvas.width;
   const h = breakoutCanvas.height;
+  const topY = getTopSafeY();
 
   breakoutBall.x += breakoutBall.vx;
   breakoutBall.y += breakoutBall.vy;
@@ -3308,8 +3407,7 @@ function breakoutLoop() {
   }
 
   // パドル衝突
-  const p1PaddleY = getTopSafeY();
-  if (breakoutBall.y - breakoutBall.radius <= p1PaddleY + 14 && breakoutBall.vy < 0 && breakoutBall.y >= p1PaddleY - 5) {
+  if (breakoutBall.y - breakoutBall.radius <= topY + 14 && breakoutBall.vy < 0 && breakoutBall.y >= topY - 5) {
     if (breakoutBall.x >= breakoutPaddle1 && breakoutBall.x <= breakoutPaddle1 + 70) {
       breakoutBall.vy = -breakoutBall.vy;
       window.sounds.playTap();
@@ -3334,7 +3432,7 @@ function breakoutLoop() {
   });
 
   // 勝敗
-  if (breakoutBall.y < getTopSafeY() - 20) {
+  if (breakoutBall.y < topY - 20) {
     isBreakoutRunning = false;
     window.sounds.playSuccess();
     showModal(`🎉 プレイヤー 2 の勝利！`, `相手の守備を突破しました！`, () => {
@@ -3364,9 +3462,16 @@ function breakoutLoop() {
 
   // パドル
   ctx.fillStyle = '#ef4444';
-  ctx.fillRect(breakoutPaddle1, getTopSafeY(), 70, 14);
+  ctx.fillRect(breakoutPaddle1, topY, 70, 14);
   ctx.fillStyle = '#3b82f6';
   ctx.fillRect(breakoutPaddle2, h - 34, 70, 14);
+
+  // ガイドラベル (P1は180度反転)
+  drawP1Text(ctx, '🔴 P1: スライドしてブロックを崩せ！', w / 2, topY + 30, 'bold 14px sans-serif', '#ef4444', 'center');
+  ctx.font = 'bold 14px sans-serif';
+  ctx.fillStyle = '#3b82f6';
+  ctx.textAlign = 'center';
+  ctx.fillText('🔵 P2: スライドしてブロックを崩せ！', w / 2, h - 48);
 
   // ボール
   ctx.beginPath();
@@ -4236,7 +4341,7 @@ function hurdleLoop() {
 let snakeCanvas, snakeCtx;
 let snake1 = [], snake2 = [];
 let snakeDir1 = { x: 0, y: 1 }, snakeDir2 = { x: 0, y: -1 };
-let snakeApple = { x: 10, y: 10 };
+let snakeApple = { x: 10, y: 15 };
 let isSnakeRunning = false;
 let snakeLastTick = 0;
 
@@ -4245,9 +4350,6 @@ function initSnakeGame() {
   snakeCtx = snakeCanvas.getContext('2d');
   snakeCanvas.width = snakeCanvas.clientWidth;
   snakeCanvas.height = snakeCanvas.clientHeight;
-
-  const cols = 20;
-  const rows = 30;
 
   snake1 = [ { x: 5, y: 5 }, { x: 5, y: 4 } ];
   snake2 = [ { x: 15, y: 25 }, { x: 15, y: 26 } ];
@@ -4258,70 +4360,93 @@ function initSnakeGame() {
   snakeLastTick = performance.now();
 
   snakeCanvas.onpointerdown = (e) => {
+    if (!isSnakeRunning) return;
     const rect = snakeCanvas.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
+    const midX = snakeCanvas.width / 2;
+
     if (y < snakeCanvas.height / 2) {
-      // P1: タップした左右方向へ曲がる
-      if (x < snakeCanvas.width / 2) snakeDir1 = { x: -snakeDir1.y, y: snakeDir1.x };
-      else snakeDir1 = { x: snakeDir1.y, y: -snakeDir1.x };
+      // P1: 対面視点。P1から見て左タップ(画面右側)で左旋回、右タップ(画面左側)で右旋回
+      if (x > midX) {
+        // P1から見て左折
+        snakeDir1 = { x: snakeDir1.y, y: -snakeDir1.x };
+      } else {
+        // P1から見て右折
+        snakeDir1 = { x: -snakeDir1.y, y: snakeDir1.x };
+      }
     } else {
-      // P2
-      if (x < snakeCanvas.width / 2) snakeDir2 = { x: -snakeDir2.y, y: snakeDir2.x };
-      else snakeDir2 = { x: snakeDir2.y, y: -snakeDir2.x };
+      // P2: 通常視点。画面左タップで左旋回、右タップで右旋回
+      if (x < midX) {
+        snakeDir2 = { x: snakeDir2.y, y: -snakeDir2.x };
+      } else {
+        snakeDir2 = { x: -snakeDir2.y, y: snakeDir2.x };
+      }
     }
-    window.sounds.playTap();
   };
 
   requestAnimationFrame(snakeLoop);
 }
 
-function snakeLoop(now) {
+function snakeLoop(time) {
   if (currentScreen !== 'screen-snake' || !isSnakeRunning) return;
 
   const ctx = snakeCtx;
   const w = snakeCanvas.width;
   const h = snakeCanvas.height;
-  const cellSize = w / 20;
+  const topY = getTopSafeY();
+  const cellSize = 16;
+  const cols = Math.floor(w / cellSize);
+  const rows = Math.floor(h / cellSize);
 
-  if (now - snakeLastTick > 120) {
-    snakeLastTick = now;
+  if (time - snakeLastTick > 140) {
+    snakeLastTick = time;
 
-    // ヘビ1移動
-    const head1 = { x: snake1[0].x + snakeDir1.x, y: snake1[0].y + snakeDir1.y };
-    // ヘビ2移動
-    const head2 = { x: snake2[0].x + snakeDir2.x, y: snake2[0].y + snakeDir2.y };
+    // ヘビ前進
+    const h1 = { x: (snake1[0].x + snakeDir1.x + cols) % cols, y: (snake1[0].y + snakeDir1.y + rows) % rows };
+    const h2 = { x: (snake2[0].x + snakeDir2.x + cols) % cols, y: (snake2[0].y + snakeDir2.y + rows) % rows };
 
-    // 壁衝突判定
-    let dead1 = head1.x < 0 || head1.x >= 20 || head1.y < 0 || head1.y >= Math.floor(h / cellSize);
-    let dead2 = head2.x < 0 || head2.x >= 20 || head2.y < 0 || head2.y >= Math.floor(h / cellSize);
+    snake1.unshift(h1);
+    snake2.unshift(h2);
 
-    if (dead1 || dead2) {
-      isSnakeRunning = false;
-      window.sounds.playError();
-      const winner = dead1 && dead2 ? '引き分け' : (dead1 ? 'プレイヤー 2' : 'プレイヤー 1');
-      showModal(`💥 壁に激突！`, `${winner} の勝利！`, () => {
-        initSnakeGame();
-      });
-      return;
-    }
-
-    snake1.unshift(head1);
-    snake2.unshift(head2);
-
-    // リンゴ
-    if (head1.x === snakeApple.x && head1.y === snakeApple.y) {
+    // リンゴ判定
+    if (h1.x === snakeApple.x && h1.y === snakeApple.y) {
       window.sounds.playCoin();
-      snakeApple = { x: Math.floor(Math.random() * 18) + 1, y: Math.floor(Math.random() * 25) + 1 };
+      snakeApple = { x: Math.floor(Math.random() * (cols - 2)) + 1, y: Math.floor(Math.random() * (rows - 2)) + 1 };
     } else {
       snake1.pop();
     }
 
-    if (head2.x === snakeApple.x && head2.y === snakeApple.y) {
+    if (h2.x === snakeApple.x && h2.y === snakeApple.y) {
       window.sounds.playCoin();
-      snakeApple = { x: Math.floor(Math.random() * 18) + 1, y: Math.floor(Math.random() * 25) + 1 };
+      snakeApple = { x: Math.floor(Math.random() * (cols - 2)) + 1, y: Math.floor(Math.random() * (rows - 2)) + 1 };
     } else {
       snake2.pop();
+    }
+
+    // 衝突判定
+    let dead1 = false, dead2 = false;
+    for (let i = 1; i < snake1.length; i++) {
+      if (h1.x === snake1[i].x && h1.y === snake1[i].y) dead1 = true;
+    }
+    for (let i = 1; i < snake2.length; i++) {
+      if (h2.x === snake2[i].x && h2.y === snake2[i].y) dead2 = true;
+    }
+    for (let i = 0; i < snake2.length; i++) {
+      if (h1.x === snake2[i].x && h1.y === snake2[i].y) dead1 = true;
+    }
+    for (let i = 0; i < snake1.length; i++) {
+      if (h2.x === snake1[i].x && h2.y === snake1[i].y) dead2 = true;
+    }
+
+    if (dead1 || dead2) {
+      isSnakeRunning = false;
+      window.sounds.playError();
+      const winner = dead1 && dead2 ? '引き分け！' : (dead1 ? 'プレイヤー 2 の勝利！' : 'プレイヤー 1 の勝利！');
+      showModal(`🐍 激突！`, winner, () => {
+        initSnakeGame();
+      });
+      return;
     }
   }
 
@@ -4330,16 +4455,29 @@ function snakeLoop(now) {
   ctx.fillRect(0, 0, w, h);
 
   // リンゴ
-  ctx.fillStyle = '#facc15';
-  ctx.fillRect(snakeApple.x * cellSize, snakeApple.y * cellSize, cellSize - 2, cellSize - 2);
+  ctx.fillStyle = '#f59e0b';
+  ctx.beginPath();
+  ctx.arc((snakeApple.x + 0.5) * cellSize, (snakeApple.y + 0.5) * cellSize, cellSize * 0.4, 0, Math.PI * 2);
+  ctx.fill();
 
-  // ヘビ1
+  // スネーク 1
   ctx.fillStyle = '#ef4444';
-  snake1.forEach(p => ctx.fillRect(p.x * cellSize, p.y * cellSize, cellSize - 2, cellSize - 2));
+  snake1.forEach((seg, idx) => {
+    ctx.fillRect(seg.x * cellSize + 1, seg.y * cellSize + 1, cellSize - 2, cellSize - 2);
+  });
 
-  // ヘビ2
+  // スネーク 2
   ctx.fillStyle = '#3b82f6';
-  snake2.forEach(p => ctx.fillRect(p.x * cellSize, p.y * cellSize, cellSize - 2, cellSize - 2));
+  snake2.forEach((seg, idx) => {
+    ctx.fillRect(seg.x * cellSize + 1, seg.y * cellSize + 1, cellSize - 2, cellSize - 2);
+  });
+
+  // 対面ラベル
+  drawP1Text(ctx, '🔴 P1: 左右タップで曲がれ！', w / 2, topY + 16, 'bold 15px sans-serif', '#ef4444', 'center');
+  ctx.font = 'bold 15px sans-serif';
+  ctx.fillStyle = '#3b82f6';
+  ctx.textAlign = 'center';
+  ctx.fillText('🔵 P2: 左右タップで曲がれ！', w / 2, h - 30);
 
   requestAnimationFrame(snakeLoop);
 }
@@ -4437,7 +4575,7 @@ function checkInvadersWinner() {
    35. カーリング・ストーン (Curling Slide)
    ============================================================ */
 let curlingCanvas, curlingCtx;
-let curlingPower = 0, curlingPowerDir = 1;
+let curlingPower = 0;
 let curlingScore1 = 0, curlingScore2 = 0;
 let curlingTurn = 1;
 let isCurlingRunning = false;
@@ -4468,7 +4606,7 @@ function initCurlingGame() {
       isCurlingRunning = false;
       window.sounds.playSuccess();
       const winner = curlingScore1 > curlingScore2 ? 'プレイヤー 1' : (curlingScore2 > curlingScore1 ? 'プレイヤー 2' : '引き分け');
-      showModal(`🥌 カーリング決着！`, `${winner} の勝利！\n(P1: ${curlingScore1}点 - P2: ${curlingScore2}点)`, () => {
+      showModal(`🥌 試合終了！`, `${winner} の勝利！\n(P1: ${curlingScore1}点 / P2: ${curlingScore2}点)`, () => {
         initCurlingGame();
       });
     }
@@ -4483,32 +4621,58 @@ function curlingLoop() {
   const ctx = curlingCtx;
   const w = curlingCanvas.width;
   const h = curlingCanvas.height;
+  const topY = getTopSafeY();
 
-  curlingPower += 1.8 * curlingPowerDir;
-  if (curlingPower >= 100 || curlingPower <= 0) curlingPowerDir = -curlingPowerDir;
+  curlingPower = (Math.sin(performance.now() * 0.004) + 1) * 50;
 
   ctx.fillStyle = '#0f172a';
   ctx.fillRect(0, 0, w, h);
 
-  // サークル (ハウス)
-  [ { r: 80, c: '#3b82f6' }, { r: 50, c: '#ffffff' }, { r: 20, c: '#ef4444' } ].forEach(ring => {
+  // 的 (ハウス)
+  const targetY = h / 2;
+  [80, 50, 25].forEach((r, idx) => {
     ctx.beginPath();
-    ctx.arc(w / 2, h / 2, ring.r, 0, Math.PI * 2);
-    ctx.fillStyle = ring.c;
+    ctx.arc(w / 2, targetY, r, 0, Math.PI * 2);
+    ctx.fillStyle = idx === 0 ? '#3b82f6' : (idx === 1 ? '#ffffff' : '#ef4444');
     ctx.fill();
   });
 
-  // パワーゲージ
-  ctx.fillStyle = '#334155';
-  ctx.fillRect(40, h - 70, w - 80, 20);
-  ctx.fillStyle = '#facc15';
-  ctx.fillRect(40, h - 70, (curlingPower / 100) * (w - 80), 20);
+  // パワーバー
+  const barW = w * 0.7;
+  const barX = (w - barW) / 2;
 
-  ctx.font = 'bold 20px sans-serif';
-  ctx.fillStyle = '#ffffff';
-  ctx.textAlign = 'center';
-  ctx.font = 'bold 15px sans-serif';
-  ctx.fillText(`P${curlingTurn}の番！タイミングよくタップ！`, w / 2, getTopSafeY());
+  if (curlingTurn === 1) {
+    // P1の手番: 上部に180度反転して表示
+    drawP1Text(ctx, `🔴 P1 の投球！ タップでストップ！`, w / 2, topY + 16, 'bold 16px sans-serif', '#ef4444', 'center');
+    ctx.save();
+    ctx.translate(w / 2, topY + 65);
+    ctx.rotate(Math.PI);
+    // パワーバー枠
+    ctx.fillStyle = '#334155';
+    ctx.fillRect(-barW / 2, -10, barW, 20);
+    ctx.fillStyle = '#ef4444';
+    ctx.fillRect(-barW / 2, -10, barW * (curlingPower / 100), 20);
+    ctx.restore();
+
+    ctx.font = 'bold 14px sans-serif';
+    ctx.fillStyle = '#94a3b8';
+    ctx.textAlign = 'center';
+    ctx.fillText(`🔵 P2 待機中... (P1スコア: 投球中)`, w / 2, h - 30);
+  } else {
+    // P2の手番: 下部に表示
+    drawP1Text(ctx, `🔴 P1 スコア: ${curlingScore1}点 (待機中)`, w / 2, topY + 16, 'bold 14px sans-serif', '#94a3b8', 'center');
+
+    ctx.font = 'bold 16px sans-serif';
+    ctx.fillStyle = '#3b82f6';
+    ctx.textAlign = 'center';
+    ctx.fillText(`🔵 P2 の投球！ タップでストップ！`, w / 2, h - 65);
+
+    // パワーバー枠
+    ctx.fillStyle = '#334155';
+    ctx.fillRect(barX, h - 50, barW, 20);
+    ctx.fillStyle = '#3b82f6';
+    ctx.fillRect(barX, h - 50, barW * (curlingPower / 100), 20);
+  }
 
   requestAnimationFrame(curlingLoop);
 }
@@ -4592,14 +4756,17 @@ function initSkateGame() {
   isSkateRunning = true;
 
   skateCanvas.onpointerdown = (e) => {
+    if (!isSkateRunning) return;
     const x = e.clientX - skateCanvas.getBoundingClientRect().left;
     const y = e.clientY - skateCanvas.getBoundingClientRect().top;
     const midX = skateCanvas.width / 2;
 
     if (y < skateCanvas.height / 2) {
-      skateTilt1 += x < midX ? -0.15 : 0.15;
+      // P1: 対面視点。P1から見て左(画面右)タップで左傾き、右(画面左)タップで右傾き
+      skateTilt1 += x > midX ? -0.16 : 0.16;
     } else {
-      skateTilt2 += x < midX ? -0.15 : 0.15;
+      // P2: 通常視点
+      skateTilt2 += x < midX ? -0.16 : 0.16;
     }
   };
 
@@ -4612,6 +4779,7 @@ function skateLoop() {
   const ctx = skateCtx;
   const w = skateCanvas.width;
   const h = skateCanvas.height;
+  const topY = getTopSafeY();
 
   // ランダムに傾く
   skateTilt1 += (Math.random() - 0.5) * 0.04;
@@ -4620,24 +4788,49 @@ function skateLoop() {
   ctx.fillStyle = '#0f172a';
   ctx.fillRect(0, 0, w, h);
 
-  // スケボー描画 P1
+  // 中央仕切り
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
+  ctx.setLineDash([4, 4]);
+  ctx.beginPath();
+  ctx.moveTo(0, h / 2); ctx.lineTo(w, h / 2);
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  // 対面ラベル
+  drawP1Text(ctx, '🔴 P1: 左右タップでスケボーのバランスを保て！', w / 2, topY + 16, 'bold 14px sans-serif', '#ef4444', 'center');
+  ctx.font = 'bold 14px sans-serif';
+  ctx.fillStyle = '#3b82f6';
+  ctx.textAlign = 'center';
+  ctx.fillText('🔵 P2: 左右タップでスケボーのバランスを保て！', w / 2, h - 30);
+
+  // スケボー描画 P1 (180度反転して対面向き)
   ctx.save();
-  ctx.translate(w / 2, h * 0.3);
-  ctx.rotate(skateTilt1);
+  ctx.translate(w / 2, h * 0.28);
+  ctx.rotate(skateTilt1 + Math.PI);
   ctx.fillStyle = '#ef4444';
-  ctx.fillRect(-60, -6, 120, 12);
+  ctx.fillRect(-60, -7, 120, 14);
+  ctx.fillStyle = '#ffffff';
+  ctx.beginPath();
+  ctx.arc(-40, 11, 7, 0, Math.PI * 2);
+  ctx.arc(40, 11, 7, 0, Math.PI * 2);
+  ctx.fill();
   ctx.restore();
 
   // スケボー描画 P2
   ctx.save();
-  ctx.translate(w / 2, h * 0.7);
+  ctx.translate(w / 2, h * 0.72);
   ctx.rotate(skateTilt2);
   ctx.fillStyle = '#3b82f6';
-  ctx.fillRect(-60, -6, 120, 12);
+  ctx.fillRect(-60, -7, 120, 14);
+  ctx.fillStyle = '#ffffff';
+  ctx.beginPath();
+  ctx.arc(-40, 11, 7, 0, Math.PI * 2);
+  ctx.arc(40, 11, 7, 0, Math.PI * 2);
+  ctx.fill();
   ctx.restore();
 
   // 転倒判定
-  if (Math.abs(skateTilt1) > 0.8) {
+  if (Math.abs(skateTilt1) > 0.82) {
     isSkateRunning = false;
     window.sounds.playError();
     showModal(`🛹 転倒！`, `プレイヤー 2 の勝利！P1のバランスが崩れました！`, () => {
@@ -4645,7 +4838,7 @@ function skateLoop() {
     });
     return;
   }
-  if (Math.abs(skateTilt2) > 0.8) {
+  if (Math.abs(skateTilt2) > 0.82) {
     isSkateRunning = false;
     window.sounds.playError();
     showModal(`🛹 転倒！`, `プレイヤー 1 の勝利！P2のバランスが崩れました！`, () => {
@@ -4661,8 +4854,8 @@ function skateLoop() {
    38. キャッチボール (Catch & Throw)
    ============================================================ */
 let catchCanvas, catchCtx;
-let catchBall = { x: 0, y: 0, vx: 0, vy: 5 };
 let catchGlove1 = 0, catchGlove2 = 0;
+let catchBall = { x: 0, y: 0, vx: 2, vy: 6 };
 let isCatchRunning = false;
 
 function initCatchGame() {
@@ -4675,18 +4868,30 @@ function initCatchGame() {
   const h = catchCanvas.height;
   catchGlove1 = w / 2;
   catchGlove2 = w / 2;
-  catchBall = { x: w / 2, y: h / 2, vx: 2, vy: 6 };
+  catchBall = { x: w / 2, y: h / 2, vx: 2.2, vy: 6 };
   isCatchRunning = true;
 
-  catchCanvas.ontouchmove = (e) => {
+  const handleCatchTouch = (e) => {
     e.preventDefault();
+    if (!isCatchRunning) return;
     const rect = catchCanvas.getBoundingClientRect();
-    for (let i = 0; i < e.touches.length; i++) {
-      const t = e.touches[i];
-      if (t.clientY - rect.top < h / 2) catchGlove1 = t.clientX - rect.left;
-      else catchGlove2 = t.clientX - rect.left;
+    const touches = e.touches ? Array.from(e.touches) : [e];
+    for (let i = 0; i < touches.length; i++) {
+      const t = touches[i];
+      const tx = t.clientX - rect.left;
+      const ty = t.clientY - rect.top;
+      if (ty < h / 2) {
+        catchGlove1 = Math.max(35, Math.min(w - 35, tx));
+      } else {
+        catchGlove2 = Math.max(35, Math.min(w - 35, tx));
+      }
     }
   };
+
+  catchCanvas.onpointerdown = handleCatchTouch;
+  catchCanvas.onpointermove = handleCatchTouch;
+  catchCanvas.ontouchstart = handleCatchTouch;
+  catchCanvas.ontouchmove = handleCatchTouch;
 
   requestAnimationFrame(catchLoop);
 }
@@ -4697,6 +4902,7 @@ function catchLoop() {
   const ctx = catchCtx;
   const w = catchCanvas.width;
   const h = catchCanvas.height;
+  const topY = getTopSafeY();
 
   catchBall.x += catchBall.vx;
   catchBall.y += catchBall.vy;
@@ -4704,51 +4910,57 @@ function catchLoop() {
   if (catchBall.x < 15 || catchBall.x > w - 15) catchBall.vx = -catchBall.vx;
 
   // キャッチ判定 P1 (上)
-  const cGlove1Y = getTopSafeY();
-  if (catchBall.y <= cGlove1Y + 15 && catchBall.vy < 0 && catchBall.y >= cGlove1Y - 10) {
-    if (Math.abs(catchBall.x - catchGlove1) < 45) {
+  if (catchBall.y <= topY + 16 && catchBall.vy < 0) {
+    if (Math.abs(catchBall.x - catchGlove1) < 42) {
       catchBall.vy = -catchBall.vy * 1.05;
+      catchBall.vx += (Math.random() - 0.5) * 2;
       window.sounds.playTap();
+    } else {
+      isCatchRunning = false;
+      window.sounds.playError();
+      showModal(`⚾ ポロリ！`, `プレイヤー 2 の勝利！P1がキャッチできませんでした！`, () => {
+        initCatchGame();
+      });
+      return;
     }
   }
 
   // キャッチ判定 P2 (下)
-  if (catchBall.y >= h - 40 && catchBall.vy > 0) {
-    if (Math.abs(catchBall.x - catchGlove2) < 45) {
+  if (catchBall.y >= h - 42 && catchBall.vy > 0) {
+    if (Math.abs(catchBall.x - catchGlove2) < 42) {
       catchBall.vy = -catchBall.vy * 1.05;
+      catchBall.vx += (Math.random() - 0.5) * 2;
       window.sounds.playTap();
+    } else {
+      isCatchRunning = false;
+      window.sounds.playError();
+      showModal(`⚾ ポロリ！`, `プレイヤー 1 の勝利！P2がキャッチできませんでした！`, () => {
+        initCatchGame();
+      });
+      return;
     }
   }
 
-  // 後逸判定
-  if (catchBall.y < getTopSafeY() - 20) {
-    isCatchRunning = false;
-    window.sounds.playSuccess();
-    showModal(`⚾ ポロリ！`, `プレイヤー 2 の勝利！P1が捕球できませんでした！`, () => {
-      initCatchGame();
-    });
-    return;
-  } else if (catchBall.y > h) {
-    isCatchRunning = false;
-    window.sounds.playSuccess();
-    showModal(`⚾ ポロリ！`, `プレイヤー 1 の勝利！P2が捕球できませんでした！`, () => {
-      initCatchGame();
-    });
-    return;
-  }
-
+  // 描画
   ctx.fillStyle = '#0f172a';
   ctx.fillRect(0, 0, w, h);
 
   // グローブ P1 & P2
   ctx.fillStyle = '#ef4444';
-  ctx.fillRect(catchGlove1 - 35, getTopSafeY(), 70, 16);
+  ctx.fillRect(catchGlove1 - 35, topY, 70, 16);
   ctx.fillStyle = '#3b82f6';
   ctx.fillRect(catchGlove2 - 35, h - 41, 70, 16);
 
+  // 対面ラベル
+  drawP1Text(ctx, '🔴 P1: スライドして捕球！', w / 2, topY + 32, 'bold 14px sans-serif', '#ef4444', 'center');
+  ctx.font = 'bold 14px sans-serif';
+  ctx.fillStyle = '#3b82f6';
+  ctx.textAlign = 'center';
+  ctx.fillText('🔵 P2: スライドして捕球！', w / 2, h - 55);
+
   // ボール
   ctx.beginPath();
-  ctx.arc(catchBall.x, catchBall.y, 12, 0, Math.PI * 2);
+  ctx.arc(catchBall.x, catchBall.y, 10, 0, Math.PI * 2);
   ctx.fillStyle = '#ffffff';
   ctx.fill();
 
@@ -4763,6 +4975,8 @@ let btBall = { x: 0, y: 0, vx: 4, vy: 5 };
 let btObstacleX = 50, btObstacleVx = 3;
 let isBtRunning = false;
 
+let btPaddle1 = 0, btPaddle2 = 0;
+
 function initBlockTennisGame() {
   blocktennisCanvas = document.getElementById('blocktennis-canvas');
   blocktennisCtx = blocktennisCanvas.getContext('2d');
@@ -4771,8 +4985,29 @@ function initBlockTennisGame() {
 
   const w = blocktennisCanvas.width;
   const h = blocktennisCanvas.height;
-  btBall = { x: w / 2, y: h / 2, vx: 4, vy: 5 };
+  btPaddle1 = (w - 80) / 2;
+  btPaddle2 = (w - 80) / 2;
+  btBall = { x: w / 2, y: h / 2, vx: 4, vy: (Math.random() > 0.5 ? 4.5 : -4.5) };
   isBtRunning = true;
+
+  const handleBtTouch = (e) => {
+    e.preventDefault();
+    if (!isBtRunning) return;
+    const rect = blocktennisCanvas.getBoundingClientRect();
+    const midY = blocktennisCanvas.height / 2;
+    const touches = e.touches ? Array.from(e.touches) : [e];
+    for (let i = 0; i < touches.length; i++) {
+      const t = touches[i];
+      const tx = t.clientX - rect.left;
+      const ty = t.clientY - rect.top;
+      if (ty < midY) btPaddle1 = Math.max(0, Math.min(w - 80, tx - 40));
+      else btPaddle2 = Math.max(0, Math.min(w - 80, tx - 40));
+    }
+  };
+  blocktennisCanvas.onpointerdown = handleBtTouch;
+  blocktennisCanvas.onpointermove = handleBtTouch;
+  blocktennisCanvas.ontouchstart = handleBtTouch;
+  blocktennisCanvas.ontouchmove = handleBtTouch;
 
   requestAnimationFrame(btLoop);
 }
@@ -4783,6 +5018,8 @@ function btLoop() {
   const ctx = blocktennisCtx;
   const w = blocktennisCanvas.width;
   const h = blocktennisCanvas.height;
+  const p1Y = getTopSafeY();
+  const p2Y = h - 35;
 
   btBall.x += btBall.vx;
   btBall.y += btBall.vy;
@@ -4790,7 +5027,10 @@ function btLoop() {
   btObstacleX += btObstacleVx;
   if (btObstacleX < 40 || btObstacleX > w - 40) btObstacleVx = -btObstacleVx;
 
-  if (btBall.x < 15 || btBall.x > w - 15) btBall.vx = -btBall.vx;
+  if (btBall.x < 15 || btBall.x > w - 15) {
+    btBall.vx = -btBall.vx;
+    window.sounds.playTap();
+  }
 
   // 中央障害物反射
   if (Math.abs(btBall.y - h / 2) < 18 && Math.abs(btBall.x - btObstacleX) < 40) {
@@ -4798,8 +5038,26 @@ function btLoop() {
     window.sounds.playTap();
   }
 
+  // パドル反射 P1 (上)
+  if (btBall.y - 12 <= p1Y + 14 && btBall.vy < 0 && btBall.y >= p1Y - 10) {
+    if (btBall.x >= btPaddle1 && btBall.x <= btPaddle1 + 80) {
+      btBall.vy = -btBall.vy * 1.05;
+      btBall.vx = (btBall.x - (btPaddle1 + 40)) * 0.15;
+      window.sounds.playTap();
+    }
+  }
+
+  // パドル反射 P2 (下)
+  if (btBall.y + 12 >= p2Y && btBall.vy > 0 && btBall.y <= p2Y + 24) {
+    if (btBall.x >= btPaddle2 && btBall.x <= btPaddle2 + 80) {
+      btBall.vy = -btBall.vy * 1.05;
+      btBall.vx = (btBall.x - (btPaddle2 + 40)) * 0.15;
+      window.sounds.playTap();
+    }
+  }
+
   // アウト判定
-  if (btBall.y < 0) {
+  if (btBall.y < getTopSafeY() - 25) {
     isBtRunning = false;
     window.sounds.playSuccess();
     showModal(`🎾 プレイヤー 2 の勝利！`, `相手のコートを撃ち抜きました！`, () => {
@@ -4818,9 +5076,30 @@ function btLoop() {
   ctx.fillStyle = '#0f172a';
   ctx.fillRect(0, 0, w, h);
 
+  // センターライン
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
+  ctx.setLineDash([8, 8]);
+  ctx.beginPath();
+  ctx.moveTo(0, h / 2); ctx.lineTo(w, h / 2);
+  ctx.stroke();
+  ctx.setLineDash([]);
+
   // 中央動くブロック
   ctx.fillStyle = '#facc15';
   ctx.fillRect(btObstacleX - 40, h / 2 - 10, 80, 20);
+
+  // パドル描画 P1 (赤) & P2 (青)
+  ctx.fillStyle = '#ef4444';
+  ctx.fillRect(btPaddle1, p1Y, 80, 14);
+  ctx.fillStyle = '#3b82f6';
+  ctx.fillRect(btPaddle2, p2Y, 80, 14);
+
+  // ガイドラベル (P1は対面向き、P2は通常向き)
+  drawP1Text(ctx, '🔴 P1: スライドして打ち返せ！', w / 2, p1Y + 28, 'bold 14px sans-serif', '#ef4444', 'center');
+  ctx.font = 'bold 14px sans-serif';
+  ctx.fillStyle = '#3b82f6';
+  ctx.textAlign = 'center';
+  ctx.fillText('🔵 P2: スライドして打ち返せ！', w / 2, p2Y - 16);
 
   // ボール
   ctx.beginPath();
@@ -5051,7 +5330,7 @@ function bowlingLoop() {
    42. ホッケー・ドリブル (Hockey Dribble)
    ============================================================ */
 let dribbleCanvas, dribbleCtx;
-let dribbleP1 = { x: 0, y: 0 }, dribbleP2 = { x: 0, y: 0 };
+let dribbleP1, dribbleP2;
 let isDribbleRunning = false;
 
 function initDribbleGame() {
@@ -5062,11 +5341,14 @@ function initDribbleGame() {
 
   const w = dribbleCanvas.width;
   const h = dribbleCanvas.height;
-  dribbleP1 = { x: w / 2, y: 60 };
-  dribbleP2 = { x: w / 2, y: h - 60 };
+  const topY = getTopSafeY();
+
+  dribbleP1 = { x: w / 2, y: topY + 35 };
+  dribbleP2 = { x: w / 2, y: h - 55 };
   isDribbleRunning = true;
 
   dribbleCanvas.onpointerdown = (e) => {
+    if (!isDribbleRunning) return;
     const x = e.clientX - dribbleCanvas.getBoundingClientRect().left;
     const y = e.clientY - dribbleCanvas.getBoundingClientRect().top;
     if (y < h / 2) {
@@ -5082,13 +5364,13 @@ function initDribbleGame() {
     if (dribbleP1.y >= h / 2 - 20) {
       isDribbleRunning = false;
       window.sounds.playSuccess();
-      showModal(`🏑 ゴール！`, `プレイヤー 1 のドリブル突破勝利！`, () => {
+      showModal(`🏒 ゴール！`, `プレイヤー 1 の勝利！見事なドリブル突破！`, () => {
         initDribbleGame();
       });
     } else if (dribbleP2.y <= h / 2 + 20) {
       isDribbleRunning = false;
       window.sounds.playSuccess();
-      showModal(`🏑 ゴール！`, `プレイヤー 2 のドリブル突破勝利！`, () => {
+      showModal(`🏒 ゴール！`, `プレイヤー 2 の勝利！見事なドリブル突破！`, () => {
         initDribbleGame();
       });
     }
@@ -5103,19 +5385,35 @@ function dribbleLoop() {
   const ctx = dribbleCtx;
   const w = dribbleCanvas.width;
   const h = dribbleCanvas.height;
+  const topY = getTopSafeY();
 
   ctx.fillStyle = '#0f172a';
   ctx.fillRect(0, 0, w, h);
 
-  // 障害物コーン
+  // 中央ゴールライン
+  ctx.strokeStyle = '#facc15';
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.moveTo(0, h / 2);
+  ctx.lineTo(w, h / 2);
+  ctx.stroke();
+
+  // 対面ラベル
+  drawP1Text(ctx, '🔴 P1: タップで障害物を避けて前進！', w / 2, topY + 16, 'bold 15px sans-serif', '#ef4444', 'center');
+  ctx.font = 'bold 15px sans-serif';
+  ctx.fillStyle = '#3b82f6';
+  ctx.textAlign = 'center';
+  ctx.fillText('🔵 P2: タップで障害物を避けて前進！', w / 2, h - 30);
+
+  // コーン
   ctx.font = '26px sans-serif';
   ctx.textAlign = 'center';
-  ctx.fillText('🔺', w * 0.35, h * 0.3);
-  ctx.fillText('🔺', w * 0.65, h * 0.35);
-  ctx.fillText('🔺', w * 0.35, h * 0.65);
-  ctx.fillText('🔺', w * 0.65, h * 0.7);
+  ctx.fillText('🔺', w * 0.35, h * 0.28);
+  ctx.fillText('🔺', w * 0.65, h * 0.36);
+  ctx.fillText('🔺', w * 0.35, h * 0.64);
+  ctx.fillText('🔺', w * 0.65, h * 0.72);
 
-  // プレイヤーボール
+  // パック / ボール
   ctx.beginPath();
   ctx.arc(dribbleP1.x, dribbleP1.y, 16, 0, Math.PI * 2);
   ctx.fillStyle = '#ef4444';
@@ -5133,9 +5431,8 @@ function dribbleLoop() {
    43. 重力反転ランナー (Gravity Flip Runner)
    ============================================================ */
 let gravityCanvas, gravityCtx;
-let gravityP1 = { y: 0, onCeiling: false };
-let gravityP2 = { y: 0, onCeiling: false };
-let gravitySpikes = [];
+let gravityP1, gravityP2;
+let gravitySpikes1 = [], gravitySpikes2 = [];
 let isGravityRunning = false;
 
 function initGravityGame() {
@@ -5145,12 +5442,14 @@ function initGravityGame() {
   gravityCanvas.height = gravityCanvas.clientHeight;
 
   const h = gravityCanvas.height;
-  gravityP1 = { y: h * 0.25, onCeiling: false };
-  gravityP2 = { y: h * 0.75, onCeiling: false };
-  gravitySpikes = [];
+  gravityP1 = { y: h * 0.32, onCeiling: false };
+  gravityP2 = { y: h * 0.85, onCeiling: false };
+  gravitySpikes1 = [];
+  gravitySpikes2 = [];
   isGravityRunning = true;
 
   gravityCanvas.onpointerdown = (e) => {
+    if (!isGravityRunning) return;
     const y = e.clientY - gravityCanvas.getBoundingClientRect().top;
     if (y < h / 2) {
       gravityP1.onCeiling = !gravityP1.onCeiling;
@@ -5170,68 +5469,107 @@ function gravityLoop() {
   const ctx = gravityCtx;
   const w = gravityCanvas.width;
   const h = gravityCanvas.height;
-  const floor1 = h * 0.35, ceil1 = h * 0.1;
-  const floor2 = h * 0.85, ceil2 = h * 0.6;
+  const topY = getTopSafeY();
+
+  // P1レーン (上半分)
+  const floor1 = h * 0.35, ceil1 = topY + 40;
+  // P2レーン (下半分)
+  const floor2 = h * 0.86, ceil2 = h * 0.62;
 
   // プレイヤー位置補間
-  gravityP1.y += (gravityP1.onCeiling ? ceil1 - gravityP1.y : floor1 - gravityP1.y) * 0.25;
-  gravityP2.y += (gravityP2.onCeiling ? ceil2 - gravityP2.y : floor2 - gravityP2.y) * 0.25;
+  gravityP1.y += (gravityP1.onCeiling ? ceil1 - gravityP1.y : floor1 - gravityP1.y) * 0.28;
+  gravityP2.y += (gravityP2.onCeiling ? ceil2 - gravityP2.y : floor2 - gravityP2.y) * 0.28;
 
-  if (Math.random() < 0.025) {
-    const isTop = Math.random() < 0.5;
-    gravitySpikes.push({ x: w + 20, isTop: isTop });
+  // トゲ生成
+  if (Math.random() < 0.026) {
+    gravitySpikes1.push({ x: w + 20, isCeil: Math.random() < 0.5 });
+  }
+  if (Math.random() < 0.026) {
+    gravitySpikes2.push({ x: w + 20, isCeil: Math.random() < 0.5 });
   }
 
   ctx.fillStyle = '#0f172a';
   ctx.fillRect(0, 0, w, h);
 
-  // 天井と床
+  // レーン描画 (床と天井)
   ctx.strokeStyle = '#ffffff';
   ctx.lineWidth = 3;
-  ctx.strokeRect(0, ceil1 - 10, w, 6);
-  ctx.strokeRect(0, floor1 + 10, w, 6);
-  ctx.strokeRect(0, ceil2 - 10, w, 6);
-  ctx.strokeRect(0, floor2 + 10, w, 6);
 
-  // トゲ
-  let hit1 = false, hit2 = false;
-  for (let i = gravitySpikes.length - 1; i >= 0; i--) {
-    const sp = gravitySpikes[i];
-    sp.x -= 6;
+  // P1 レーン
+  ctx.beginPath();
+  ctx.moveTo(0, ceil1); ctx.lineTo(w, ceil1);
+  ctx.moveTo(0, floor1); ctx.lineTo(w, floor1);
+  ctx.stroke();
 
-    const y1 = sp.isTop ? ceil1 : floor1;
-    const y2 = sp.isTop ? ceil2 : floor2;
+  // P2 レーン
+  ctx.beginPath();
+  ctx.moveTo(0, ceil2); ctx.lineTo(w, ceil2);
+  ctx.moveTo(0, floor2); ctx.lineTo(w, floor2);
+  ctx.stroke();
 
-    ctx.fillStyle = '#f43f5e';
-    ctx.beginPath();
-    ctx.arc(sp.x, y1, 10, 0, Math.PI * 2);
-    ctx.arc(sp.x, y2, 10, 0, Math.PI * 2);
-    ctx.fill();
+  // 対面ラベル
+  drawP1Text(ctx, '🔴 P1: タップで重力反転して障害物を回避！', w / 2, topY + 16, 'bold 14px sans-serif', '#ef4444', 'center');
+  ctx.font = 'bold 14px sans-serif';
+  ctx.fillStyle = '#3b82f6';
+  ctx.textAlign = 'center';
+  ctx.fillText('🔵 P2: タップで重力反転して障害物を回避！', w / 2, h - 30);
 
-    if (Math.abs(sp.x - 60) < 16) {
-      if (Math.abs(gravityP1.y - y1) < 14) hit1 = true;
-      if (Math.abs(gravityP2.y - y2) < 14) hit2 = true;
+  // P1 レーン描画 (180度反転して対面向き)
+  ctx.save();
+  const p1MidY = (ceil1 + floor1) / 2;
+  ctx.translate(w / 2, p1MidY);
+  ctx.rotate(Math.PI);
+  // P1 キャラクター (相対座標)
+  ctx.font = '28px sans-serif';
+  ctx.textAlign = 'center';
+  const p1RelY = gravityP1.y - p1MidY;
+  ctx.fillText('🏃', (w / 2) - 60, -p1RelY + 10);
+  ctx.restore();
+
+  // P1 トゲ更新と判定
+  let hit1 = false;
+  ctx.font = '24px sans-serif';
+  ctx.textAlign = 'center';
+  for (let i = gravitySpikes1.length - 1; i >= 0; i--) {
+    const s = gravitySpikes1[i];
+    s.x -= 4.2;
+    const sy = s.isCeil ? ceil1 + 14 : floor1 - 6;
+    ctx.fillText('🔺', s.x, sy);
+
+    if (Math.abs(s.x - 60) < 18) {
+      if ((s.isCeil && gravityP1.onCeiling) || (!s.isCeil && !gravityP1.onCeiling)) {
+        hit1 = true;
+      }
     }
-
-    if (sp.x < -30) gravitySpikes.splice(i, 1);
+    if (s.x < -20) gravitySpikes1.splice(i, 1);
   }
 
-  // プレイヤー
-  ctx.fillStyle = '#ef4444';
-  ctx.beginPath();
-  ctx.arc(60, gravityP1.y, 14, 0, Math.PI * 2);
-  ctx.fill();
+  // P2 キャラクター描画
+  ctx.font = '28px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('🏃', 60, gravityP2.y);
 
-  ctx.fillStyle = '#3b82f6';
-  ctx.beginPath();
-  ctx.arc(60, gravityP2.y, 14, 0, Math.PI * 2);
-  ctx.fill();
+  // P2 トゲ更新と判定
+  let hit2 = false;
+  for (let i = gravitySpikes2.length - 1; i >= 0; i--) {
+    const s = gravitySpikes2[i];
+    s.x -= 4.2;
+    const sy = s.isCeil ? ceil2 + 14 : floor2 - 6;
+    ctx.fillText('🔺', s.x, sy);
+
+    if (Math.abs(s.x - 60) < 18) {
+      if ((s.isCeil && gravityP2.onCeiling) || (!s.isCeil && !gravityP2.onCeiling)) {
+        hit2 = true;
+      }
+    }
+    if (s.x < -20) gravitySpikes2.splice(i, 1);
+  }
 
   if ((hit1 || hit2) && isGravityRunning) {
     isGravityRunning = false;
     window.sounds.playError();
-    const winner = hit1 ? 'プレイヤー 2' : 'プレイヤー 1';
-    showModal(`💥 トゲ衝突！`, `${winner} の勝利！重力反転を見事に使いこなしました！`, () => {
+    const winner = hit1 ? 'プレイヤー 2 の勝利！' : 'プレイヤー 1 の勝利！';
+    showModal(`💥 激突！`, `${winner} 障害物を避けきりました！`, () => {
       initGravityGame();
     });
     return;
@@ -5422,7 +5760,7 @@ function checkBalloonWinner() {
    46. アームレスリング (Arm Wrestling)
    ============================================================ */
 let armCanvas, armCtx;
-let armPower = 50; // 0 (P1勝利) 〜 100 (P2勝利)
+let armPower = 50;
 let isArmRunning = false;
 
 function initArmGame() {
@@ -5469,21 +5807,47 @@ function armLoop() {
   const ctx = armCtx;
   const w = armCanvas.width;
   const h = armCanvas.height;
+  const topY = getTopSafeY();
 
   ctx.fillStyle = '#0f172a';
   ctx.fillRect(0, 0, w, h);
 
-  // パワーバー
-  ctx.fillStyle = '#334155';
-  ctx.fillRect(w / 2 - 20, 80, 40, h - 160);
+  // 中央仕切り
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
+  ctx.setLineDash([4, 4]);
+  ctx.beginPath();
+  ctx.moveTo(0, h / 2); ctx.lineTo(w, h / 2);
+  ctx.stroke();
+  ctx.setLineDash([]);
 
-  ctx.fillStyle = armPower < 50 ? '#ef4444' : '#3b82f6';
-  const barY = 80 + (armPower / 100) * (h - 160);
-  ctx.fillRect(w / 2 - 35, barY - 10, 70, 20);
-
-  ctx.font = '60px sans-serif';
+  // 対面ラベル
+  drawP1Text(ctx, '🔴 P1: 画面を連打して相手の腕を倒せ！', w / 2, topY + 16, 'bold 15px sans-serif', '#ef4444', 'center');
+  ctx.font = 'bold 15px sans-serif';
+  ctx.fillStyle = '#3b82f6';
   ctx.textAlign = 'center';
-  ctx.fillText('🤼', w / 2, h / 2);
+  ctx.fillText('🔵 P2: 画面を連打して相手の腕を倒せ！', w / 2, h - 30);
+
+  // パワーゲージ
+  const barW = w * 0.75;
+  const barH = 24;
+  const barX = (w - barW) / 2;
+  const barY = h / 2 - 50;
+
+  ctx.fillStyle = '#334155';
+  ctx.fillRect(barX, barY, barW, barH);
+
+  // P1側パワー (赤)
+  ctx.fillStyle = '#ef4444';
+  ctx.fillRect(barX, barY, barW * (1 - armPower / 100), barH);
+
+  // P2側パワー (青)
+  ctx.fillStyle = '#3b82f6';
+  ctx.fillRect(barX + barW * (1 - armPower / 100), barY, barW * (armPower / 100), barH);
+
+  // 腕相撲絵文字
+  ctx.font = '65px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('🤼', w / 2, h / 2 + 50);
 
   requestAnimationFrame(armLoop);
 }
@@ -5573,12 +5937,32 @@ function initLaserGame() {
   isLaserRunning = true;
 
   laserCanvas.onpointerdown = (e) => {
-    laserAngle += 0.25;
-    window.sounds.playTap();
-    if (Math.abs(Math.sin(laserAngle)) > 0.92) {
+    if (!isLaserRunning) return;
+    const y = e.clientY - laserCanvas.getBoundingClientRect().top;
+    if (y < laserCanvas.height / 2) {
+      // P1: ミラーを回転
+      laserAngle += 0.22;
+      window.sounds.playTap();
+    } else {
+      // P2: ミラーを逆回転
+      laserAngle -= 0.22;
+      window.sounds.playTap();
+    }
+
+    // コア照射判定
+    const sinVal = Math.sin(laserAngle);
+    if (sinVal > 0.92) {
+      // P1の勝利 (レーザーがP2コアへ到達)
       isLaserRunning = false;
       window.sounds.playGunshot();
-      showModal(`💥 コア照射！`, `レーザー反射で見事ターゲットを破壊！`, () => {
+      showModal(`💥 コア破壊！`, `プレイヤー 1 の勝利！反射レーザーで相手コアを撃ち抜きました！`, () => {
+        initLaserGame();
+      });
+    } else if (sinVal < -0.92) {
+      // P2の勝利 (レーザーがP1コアへ到達)
+      isLaserRunning = false;
+      window.sounds.playGunshot();
+      showModal(`💥 コア破壊！`, `プレイヤー 2 の勝利！反射レーザーで相手コアを撃ち抜きました！`, () => {
         initLaserGame();
       });
     }
@@ -5593,24 +5977,52 @@ function laserLoop() {
   const ctx = laserCtx;
   const w = laserCanvas.width;
   const h = laserCanvas.height;
+  const topY = getTopSafeY();
 
   ctx.fillStyle = '#0f172a';
   ctx.fillRect(0, 0, w, h);
 
-  // ミラー
+  // 対面ラベル
+  drawP1Text(ctx, '🔴 P1: タップでミラーを回転して相手コアを狙え！', w / 2, topY + 16, 'bold 14px sans-serif', '#ef4444', 'center');
+  ctx.font = 'bold 14px sans-serif';
+  ctx.fillStyle = '#3b82f6';
+  ctx.textAlign = 'center';
+  ctx.fillText('🔵 P2: タップでミラーを回転して相手コアを狙え！', w / 2, h - 30);
+
+  // コアターゲット P1 (上)
+  ctx.beginPath();
+  ctx.arc(w / 2, topY + 45, 18, 0, Math.PI * 2);
+  ctx.fillStyle = '#ef4444';
+  ctx.fill();
+  ctx.strokeStyle = '#ffffff';
+  ctx.lineWidth = 3;
+  ctx.stroke();
+
+  // コアターゲット P2 (下)
+  ctx.beginPath();
+  ctx.arc(w / 2, h - 60, 18, 0, Math.PI * 2);
+  ctx.fillStyle = '#3b82f6';
+  ctx.fill();
+  ctx.strokeStyle = '#ffffff';
+  ctx.lineWidth = 3;
+  ctx.stroke();
+
+  // 中央ミラー
   ctx.save();
   ctx.translate(w / 2, h / 2);
   ctx.rotate(laserAngle);
   ctx.fillStyle = '#38bdf8';
-  ctx.fillRect(-60, -6, 120, 12);
+  ctx.fillRect(-50, -6, 100, 12);
   ctx.restore();
 
-  // レーザー光線
-  ctx.strokeStyle = '#ef4444';
+  // 反射レーザー光線
+  ctx.strokeStyle = '#f43f5e';
   ctx.lineWidth = 4;
   ctx.beginPath();
-  ctx.moveTo(w / 2, 40);
+  ctx.moveTo(w * 0.1, h / 2);
   ctx.lineTo(w / 2, h / 2);
+  const endY = (h / 2) + Math.sin(laserAngle) * (h * 0.42);
+  ctx.lineTo(w / 2, endY);
   ctx.stroke();
 
   requestAnimationFrame(laserLoop);
@@ -5697,7 +6109,7 @@ function initFencingGame() {
     const player = y < fencingCanvas.height / 2 ? 1 : 2;
 
     window.sounds.playSlash();
-    if (fencingDist < 40) {
+    if (fencingDist < 45) {
       isFencingRunning = false;
       window.sounds.playSuccess();
       const winner = player === 1 ? 'プレイヤー 1' : 'プレイヤー 2';
@@ -5716,29 +6128,47 @@ function fencingLoop() {
   const ctx = fencingCtx;
   const w = fencingCanvas.width;
   const h = fencingCanvas.height;
+  const topY = getTopSafeY();
 
   fencingDist = 30 + Math.abs(Math.sin(performance.now() * 0.003)) * 80;
 
   ctx.fillStyle = '#0f172a';
   ctx.fillRect(0, 0, w, h);
 
-  ctx.font = 'bold 20px sans-serif';
-  ctx.fillStyle = '#facc15';
-  ctx.textAlign = 'center';
-  ctx.font = 'bold 15px sans-serif';
-  ctx.fillText(`間合い: ${Math.round(fencingDist)}cm (突け!)`, w / 2, getTopSafeY());
+  // 中央仕切り
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
+  ctx.setLineDash([4, 4]);
+  ctx.beginPath();
+  ctx.moveTo(0, h / 2); ctx.lineTo(w, h / 2);
+  ctx.stroke();
+  ctx.setLineDash([]);
 
-  ctx.font = '60px sans-serif';
-  ctx.fillText('🤺', w / 2 - fencingDist, h / 2);
-  ctx.fillText('🤺', w / 2 + fencingDist, h / 2);
+  // 対面ラベル
+  drawP1Text(ctx, `🔴 P1: 間合い ${Math.round(fencingDist)}cm (間合いに入ったら突け!)`, w / 2, topY + 16, 'bold 15px sans-serif', '#ef4444', 'center');
+  ctx.font = 'bold 15px sans-serif';
+  ctx.fillStyle = '#3b82f6';
+  ctx.textAlign = 'center';
+  ctx.fillText(`🔵 P2: 間合い ${Math.round(fencingDist)}cm (間合いに入ったら突け!)`, w / 2, h - 30);
+
+  // フェンサー P1 (上側、180度反転してP2に向かって構える)
+  ctx.save();
+  ctx.translate(w / 2, (h / 2) - fencingDist - 20);
+  ctx.rotate(Math.PI);
+  ctx.font = '55px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('🤺', 0, 0);
+  ctx.restore();
+
+  // フェンサー P2 (下側、P1に向かって構える)
+  ctx.save();
+  ctx.translate(w / 2, (h / 2) + fencingDist + 20);
+  ctx.font = '55px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('🤺', 0, 0);
+  ctx.restore();
 
   requestAnimationFrame(fencingLoop);
 }
-
-
-
-
-
 
 /* ============================================================
    51. 早弁ウォンテッド (Stealth Lunch)
@@ -5931,7 +6361,7 @@ function stealthlunchLoop() {
    ============================================================ */
 let eraserCanvas, eraserCtx;
 let eraserP1, eraserP2;
-let eraserAiming = null; // { player, startX, startY, curX, curY }
+let eraserAiming = null;
 let isEraserRunning = false;
 
 function initEraserGame() {
@@ -5954,12 +6384,11 @@ function initEraserGame() {
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
 
-    // Check hit on P1 or P2
     const d1 = Math.hypot(x - eraserP1.x, y - eraserP1.y);
     const d2 = Math.hypot(x - eraserP2.x, y - eraserP2.y);
-    if (d1 < 40) {
+    if (d1 < 45) {
       eraserAiming = { player: 1, startX: eraserP1.x, startY: eraserP1.y, curX: x, curY: y };
-    } else if (d2 < 40) {
+    } else if (d2 < 45) {
       eraserAiming = { player: 2, startX: eraserP2.x, startY: eraserP2.y, curX: x, curY: y };
     }
   };
@@ -5973,18 +6402,9 @@ function initEraserGame() {
 
   eraserCanvas.onpointerup = () => {
     if (!eraserAiming) return;
-    const dx = eraserAiming.startX - eraserAiming.curX;
-    const dy = eraserAiming.startY - eraserAiming.curY;
-    const power = Math.min(Math.hypot(dx, dy), 120) * 0.22;
-    const angle = Math.atan2(dy, dx);
-
-    if (eraserAiming.player === 1) {
-      eraserP1.vx = Math.cos(angle) * power;
-      eraserP1.vy = Math.sin(angle) * power;
-    } else {
-      eraserP2.vx = Math.cos(angle) * power;
-      eraserP2.vy = Math.sin(angle) * power;
-    }
+    const p = eraserAiming.player === 1 ? eraserP1 : eraserP2;
+    p.vx = (eraserAiming.startX - eraserAiming.curX) * 0.22;
+    p.vy = (eraserAiming.startY - eraserAiming.curY) * 0.22;
     window.sounds.playGunshot();
     eraserAiming = null;
   };
@@ -5998,8 +6418,9 @@ function eraserLoop() {
   const ctx = eraserCtx;
   const w = eraserCanvas.width;
   const h = eraserCanvas.height;
+  const topY = getTopSafeY();
 
-  // Physics update
+  // 物理挙動更新
   [eraserP1, eraserP2].forEach(p => {
     p.x += p.vx;
     p.y += p.vy;
@@ -6007,7 +6428,7 @@ function eraserLoop() {
     p.vy *= 0.96;
   });
 
-  // Collision between erasers
+  // 消しゴム同士の衝突
   const dist = Math.hypot(eraserP1.x - eraserP2.x, eraserP1.y - eraserP2.y);
   if (dist < eraserP1.r + eraserP2.r && dist > 0) {
     window.sounds.playTap();
@@ -6020,48 +6441,45 @@ function eraserLoop() {
     eraserP2.x -= nx * overlap * 0.5;
     eraserP2.y -= ny * overlap * 0.5;
 
-    const relVx = eraserP1.vx - eraserP2.vx;
-    const relVy = eraserP1.vy - eraserP2.vy;
-    const dot = relVx * nx + relVy * ny;
-
-    eraserP1.vx -= nx * dot * 1.2;
-    eraserP1.vy -= ny * dot * 1.2;
-    eraserP2.vx += nx * dot * 1.2;
-    eraserP2.vy += ny * dot * 1.2;
+    const kx = eraserP1.vx - eraserP2.vx;
+    const ky = eraserP1.vy - eraserP2.vy;
+    const p = 2 * (nx * kx + ny * ky) / 2;
+    eraserP1.vx -= p * nx * 0.95;
+    eraserP1.vy -= p * ny * 0.95;
+    eraserP2.vx += p * nx * 0.95;
+    eraserP2.vy += p * ny * 0.95;
   }
 
-  // Fall off table bounds
-  const deskMargin = 30;
-  const p1Out = eraserP1.x < deskMargin || eraserP1.x > w - deskMargin || eraserP1.y < deskMargin || eraserP1.y > h - deskMargin;
-  const p2Out = eraserP2.x < deskMargin || eraserP2.x > w - deskMargin || eraserP2.y < deskMargin || eraserP2.y > h - deskMargin;
+  // 机からの落下判定 (机の範囲: 左右20pxマージン、上下topY+10からh-20)
+  const deskLeft = 20, deskRight = w - 20;
+  const deskTop = topY + 20, deskBottom = h - 20;
 
-  if (p1Out || p2Out) {
-    isEraserRunning = false;
-    window.sounds.playExplosion();
-    const winner = p1Out ? 'プレイヤー 2' : 'プレイヤー 1';
-    showModal('落選！机から落下！', `${winner} の勝利！\n消しゴムを机の上に残しました！`, () => {
-      initEraserGame();
-    });
-    return;
-  }
+  const p1Out = eraserP1.x < deskLeft || eraserP1.x > deskRight || eraserP1.y < deskTop || eraserP1.y > deskBottom;
+  const p2Out = eraserP2.x < deskLeft || eraserP2.x > deskRight || eraserP2.y < deskTop || eraserP2.y > deskBottom;
 
-  // Draw Wood Desk
-  ctx.fillStyle = '#78350f';
+  // 描画: 木目調の机
+  ctx.fillStyle = '#92400e';
   ctx.fillRect(0, 0, w, h);
   ctx.fillStyle = '#b45309';
-  ctx.fillRect(deskMargin, deskMargin, w - deskMargin * 2, h - deskMargin * 2);
+  ctx.fillRect(deskLeft, deskTop, deskRight - deskLeft, deskBottom - deskTop);
 
-  // Desk lines
-  ctx.strokeStyle = '#92400e';
-  ctx.lineWidth = 2;
-  for (let i = deskMargin + 60; i < h - deskMargin; i += 60) {
-    ctx.beginPath();
-    ctx.moveTo(deskMargin, i);
-    ctx.lineTo(w - deskMargin, i);
-    ctx.stroke();
-  }
+  // 机の中央ライン
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
+  ctx.setLineDash([6, 6]);
+  ctx.beginPath();
+  ctx.moveTo(deskLeft, h / 2);
+  ctx.lineTo(deskRight, h / 2);
+  ctx.stroke();
+  ctx.setLineDash([]);
 
-  // Aiming slingshot line
+  // 対面ラベル
+  drawP1Text(ctx, '🔴 P1: 引っ張って相手を机から落とせ！', w / 2, topY + 14, 'bold 14px sans-serif', '#ffffff', 'center');
+  ctx.font = 'bold 14px sans-serif';
+  ctx.fillStyle = '#ffffff';
+  ctx.textAlign = 'center';
+  ctx.fillText('🔵 P2: 引っ張って相手を机から落とせ！', w / 2, h - 25);
+
+  // エイムライン
   if (eraserAiming) {
     ctx.strokeStyle = '#facc15';
     ctx.lineWidth = 3;
@@ -6071,22 +6489,44 @@ function eraserLoop() {
     ctx.stroke();
   }
 
-  // Draw Erasers
-  [eraserP1, eraserP2].forEach(p => {
-    ctx.save();
-    ctx.translate(p.x, p.y);
-    ctx.fillStyle = '#ffffff';
-    ctx.fillRect(-22, -14, 44, 28);
-    ctx.fillStyle = p.color;
-    ctx.fillRect(-22, -14, 18, 28);
-    ctx.strokeStyle = '#1e293b';
-    ctx.lineWidth = 2;
-    ctx.strokeRect(-22, -14, 44, 28);
-    ctx.fillStyle = '#0f172a';
-    ctx.font = 'bold 9px sans-serif';
-    ctx.fillText(p.label, -4, 4);
-    ctx.restore();
-  });
+  // 消しゴム P1 (180度反転文字)
+  ctx.save();
+  ctx.translate(eraserP1.x, eraserP1.y);
+  ctx.fillStyle = eraserP1.color;
+  ctx.fillRect(-eraserP1.r, -eraserP1.r * 0.7, eraserP1.r * 2, eraserP1.r * 1.4);
+  ctx.strokeStyle = '#ffffff';
+  ctx.lineWidth = 2;
+  ctx.strokeRect(-eraserP1.r, -eraserP1.r * 0.7, eraserP1.r * 2, eraserP1.r * 1.4);
+  ctx.rotate(Math.PI);
+  ctx.fillStyle = '#ffffff';
+  ctx.font = 'bold 11px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('MONO 1', 0, 4);
+  ctx.restore();
+
+  // 消しゴム P2
+  ctx.save();
+  ctx.translate(eraserP2.x, eraserP2.y);
+  ctx.fillStyle = eraserP2.color;
+  ctx.fillRect(-eraserP2.r, -eraserP2.r * 0.7, eraserP2.r * 2, eraserP2.r * 1.4);
+  ctx.strokeStyle = '#ffffff';
+  ctx.lineWidth = 2;
+  ctx.strokeRect(-eraserP2.r, -eraserP2.r * 0.7, eraserP2.r * 2, eraserP2.r * 1.4);
+  ctx.fillStyle = '#ffffff';
+  ctx.font = 'bold 11px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('MONO 2', 0, 4);
+  ctx.restore();
+
+  if ((p1Out || p2Out) && isEraserRunning) {
+    isEraserRunning = false;
+    window.sounds.playFall();
+    const winner = p1Out && p2Out ? '引き分け！' : (p1Out ? 'プレイヤー 2 の勝利！' : 'プレイヤー 1 の勝利！');
+    showModal(`落盤！`, `${winner}相手の消しゴムが机から落ちました！`, () => {
+      initEraserGame();
+    });
+    return;
+  }
 
   requestAnimationFrame(eraserLoop);
 }
@@ -7125,9 +7565,9 @@ function initRulerGame() {
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
 
-    if (Math.hypot(x - ruler1.x, y - ruler1.y) < 50) {
+    if (Math.hypot(x - ruler1.x, y - ruler1.y) < 55) {
       rulerDrag = { ruler: ruler1, startX: ruler1.x, startY: ruler1.y, curX: x, curY: y };
-    } else if (Math.hypot(x - ruler2.x, y - ruler2.y) < 50) {
+    } else if (Math.hypot(x - ruler2.x, y - ruler2.y) < 55) {
       rulerDrag = { ruler: ruler2, startX: ruler2.x, startY: ruler2.y, curX: x, curY: y };
     }
   };
@@ -7141,14 +7581,9 @@ function initRulerGame() {
 
   rulerCanvas.onpointerup = () => {
     if (!rulerDrag) return;
-    const dx = rulerDrag.startX - rulerDrag.curX;
-    const dy = rulerDrag.startY - rulerDrag.curY;
-    const power = Math.min(Math.hypot(dx, dy), 100) * 0.25;
-    const angle = Math.atan2(dy, dx);
-
-    rulerDrag.ruler.vx = Math.cos(angle) * power;
-    rulerDrag.ruler.vy = Math.sin(angle) * power;
-    window.sounds.playSlash();
+    rulerDrag.ruler.vx = (rulerDrag.startX - rulerDrag.curX) * 0.22;
+    rulerDrag.ruler.vy = (rulerDrag.startY - rulerDrag.curY) * 0.22;
+    window.sounds.playGunshot();
     rulerDrag = null;
   };
 
@@ -7161,6 +7596,7 @@ function rulerLoop() {
   const ctx = rulerCtx;
   const w = rulerCanvas.width;
   const h = rulerCanvas.height;
+  const topY = getTopSafeY();
 
   [ruler1, ruler2].forEach(r => {
     r.x += r.vx;
@@ -7169,7 +7605,7 @@ function rulerLoop() {
     r.vy *= 0.95;
   });
 
-  // Collision
+  // 衝突判定
   if (Math.hypot(ruler1.x - ruler2.x, ruler1.y - ruler2.y) < 45) {
     window.sounds.playGunshot();
     ruler1.vx = (ruler1.x - ruler2.x) * 0.2;
@@ -7178,26 +7614,27 @@ function rulerLoop() {
     ruler2.vy = -ruler1.vy;
   }
 
-  // Bounds
-  const r1Out = ruler1.x < 20 || ruler1.x > w - 20 || ruler1.y < 20 || ruler1.y > h - 20;
-  const r2Out = ruler2.x < 20 || ruler2.x > w - 20 || ruler2.y < 20 || ruler2.y > h - 20;
+  // 机境界
+  const deskLeft = 20, deskRight = w - 20;
+  const deskTop = topY + 20, deskBottom = h - 20;
 
-  if (r1Out || r2Out) {
-    isRulerRunning = false;
-    window.sounds.playSuccess();
-    const winner = r1Out ? 'プレイヤー 2' : 'プレイヤー 1';
-    showModal('📏 机から落下！', `${winner} の定規が生き残りました！`, () => {
-      initRulerGame();
-    });
-    return;
-  }
+  const r1Out = ruler1.x < deskLeft || ruler1.x > deskRight || ruler1.y < deskTop || ruler1.y > deskBottom;
+  const r2Out = ruler2.x < deskLeft || ruler2.x > deskRight || ruler2.y < deskTop || ruler2.y > deskBottom;
 
-  // Draw Wood table
-  ctx.fillStyle = '#78350f';
+  // 机背景
+  ctx.fillStyle = '#1e293b';
   ctx.fillRect(0, 0, w, h);
-  ctx.fillStyle = '#92400e';
-  ctx.fillRect(20, 20, w - 40, h - 40);
+  ctx.fillStyle = '#334155';
+  ctx.fillRect(deskLeft, deskTop, deskRight - deskLeft, deskBottom - deskTop);
 
+  // 対面ラベル
+  drawP1Text(ctx, '🔴 P1: 定規を弾いて相手を落とせ！', w / 2, topY + 14, 'bold 15px sans-serif', '#ffffff', 'center');
+  ctx.font = 'bold 15px sans-serif';
+  ctx.fillStyle = '#ffffff';
+  ctx.textAlign = 'center';
+  ctx.fillText('🔵 P2: 定規を弾いて相手を落とせ！', w / 2, h - 25);
+
+  // エイムライン
   if (rulerDrag) {
     ctx.strokeStyle = '#facc15';
     ctx.lineWidth = 3;
@@ -7207,7 +7644,7 @@ function rulerLoop() {
     ctx.stroke();
   }
 
-  // Draw Rulers
+  // 定規描画
   [ruler1, ruler2].forEach(r => {
     ctx.save();
     ctx.translate(r.x, r.y);
@@ -7216,13 +7653,27 @@ function rulerLoop() {
     ctx.strokeStyle = '#ffffff';
     ctx.lineWidth = 2;
     ctx.strokeRect(-r.w / 2, -r.h / 2, r.w, r.h);
-    // Ruler notches
-    ctx.fillStyle = '#ffffff';
+    // 目盛り線
+    ctx.strokeStyle = '#ffffff';
+    ctx.lineWidth = 1;
     for (let x = -r.w / 2 + 8; x < r.w / 2; x += 10) {
-      ctx.fillRect(x, -r.h / 2, 2, 6);
+      ctx.beginPath();
+      ctx.moveTo(x, -r.h / 2);
+      ctx.lineTo(x, -r.h / 2 + 6);
+      ctx.stroke();
     }
     ctx.restore();
   });
+
+  if ((r1Out || r2Out) && isRulerRunning) {
+    isRulerRunning = false;
+    window.sounds.playFall();
+    const winner = r1Out && r2Out ? '引き分け！' : (r1Out ? 'プレイヤー 2 の勝利！' : 'プレイヤー 1 の勝利！');
+    showModal(`📏 落下！`, `${winner}相手の定規が机から転落しました！`, () => {
+      initRulerGame();
+    });
+    return;
+  }
 
   requestAnimationFrame(rulerLoop);
 }
@@ -8424,7 +8875,7 @@ function penSpinLoop() {
 }
 
 /* ============================================================
-   75. 机上キャップカーリング (Desk Curling)
+   75. キャップカーリング (Desk Curling)
    ============================================================ */
 let curlCanvas, curlCtx;
 let curlP1Dist = 999, curlP2Dist = 999;
@@ -8459,7 +8910,7 @@ function initDeskCurlingGame() {
       isCurlRunning = false;
       window.sounds.playSuccess();
       const winner = curlP1Dist < curlP2Dist ? 'プレイヤー 1' : 'プレイヤー 2';
-      showModal('🥌 カーリング決着！', `${winner} の勝利！\n(P1誤差: ${Math.round(curlP1Dist)}px vs P2誤差: ${Math.round(curlP2Dist)}px)`, () => {
+      showModal(`🎯 カーリング決着！`, `${winner} の勝利！\n(P1距離: ${Math.round(curlP1Dist)}px / P2距離: ${Math.round(curlP2Dist)}px)`, () => {
         initDeskCurlingGame();
       });
     }
@@ -8474,24 +8925,35 @@ function deskCurlingLoop() {
   const ctx = curlCtx;
   const w = curlCanvas.width;
   const h = curlCanvas.height;
+  const topY = getTopSafeY();
 
-  ctx.fillStyle = '#0284c7';
+  ctx.fillStyle = '#0f172a';
   ctx.fillRect(0, 0, w, h);
 
-  // House target in center
-  [ { r: 90, c: '#ef4444' }, { r: 60, c: '#ffffff' }, { r: 30, c: '#3b82f6' }, { r: 10, c: '#facc15' } ].forEach(ring => {
+  // ハウス (同心円ターゲット)
+  [120, 80, 40].forEach((r, idx) => {
     ctx.beginPath();
-    ctx.arc(w / 2, h / 2, ring.r, 0, Math.PI * 2);
-    ctx.fillStyle = ring.c;
+    ctx.arc(w / 2, h / 2, r, 0, Math.PI * 2);
+    ctx.fillStyle = idx === 0 ? 'rgba(59, 130, 246, 0.25)' : (idx === 1 ? 'rgba(239, 68, 68, 0.25)' : 'rgba(250, 204, 21, 0.4)');
     ctx.fill();
+    ctx.strokeStyle = '#ffffff';
+    ctx.lineWidth = 2;
     ctx.stroke();
   });
 
-  ctx.font = 'bold 20px sans-serif';
-  ctx.fillStyle = '#ffffff';
-  ctx.textAlign = 'center';
+  // 対面ラベル
+  drawP1Text(ctx, `🔴 P1: ${curlP1Turn ? '【あなたの番: 指で弾いて中心を狙え！】' : '(投球完了)'}`, w / 2, topY + 16, 'bold 15px sans-serif', '#ef4444', 'center');
   ctx.font = 'bold 15px sans-serif';
-  ctx.fillText(curlP1Turn ? '👉 P1の番 (タップ！)' : '👉 P2の番 (タップ！)', w / 2, getTopSafeY());
+  ctx.fillStyle = '#3b82f6';
+  ctx.textAlign = 'center';
+  ctx.fillText(`🔵 P2: ${!curlP1Turn ? '【あなたの番: 指で弾いて中心を狙え！】' : '(投球完了)'}`, w / 2, h - 30);
+
+  // 投げたキャップの位置
+  if (curlP1Dist !== 999) {
+    ctx.font = '32px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('🔴', w / 2, (h / 2) - curlP1Dist * 0.8);
+  }
 
   requestAnimationFrame(deskCurlingLoop);
 }
@@ -8970,9 +9432,25 @@ function closeInstallGuide() {
 // サービスワーカー登録（オフラインプレイ＆PWA化）
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('./sw.js').catch((err) => {
-      console.log('ServiceWorker registration note:', err);
+    navigator.serviceWorker.register('./sw.js?v=4').then((reg) => {
+      reg.addEventListener('updatefound', () => {
+        const newWorker = reg.installing;
+        if (newWorker) {
+          newWorker.addEventListener('statechange', () => {
+            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+              console.log('New version detected! Auto reloading...');
+              window.location.reload();
+            }
+          });
+        }
+      });
+    }).catch((err) => {
+      console.log('ServiceWorker note:', err);
     });
+  });
+
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    window.location.reload();
   });
 }
 
