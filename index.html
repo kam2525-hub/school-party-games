@@ -22,12 +22,20 @@
     <div id="screen-menu" class="screen active">
       <div class="app-title">
         <h1>🎮 休み時間パーティー</h1>
-        <p>1台のスマホでみんなで盛り上がろう！</p>
+        <p>1台のスマホでみんなで盛り上がろう！【全20ゲーム収録】</p>
       </div>
 
-      <div class="game-grid">
+      <!-- カテゴリタブ -->
+      <div class="category-tabs">
+        <button class="tab-btn active" onclick="filterCategory('all')">すべて (20)</button>
+        <button class="tab-btn" onclick="filterCategory('action')">💥 アクション</button>
+        <button class="tab-btn" onclick="filterCategory('brain')">🧠 脳トレ・反射</button>
+        <button class="tab-btn" onclick="filterCategory('party')">🎲 パーティー</button>
+      </div>
+
+      <div class="game-grid" id="game-grid">
         <!-- ゲーム1: 連打相撲 -->
-        <div class="game-card" onclick="startGame('sumo')">
+        <div class="game-card" data-category="action" onclick="startGame('sumo')">
           <div class="card-icon" style="background: rgba(239, 68, 68, 0.15); color: #f87171;">💥</div>
           <div class="card-info">
             <h3>連打クラッシュ！ <span class="card-badge badge-2p">2人対面</span></h3>
@@ -36,7 +44,7 @@
         </div>
 
         <!-- ゲーム2: 早押しデュエル -->
-        <div class="game-card" onclick="startGame('reflex')">
+        <div class="game-card" data-category="brain" onclick="startGame('reflex')">
           <div class="card-icon" style="background: rgba(234, 179, 8, 0.15); color: #facc15;">⚡</div>
           <div class="card-info">
             <h3>早押しデュエル <span class="card-badge badge-2p">2人対面</span></h3>
@@ -45,7 +53,7 @@
         </div>
 
         <!-- ゲーム3: ワードウルフ -->
-        <div class="game-card" onclick="startGame('wolf')">
+        <div class="game-card" data-category="party" onclick="startGame('wolf')">
           <div class="card-icon" style="background: rgba(168, 85, 247, 0.15); color: #c084fc;">🐺</div>
           <div class="card-info">
             <h3>ワードウルフ <span class="card-badge badge-multi">3〜8人</span></h3>
@@ -54,7 +62,7 @@
         </div>
 
         <!-- ゲーム4: 爆弾パニック -->
-        <div class="game-card" onclick="startGame('bomb')">
+        <div class="game-card" data-category="party" onclick="startGame('bomb')">
           <div class="card-icon" style="background: rgba(249, 115, 22, 0.15); color: #fb923c;">💣</div>
           <div class="card-info">
             <h3>爆弾チキンレース <span class="card-badge badge-multi">2〜8人</span></h3>
@@ -63,7 +71,7 @@
         </div>
 
         <!-- ゲーム5: 指置きツイスター -->
-        <div class="game-card" onclick="startGame('twister')">
+        <div class="game-card" data-category="action" onclick="startGame('twister')">
           <div class="card-icon" style="background: rgba(16, 185, 129, 0.15); color: #34d399;">🖐️</div>
           <div class="card-info">
             <h3>フィンガーツイスター <span class="card-badge badge-2p">2人対戦</span></h3>
@@ -72,7 +80,7 @@
         </div>
 
         <!-- ゲーム6: エアホッケー -->
-        <div class="game-card" onclick="startGame('hockey')">
+        <div class="game-card" data-category="action" onclick="startGame('hockey')">
           <div class="card-icon" style="background: rgba(6, 182, 212, 0.15); color: #22d3ee;">🏓</div>
           <div class="card-info">
             <h3>エアホッケー <span class="card-badge badge-2p">2人対戦</span></h3>
@@ -81,7 +89,7 @@
         </div>
 
         <!-- ゲーム7: 後出しじゃんけん -->
-        <div class="game-card" onclick="startGame('rps')">
+        <div class="game-card" data-category="brain" onclick="startGame('rps')">
           <div class="card-icon" style="background: rgba(244, 63, 94, 0.15); color: #fb7185;">🪨</div>
           <div class="card-info">
             <h3>スピードじゃんけん <span class="card-badge badge-2p">2人対面</span></h3>
@@ -90,7 +98,7 @@
         </div>
 
         <!-- ゲーム8: ナイフスロー -->
-        <div class="game-card" onclick="startGame('knife')">
+        <div class="game-card" data-category="brain" onclick="startGame('knife')">
           <div class="card-icon" style="background: rgba(139, 92, 246, 0.15); color: #a78bfa;">🎯</div>
           <div class="card-info">
             <h3>ナイフスロー <span class="card-badge badge-2p">2人対面</span></h3>
@@ -99,7 +107,7 @@
         </div>
 
         <!-- ゲーム9: カラーブレイン -->
-        <div class="game-card" onclick="startGame('color')">
+        <div class="game-card" data-category="brain" onclick="startGame('color')">
           <div class="card-icon" style="background: rgba(234, 179, 8, 0.15); color: #fde047;">🧠</div>
           <div class="card-info">
             <h3>カラーブレイン <span class="card-badge badge-2p">2人対面</span></h3>
@@ -108,11 +116,101 @@
         </div>
 
         <!-- ゲーム10: スペースドッジ -->
-        <div class="game-card" onclick="startGame('space')">
+        <div class="game-card" data-category="action" onclick="startGame('space')">
           <div class="card-icon" style="background: rgba(99, 102, 241, 0.15); color: #818cf8;">🚀</div>
           <div class="card-info">
             <h3>スペースドッジ <span class="card-badge badge-2p">2人対戦</span></h3>
             <p>自機を操作して迫り来る小惑星を避け続けろ！最後まで生き残れ！</p>
+          </div>
+        </div>
+
+        <!-- ゲーム11: ピンポン・ラリー -->
+        <div class="game-card" data-category="action" onclick="startGame('pong')">
+          <div class="card-icon" style="background: rgba(14, 165, 233, 0.15); color: #38bdf8;">🏓</div>
+          <div class="card-info">
+            <h3>ピンポン・ラリー <span class="card-badge badge-2p">2人対面</span></h3>
+            <p>パドルを左右に動かして打ち返せ！ラリーが続くほど超高速化！</p>
+          </div>
+        </div>
+
+        <!-- ゲーム12: PKサッカー対決 -->
+        <div class="game-card" data-category="action" onclick="startGame('penalty')">
+          <div class="card-icon" style="background: rgba(34, 197, 94, 0.15); color: #4ade80;">⚽</div>
+          <div class="card-info">
+            <h3>PKサッカー対決 <span class="card-badge badge-2p">2人対戦</span></h3>
+            <p>キッカーとキーパーの真剣勝負！コースを読んでゴールを奪え！</p>
+          </div>
+        </div>
+
+        <!-- ゲーム13: ワンタップレーサー -->
+        <div class="game-card" data-category="action" onclick="startGame('racer')">
+          <div class="card-icon" style="background: rgba(249, 115, 22, 0.15); color: #fb923c;">🏎️</div>
+          <div class="card-info">
+            <h3>ワンタップレーサー <span class="card-badge badge-2p">2人対戦</span></h3>
+            <p>画面を押している間だけドリフト！サーキット3周先取バトル！</p>
+          </div>
+        </div>
+
+        <!-- ゲーム14: 木こり早切りバトル -->
+        <div class="game-card" data-category="brain" onclick="startGame('lumber')">
+          <div class="card-icon" style="background: rgba(180, 83, 9, 0.15); color: #d97706;">🪓</div>
+          <div class="card-info">
+            <h3>木こり早切りバトル <span class="card-badge badge-2p">2人対面</span></h3>
+            <p>迫り来る枝を左右に避けて木を切り落とせ！枝に当たるとゲームオーバー！</p>
+          </div>
+        </div>
+
+        <!-- ゲーム15: ピンボールジャンプ -->
+        <div class="game-card" data-category="action" onclick="startGame('jump')">
+          <div class="card-icon" style="background: rgba(236, 72, 153, 0.15); color: #f472b6;">🔴</div>
+          <div class="card-info">
+            <h3>ピンボールジャンプ <span class="card-badge badge-2p">2人対戦</span></h3>
+            <p>迫り来る障害物をタイミングよくタップジャンプ！生き残り競争！</p>
+          </div>
+        </div>
+
+        <!-- ゲーム16: スピード数字タッチ -->
+        <div class="game-card" data-category="brain" onclick="startGame('numbers')">
+          <div class="card-icon" style="background: rgba(59, 130, 246, 0.15); color: #60a5fa;">🔢</div>
+          <div class="card-info">
+            <h3>スピード数字タッチ <span class="card-badge badge-2p">2人対面</span></h3>
+            <p>1から16までの散らばった数字をどちらが早く順番にタッチできるか！</p>
+          </div>
+        </div>
+
+        <!-- ゲーム17: さかな釣りバトル -->
+        <div class="game-card" data-category="brain" onclick="startGame('fishing')">
+          <div class="card-icon" style="background: rgba(20, 184, 166, 0.15); color: #2dd4bf;">🐟</div>
+          <div class="card-info">
+            <h3>さかな釣りバトル <span class="card-badge badge-2p">2人対面</span></h3>
+            <p>ウキがピクッと沈んだ瞬間にリールを巻け！ヒットの瞬間を逃すな！</p>
+          </div>
+        </div>
+
+        <!-- ゲーム18: フルーツスラッシュ -->
+        <div class="game-card" data-category="action" onclick="startGame('slash')">
+          <div class="card-icon" style="background: rgba(244, 63, 94, 0.15); color: #fb7185;">⚔️</div>
+          <div class="card-info">
+            <h3>フルーツスラッシュ <span class="card-badge badge-2p">2人対面</span></h3>
+            <p>飛び出すフルーツを指で一刀両断！爆弾を切ったらマイナス！</p>
+          </div>
+        </div>
+
+        <!-- ゲーム19: ハイ＆ロー対決 -->
+        <div class="game-card" data-category="party" onclick="startGame('highlow')">
+          <div class="card-icon" style="background: rgba(168, 85, 247, 0.15); color: #c084fc;">🎲</div>
+          <div class="card-info">
+            <h3>ハイ＆ロー対決 <span class="card-badge badge-2p">2人対戦</span></h3>
+            <p>次のカードは今の数字より高いか低いか？連勝してボーナス大量獲得！</p>
+          </div>
+        </div>
+
+        <!-- ゲーム20: 戦車デュエル -->
+        <div class="game-card" data-category="action" onclick="startGame('tank')">
+          <div class="card-icon" style="background: rgba(100, 116, 139, 0.15); color: #cbd5e1;">💥</div>
+          <div class="card-info">
+            <h3>戦車デュエル <span class="card-badge badge-2p">2人対戦</span></h3>
+            <p>タップで旋回・前進＆砲撃！障害物に隠れて相手の戦車を撃破せよ！</p>
           </div>
         </div>
       </div>
@@ -299,6 +397,84 @@
     <!-- 11. スペースドッジ画面 -->
     <div id="screen-space" class="screen">
       <canvas id="space-canvas"></canvas>
+    </div>
+
+    <!-- 12. ピンポン・ラリー画面 -->
+    <div id="screen-pong" class="screen">
+      <canvas id="pong-canvas"></canvas>
+    </div>
+
+    <!-- 13. PKサッカー対決画面 -->
+    <div id="screen-penalty" class="screen">
+      <canvas id="penalty-canvas"></canvas>
+    </div>
+
+    <!-- 14. ワンタップレーサー画面 -->
+    <div id="screen-racer" class="screen">
+      <canvas id="racer-canvas"></canvas>
+    </div>
+
+    <!-- 15. 木こり早切り画面 -->
+    <div id="screen-lumber" class="screen">
+      <canvas id="lumber-canvas"></canvas>
+    </div>
+
+    <!-- 16. ピンボールジャンプ画面 -->
+    <div id="screen-jump" class="screen">
+      <canvas id="jump-canvas"></canvas>
+    </div>
+
+    <!-- 17. スピード数字タッチ画面 -->
+    <div id="screen-numbers" class="screen">
+      <div class="split-battle">
+        <div class="player-zone top-player" style="justify-content: center; padding: 12px;">
+          <div style="font-size: 16px; font-weight: 700; margin-bottom: 8px;">次に押す: <span id="num-next-p1" style="font-size: 26px; color: #fbbf24;">1</span></div>
+          <div class="numbers-grid" id="grid-p1"></div>
+        </div>
+        <div class="player-zone bottom-player" style="justify-content: center; padding: 12px;">
+          <div style="font-size: 16px; font-weight: 700; margin-bottom: 8px;">次に押す: <span id="num-next-p2" style="font-size: 26px; color: #fbbf24;">1</span></div>
+          <div class="numbers-grid" id="grid-p2"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 18. さかな釣りバトル画面 -->
+    <div id="screen-fishing" class="screen">
+      <canvas id="fishing-canvas"></canvas>
+    </div>
+
+    <!-- 19. フルーツスラッシュ画面 -->
+    <div id="screen-slash" class="screen">
+      <canvas id="slash-canvas"></canvas>
+    </div>
+
+    <!-- 20. ハイ＆ロー対決画面 -->
+    <div id="screen-highlow" class="screen">
+      <div class="split-battle">
+        <div class="player-zone top-player" style="justify-content: space-around;">
+          <div class="zone-score" id="highlow-score-p1">0</div>
+          <div style="display: flex; gap: 16px;">
+            <button class="btn-primary" style="background: #3b82f6; font-size: 20px;" onclick="handleHighLowGuess(1, 'high')">▲ HIGH</button>
+            <button class="btn-primary" style="background: #ef4444; font-size: 20px;" onclick="handleHighLowGuess(1, 'low')">▼ LOW</button>
+          </div>
+        </div>
+        <div class="color-center-box" id="highlow-center-box">
+          <div style="font-size: 14px; color: #94a3b8;">現在の数字</div>
+          <div id="highlow-current-num" style="font-size: 48px; font-weight: 900; color: #facc15;">7</div>
+        </div>
+        <div class="player-zone bottom-player" style="justify-content: space-around;">
+          <div style="display: flex; gap: 16px;">
+            <button class="btn-primary" style="background: #3b82f6; font-size: 20px;" onclick="handleHighLowGuess(2, 'high')">▲ HIGH</button>
+            <button class="btn-primary" style="background: #ef4444; font-size: 20px;" onclick="handleHighLowGuess(2, 'low')">▼ LOW</button>
+          </div>
+          <div class="zone-score" id="highlow-score-p2">0</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 21. 戦車デュエル画面 -->
+    <div id="screen-tank" class="screen">
+      <canvas id="tank-canvas"></canvas>
     </div>
 
     <!-- 結果・通知モーダル -->
