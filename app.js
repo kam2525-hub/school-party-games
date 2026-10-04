@@ -250,6 +250,46 @@ function startGame(gameKey) {
       showScreen('screen-seesaw');
       initSeesawGame();
       break;
+    case 'bowling':
+      showScreen('screen-bowling');
+      initBowlingGame();
+      break;
+    case 'dribble':
+      showScreen('screen-dribble');
+      initDribbleGame();
+      break;
+    case 'gravity':
+      showScreen('screen-gravity');
+      initGravityGame();
+      break;
+    case 'axe':
+      showScreen('screen-axe');
+      initAxeGame();
+      break;
+    case 'balloon':
+      showScreen('screen-balloon');
+      initBalloonGame();
+      break;
+    case 'arm':
+      showScreen('screen-arm');
+      initArmGame();
+      break;
+    case 'pitstop':
+      showScreen('screen-pitstop');
+      initPitstopGame();
+      break;
+    case 'laser':
+      showScreen('screen-laser');
+      initLaserGame();
+      break;
+    case 'pogo':
+      showScreen('screen-pogo');
+      initPogoGame();
+      break;
+    case 'fencing':
+      showScreen('screen-fencing');
+      initFencingGame();
+      break;
   }
 }
 
@@ -798,7 +838,9 @@ window.addEventListener('resize', () => {
     basketCanvas, dartsCanvas, ropeCanvas, breakoutCanvas,
     ufoCanvas, boxingCanvas, highwayCanvas, rhythmCanvas, archeryCanvas,
     cricketCanvas, hurdleCanvas, snakeCanvas, invadersCanvas,
-    curlingCanvas, skateCanvas, catchCanvas, blocktennisCanvas, seesawCanvas
+    curlingCanvas, skateCanvas, catchCanvas, blocktennisCanvas, seesawCanvas,
+    bowlingCanvas, dribbleCanvas, gravityCanvas, axeCanvas,
+    balloonCanvas, armCanvas, pitstopCanvas, laserCanvas, pogoCanvas, fencingCanvas
   ].forEach(c => {
     if (c) {
       c.width = c.clientWidth;
@@ -4559,6 +4601,828 @@ function seesawLoop() {
 
   requestAnimationFrame(seesawLoop);
 }
+
+/* ============================================================
+   41. ボウリング・ストライク (Bowling Strike)
+   ============================================================ */
+let bowlingCanvas, bowlingCtx;
+let bowlingBall = null;
+let bowlingPins = [];
+let bowlingScore1 = 0, bowlingScore2 = 0;
+let isBowlingRunning = false;
+
+function initBowlingGame() {
+  bowlingCanvas = document.getElementById('bowling-canvas');
+  bowlingCtx = bowlingCanvas.getContext('2d');
+  bowlingCanvas.width = bowlingCanvas.clientWidth;
+  bowlingCanvas.height = bowlingCanvas.clientHeight;
+
+  const w = bowlingCanvas.width;
+  const h = bowlingCanvas.height;
+
+  bowlingScore1 = 0;
+  bowlingScore2 = 0;
+  bowlingBall = null;
+  isBowlingRunning = true;
+
+  resetBowlingPins();
+
+  let startY = 0;
+  bowlingCanvas.onpointerdown = (e) => {
+    startY = e.clientY - bowlingCanvas.getBoundingClientRect().top;
+  };
+
+  bowlingCanvas.onpointerup = (e) => {
+    if (!isBowlingRunning || bowlingBall) return;
+    const endY = e.clientY - bowlingCanvas.getBoundingClientRect().top;
+    const player = startY > h / 2 ? 2 : 1;
+    const speed = (startY - endY) * 0.15;
+
+    bowlingBall = {
+      x: w / 2,
+      y: player === 2 ? h - 40 : 40,
+      vy: player === 2 ? -Math.max(6, Math.min(16, speed)) : Math.max(6, Math.min(16, -speed)),
+      radius: 15,
+      player: player
+    };
+    window.sounds.playSlash();
+  };
+
+  requestAnimationFrame(bowlingLoop);
+}
+
+function resetBowlingPins() {
+  const w = bowlingCanvas.width;
+  const h = bowlingCanvas.height;
+  bowlingPins = [];
+  // 中央にピンを三角配置
+  for (let r = 0; r < 3; r++) {
+    for (let c = 0; c <= r; c++) {
+      bowlingPins.push({
+        x: w / 2 + (c - r / 2) * 24,
+        y: h / 2 - 20 + r * 20,
+        alive: true
+      });
+    }
+  }
+}
+
+function bowlingLoop() {
+  if (currentScreen !== 'screen-bowling' || !isBowlingRunning) return;
+
+  const ctx = bowlingCtx;
+  const w = bowlingCanvas.width;
+  const h = bowlingCanvas.height;
+
+  if (bowlingBall) {
+    bowlingBall.y += bowlingBall.vy;
+
+    // ピン衝突
+    bowlingPins.forEach(p => {
+      if (p.alive && Math.hypot(bowlingBall.x - p.x, bowlingBall.y - p.y) < bowlingBall.radius + 12) {
+        p.alive = false;
+        window.sounds.playCoin();
+        if (bowlingBall.player === 1) bowlingScore1++; else bowlingScore2++;
+      }
+    });
+
+    if (bowlingBall.y < 0 || bowlingBall.y > h) {
+      bowlingBall = null;
+      if (bowlingScore1 >= 6 || bowlingScore2 >= 6) {
+        isBowlingRunning = false;
+        window.sounds.playSuccess();
+        const winner = bowlingScore1 >= 6 ? 'プレイヤー 1' : 'プレイヤー 2';
+        showModal(`🎳 STRIKE!`, `${winner} の勝利！ピンを爽快に吹き飛ばしました！`, () => {
+          initBowlingGame();
+        });
+        return;
+      }
+    }
+  }
+
+  ctx.fillStyle = '#0f172a';
+  ctx.fillRect(0, 0, w, h);
+
+  // レーン
+  ctx.fillStyle = '#78350f';
+  ctx.fillRect(w / 2 - 70, 0, 140, h);
+
+  // ピン
+  bowlingPins.forEach(p => {
+    if (p.alive) {
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, 8, 0, Math.PI * 2);
+      ctx.fillStyle = '#ffffff';
+      ctx.fill();
+      ctx.lineWidth = 2;
+      ctx.strokeStyle = '#ef4444';
+      ctx.stroke();
+    }
+  });
+
+  // ボール
+  if (bowlingBall) {
+    ctx.beginPath();
+    ctx.arc(bowlingBall.x, bowlingBall.y, bowlingBall.radius, 0, Math.PI * 2);
+    ctx.fillStyle = bowlingBall.player === 1 ? '#ef4444' : '#3b82f6';
+    ctx.fill();
+  }
+
+  // スコア
+  ctx.font = 'bold 20px sans-serif';
+  ctx.fillStyle = '#ef4444';
+  ctx.fillText(`P1: ${bowlingScore1}/6`, 30, 35);
+  ctx.fillStyle = '#3b82f6';
+  ctx.fillText(`P2: ${bowlingScore2}/6`, 30, h - 25);
+
+  requestAnimationFrame(bowlingLoop);
+}
+
+/* ============================================================
+   42. ホッケー・ドリブル (Hockey Dribble)
+   ============================================================ */
+let dribbleCanvas, dribbleCtx;
+let dribbleP1 = { x: 0, y: 0 }, dribbleP2 = { x: 0, y: 0 };
+let isDribbleRunning = false;
+
+function initDribbleGame() {
+  dribbleCanvas = document.getElementById('dribble-canvas');
+  dribbleCtx = dribbleCanvas.getContext('2d');
+  dribbleCanvas.width = dribbleCanvas.clientWidth;
+  dribbleCanvas.height = dribbleCanvas.clientHeight;
+
+  const w = dribbleCanvas.width;
+  const h = dribbleCanvas.height;
+  dribbleP1 = { x: w / 2, y: 60 };
+  dribbleP2 = { x: w / 2, y: h - 60 };
+  isDribbleRunning = true;
+
+  dribbleCanvas.onpointerdown = (e) => {
+    const x = e.clientX - dribbleCanvas.getBoundingClientRect().left;
+    const y = e.clientY - dribbleCanvas.getBoundingClientRect().top;
+    if (y < h / 2) {
+      dribbleP1.x = x;
+      dribbleP1.y += 18;
+      window.sounds.playTap();
+    } else {
+      dribbleP2.x = x;
+      dribbleP2.y -= 18;
+      window.sounds.playTap();
+    }
+
+    if (dribbleP1.y >= h / 2 - 20) {
+      isDribbleRunning = false;
+      window.sounds.playSuccess();
+      showModal(`🏑 ゴール！`, `プレイヤー 1 のドリブル突破勝利！`, () => {
+        initDribbleGame();
+      });
+    } else if (dribbleP2.y <= h / 2 + 20) {
+      isDribbleRunning = false;
+      window.sounds.playSuccess();
+      showModal(`🏑 ゴール！`, `プレイヤー 2 のドリブル突破勝利！`, () => {
+        initDribbleGame();
+      });
+    }
+  };
+
+  requestAnimationFrame(dribbleLoop);
+}
+
+function dribbleLoop() {
+  if (currentScreen !== 'screen-dribble' || !isDribbleRunning) return;
+
+  const ctx = dribbleCtx;
+  const w = dribbleCanvas.width;
+  const h = dribbleCanvas.height;
+
+  ctx.fillStyle = '#0f172a';
+  ctx.fillRect(0, 0, w, h);
+
+  // 障害物コーン
+  ctx.font = '26px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('🔺', w * 0.35, h * 0.3);
+  ctx.fillText('🔺', w * 0.65, h * 0.35);
+  ctx.fillText('🔺', w * 0.35, h * 0.65);
+  ctx.fillText('🔺', w * 0.65, h * 0.7);
+
+  // プレイヤーボール
+  ctx.beginPath();
+  ctx.arc(dribbleP1.x, dribbleP1.y, 16, 0, Math.PI * 2);
+  ctx.fillStyle = '#ef4444';
+  ctx.fill();
+
+  ctx.beginPath();
+  ctx.arc(dribbleP2.x, dribbleP2.y, 16, 0, Math.PI * 2);
+  ctx.fillStyle = '#3b82f6';
+  ctx.fill();
+
+  requestAnimationFrame(dribbleLoop);
+}
+
+/* ============================================================
+   43. 重力反転ランナー (Gravity Flip Runner)
+   ============================================================ */
+let gravityCanvas, gravityCtx;
+let gravityP1 = { y: 0, onCeiling: false };
+let gravityP2 = { y: 0, onCeiling: false };
+let gravitySpikes = [];
+let isGravityRunning = false;
+
+function initGravityGame() {
+  gravityCanvas = document.getElementById('gravity-canvas');
+  gravityCtx = gravityCanvas.getContext('2d');
+  gravityCanvas.width = gravityCanvas.clientWidth;
+  gravityCanvas.height = gravityCanvas.clientHeight;
+
+  const h = gravityCanvas.height;
+  gravityP1 = { y: h * 0.25, onCeiling: false };
+  gravityP2 = { y: h * 0.75, onCeiling: false };
+  gravitySpikes = [];
+  isGravityRunning = true;
+
+  gravityCanvas.onpointerdown = (e) => {
+    const y = e.clientY - gravityCanvas.getBoundingClientRect().top;
+    if (y < h / 2) {
+      gravityP1.onCeiling = !gravityP1.onCeiling;
+      window.sounds.playJump();
+    } else {
+      gravityP2.onCeiling = !gravityP2.onCeiling;
+      window.sounds.playJump();
+    }
+  };
+
+  requestAnimationFrame(gravityLoop);
+}
+
+function gravityLoop() {
+  if (currentScreen !== 'screen-gravity' || !isGravityRunning) return;
+
+  const ctx = gravityCtx;
+  const w = gravityCanvas.width;
+  const h = gravityCanvas.height;
+  const floor1 = h * 0.35, ceil1 = h * 0.1;
+  const floor2 = h * 0.85, ceil2 = h * 0.6;
+
+  // プレイヤー位置補間
+  gravityP1.y += (gravityP1.onCeiling ? ceil1 - gravityP1.y : floor1 - gravityP1.y) * 0.25;
+  gravityP2.y += (gravityP2.onCeiling ? ceil2 - gravityP2.y : floor2 - gravityP2.y) * 0.25;
+
+  if (Math.random() < 0.025) {
+    const isTop = Math.random() < 0.5;
+    gravitySpikes.push({ x: w + 20, isTop: isTop });
+  }
+
+  ctx.fillStyle = '#0f172a';
+  ctx.fillRect(0, 0, w, h);
+
+  // 天井と床
+  ctx.strokeStyle = '#ffffff';
+  ctx.lineWidth = 3;
+  ctx.strokeRect(0, ceil1 - 10, w, 6);
+  ctx.strokeRect(0, floor1 + 10, w, 6);
+  ctx.strokeRect(0, ceil2 - 10, w, 6);
+  ctx.strokeRect(0, floor2 + 10, w, 6);
+
+  // トゲ
+  let hit1 = false, hit2 = false;
+  for (let i = gravitySpikes.length - 1; i >= 0; i--) {
+    const sp = gravitySpikes[i];
+    sp.x -= 6;
+
+    const y1 = sp.isTop ? ceil1 : floor1;
+    const y2 = sp.isTop ? ceil2 : floor2;
+
+    ctx.fillStyle = '#f43f5e';
+    ctx.beginPath();
+    ctx.arc(sp.x, y1, 10, 0, Math.PI * 2);
+    ctx.arc(sp.x, y2, 10, 0, Math.PI * 2);
+    ctx.fill();
+
+    if (Math.abs(sp.x - 60) < 16) {
+      if (Math.abs(gravityP1.y - y1) < 14) hit1 = true;
+      if (Math.abs(gravityP2.y - y2) < 14) hit2 = true;
+    }
+
+    if (sp.x < -30) gravitySpikes.splice(i, 1);
+  }
+
+  // プレイヤー
+  ctx.fillStyle = '#ef4444';
+  ctx.beginPath();
+  ctx.arc(60, gravityP1.y, 14, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.fillStyle = '#3b82f6';
+  ctx.beginPath();
+  ctx.arc(60, gravityP2.y, 14, 0, Math.PI * 2);
+  ctx.fill();
+
+  if ((hit1 || hit2) && isGravityRunning) {
+    isGravityRunning = false;
+    window.sounds.playError();
+    const winner = hit1 ? 'プレイヤー 2' : 'プレイヤー 1';
+    showModal(`💥 トゲ衝突！`, `${winner} の勝利！重力反転を見事に使いこなしました！`, () => {
+      initGravityGame();
+    });
+    return;
+  }
+
+  requestAnimationFrame(gravityLoop);
+}
+
+/* ============================================================
+   44. トマホーク・スロー (Axe Throw)
+   ============================================================ */
+let axeCanvas, axeCtx;
+let axeAngle = 0;
+let axeScore1 = 0, axeScore2 = 0;
+let isAxeRunning = false;
+
+function initAxeGame() {
+  axeCanvas = document.getElementById('axe-canvas');
+  axeCtx = axeCanvas.getContext('2d');
+  axeCanvas.width = axeCanvas.clientWidth;
+  axeCanvas.height = axeCanvas.clientHeight;
+
+  axeAngle = 0;
+  axeScore1 = 0;
+  axeScore2 = 0;
+  isAxeRunning = true;
+
+  axeCanvas.onpointerdown = (e) => {
+    if (!isAxeRunning) return;
+    const y = e.clientY - axeCanvas.getBoundingClientRect().top;
+    const player = y < axeCanvas.height / 2 ? 1 : 2;
+    const rot = Math.abs(Math.sin(axeAngle));
+
+    if (rot > 0.85) {
+      window.sounds.playGunshot();
+      if (player === 1) axeScore1 += 50; else axeScore2 += 50;
+    } else {
+      window.sounds.playTap();
+      if (player === 1) axeScore1 += 10; else axeScore2 += 10;
+    }
+
+    if (axeScore1 >= 100 || axeScore2 >= 100) {
+      isAxeRunning = false;
+      window.sounds.playSuccess();
+      const winner = axeScore1 >= 100 ? 'プレイヤー 1' : 'プレイヤー 2';
+      showModal(`🪓 的中！`, `${winner} の勝利！見事なアックススロー！`, () => {
+        initAxeGame();
+      });
+    }
+  };
+
+  requestAnimationFrame(axeLoop);
+}
+
+function axeLoop() {
+  if (currentScreen !== 'screen-axe' || !isAxeRunning) return;
+
+  const ctx = axeCtx;
+  const w = axeCanvas.width;
+  const h = axeCanvas.height;
+
+  axeAngle += 0.08;
+
+  ctx.fillStyle = '#0f172a';
+  ctx.fillRect(0, 0, w, h);
+
+  // 的
+  ctx.fillStyle = '#b45309';
+  ctx.beginPath();
+  ctx.arc(w / 2, h / 2, 70, 0, Math.PI * 2);
+  ctx.fill();
+
+  // 回転する斧
+  ctx.save();
+  ctx.translate(w / 2, h / 2);
+  ctx.rotate(axeAngle);
+  ctx.font = '50px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('🪓', 0, 0);
+  ctx.restore();
+
+  // スコア
+  ctx.font = 'bold 20px sans-serif';
+  ctx.fillStyle = '#ef4444';
+  ctx.fillText(`P1: ${axeScore1}/100`, 30, 35);
+  ctx.fillStyle = '#3b82f6';
+  ctx.fillText(`P2: ${axeScore2}/100`, 30, h - 25);
+
+  requestAnimationFrame(axeLoop);
+}
+
+/* ============================================================
+   45. バルーン・ポップ (Balloon Pop Duel)
+   ============================================================ */
+let balloonCanvas, balloonCtx;
+let balloonList = [];
+let balloonScore1 = 0, balloonScore2 = 0;
+let isBalloonRunning = false;
+
+function initBalloonGame() {
+  balloonCanvas = document.getElementById('balloon-canvas');
+  balloonCtx = balloonCanvas.getContext('2d');
+  balloonCanvas.width = balloonCanvas.clientWidth;
+  balloonCanvas.height = balloonCanvas.clientHeight;
+
+  balloonScore1 = 0;
+  balloonScore2 = 0;
+  balloonList = [];
+  isBalloonRunning = true;
+
+  balloonCanvas.onpointerdown = (e) => {
+    const x = e.clientX - balloonCanvas.getBoundingClientRect().left;
+    const y = e.clientY - balloonCanvas.getBoundingClientRect().top;
+    const player = y < balloonCanvas.height / 2 ? 1 : 2;
+
+    for (let i = balloonList.length - 1; i >= 0; i--) {
+      const b = balloonList[i];
+      if (Math.hypot(x - b.x, y - b.y) < b.radius + 15) {
+        balloonList.splice(i, 1);
+        if (b.bomb) {
+          window.sounds.playExplosion();
+          if (player === 1) balloonScore1 -= 2; else balloonScore2 -= 2;
+        } else {
+          window.sounds.playCoin();
+          if (player === 1) balloonScore1++; else balloonScore2++;
+        }
+        checkBalloonWinner();
+        return;
+      }
+    }
+  };
+
+  requestAnimationFrame(balloonLoop);
+}
+
+function balloonLoop() {
+  if (currentScreen !== 'screen-balloon' || !isBalloonRunning) return;
+
+  const ctx = balloonCtx;
+  const w = balloonCanvas.width;
+  const h = balloonCanvas.height;
+
+  if (Math.random() < 0.05 && balloonList.length < 10) {
+    balloonList.push({
+      x: 30 + Math.random() * (w - 60),
+      y: h + 20,
+      vy: -3 - Math.random() * 3,
+      radius: 20,
+      bomb: Math.random() < 0.2
+    });
+  }
+
+  ctx.fillStyle = '#0f172a';
+  ctx.fillRect(0, 0, w, h);
+
+  ctx.font = 'bold 20px sans-serif';
+  ctx.fillStyle = '#ef4444';
+  ctx.fillText(`P1: ${balloonScore1}/8`, 30, 35);
+  ctx.fillStyle = '#3b82f6';
+  ctx.fillText(`P2: ${balloonScore2}/8`, 30, h - 25);
+
+  for (let i = balloonList.length - 1; i >= 0; i--) {
+    const b = balloonList[i];
+    b.y += b.vy;
+
+    ctx.font = '36px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(b.bomb ? '💣' : '🎈', b.x, b.y);
+
+    if (b.y < -30) balloonList.splice(i, 1);
+  }
+
+  requestAnimationFrame(balloonLoop);
+}
+
+function checkBalloonWinner() {
+  if (balloonScore1 >= 8 || balloonScore2 >= 8) {
+    isBalloonRunning = false;
+    window.sounds.playSuccess();
+    const winner = balloonScore1 >= 8 ? 'プレイヤー 1' : 'プレイヤー 2';
+    showModal(`🎈 ${winner} の勝利！`, `風船を素早く割り尽くしました！`, () => {
+      initBalloonGame();
+    });
+  }
+}
+
+/* ============================================================
+   46. アームレスリング (Arm Wrestling)
+   ============================================================ */
+let armCanvas, armCtx;
+let armPower = 50; // 0 (P1勝利) 〜 100 (P2勝利)
+let isArmRunning = false;
+
+function initArmGame() {
+  armCanvas = document.getElementById('arm-canvas');
+  armCtx = armCanvas.getContext('2d');
+  armCanvas.width = armCanvas.clientWidth;
+  armCanvas.height = armCanvas.clientHeight;
+
+  armPower = 50;
+  isArmRunning = true;
+
+  armCanvas.onpointerdown = (e) => {
+    if (!isArmRunning) return;
+    const y = e.clientY - armCanvas.getBoundingClientRect().top;
+    if (y < armCanvas.height / 2) {
+      armPower -= 3.5;
+      window.sounds.playTap();
+    } else {
+      armPower += 3.5;
+      window.sounds.playTap();
+    }
+
+    if (armPower <= 10) {
+      isArmRunning = false;
+      window.sounds.playSuccess();
+      showModal(`💪 プレイヤー 1 の怪力勝利！`, `相手の腕を机に叩きつけました！`, () => {
+        initArmGame();
+      });
+    } else if (armPower >= 90) {
+      isArmRunning = false;
+      window.sounds.playSuccess();
+      showModal(`💪 プレイヤー 2 の怪力勝利！`, `相手の腕を机に叩きつけました！`, () => {
+        initArmGame();
+      });
+    }
+  };
+
+  requestAnimationFrame(armLoop);
+}
+
+function armLoop() {
+  if (currentScreen !== 'screen-arm' || !isArmRunning) return;
+
+  const ctx = armCtx;
+  const w = armCanvas.width;
+  const h = armCanvas.height;
+
+  ctx.fillStyle = '#0f172a';
+  ctx.fillRect(0, 0, w, h);
+
+  // パワーバー
+  ctx.fillStyle = '#334155';
+  ctx.fillRect(w / 2 - 20, 80, 40, h - 160);
+
+  ctx.fillStyle = armPower < 50 ? '#ef4444' : '#3b82f6';
+  const barY = 80 + (armPower / 100) * (h - 160);
+  ctx.fillRect(w / 2 - 35, barY - 10, 70, 20);
+
+  ctx.font = '60px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('🤼', w / 2, h / 2);
+
+  requestAnimationFrame(armLoop);
+}
+
+/* ============================================================
+   47. ピットストップ・レース (Pit Stop)
+   ============================================================ */
+let pitstopCanvas, pitstopCtx;
+let pitstopBolts1 = 8, pitstopBolts2 = 8;
+let isPitstopRunning = false;
+
+function initPitstopGame() {
+  pitstopCanvas = document.getElementById('pitstop-canvas');
+  pitstopCtx = pitstopCanvas.getContext('2d');
+  pitstopCanvas.width = pitstopCanvas.clientWidth;
+  pitstopCanvas.height = pitstopCanvas.clientHeight;
+
+  pitstopBolts1 = 8;
+  pitstopBolts2 = 8;
+  isPitstopRunning = true;
+
+  pitstopCanvas.onpointerdown = (e) => {
+    if (!isPitstopRunning) return;
+    const y = e.clientY - pitstopCanvas.getBoundingClientRect().top;
+    if (y < pitstopCanvas.height / 2 && pitstopBolts1 > 0) {
+      pitstopBolts1--;
+      window.sounds.playCoin();
+    } else if (y >= pitstopCanvas.height / 2 && pitstopBolts2 > 0) {
+      pitstopBolts2--;
+      window.sounds.playCoin();
+    }
+
+    if (pitstopBolts1 === 0 || pitstopBolts2 === 0) {
+      isPitstopRunning = false;
+      window.sounds.playSuccess();
+      const winner = pitstopBolts1 === 0 ? 'プレイヤー 1' : 'プレイヤー 2';
+      showModal(`🏎️ タイヤ交換完了！`, `${winner} が驚異のピット作業で勝利！`, () => {
+        initPitstopGame();
+      });
+    }
+  };
+
+  requestAnimationFrame(pitstopLoop);
+}
+
+function pitstopLoop() {
+  if (currentScreen !== 'screen-pitstop' || !isPitstopRunning) return;
+
+  const ctx = pitstopCtx;
+  const w = pitstopCanvas.width;
+  const h = pitstopCanvas.height;
+
+  ctx.fillStyle = '#0f172a';
+  ctx.fillRect(0, 0, w, h);
+
+  ctx.font = 'bold 22px sans-serif';
+  ctx.fillStyle = '#ef4444';
+  ctx.textAlign = 'center';
+  ctx.fillText(`P1 残りボルト: ${pitstopBolts1}個 (タップ連打!)`, w / 2, 70);
+
+  ctx.fillStyle = '#3b82f6';
+  ctx.fillText(`P2 残りボルト: ${pitstopBolts2}個 (タップ連打!)`, w / 2, h - 70);
+
+  ctx.font = '70px sans-serif';
+  ctx.fillText('🛞', w / 2, h * 0.35);
+  ctx.fillText('🛞', w / 2, h * 0.65);
+
+  requestAnimationFrame(pitstopLoop);
+}
+
+/* ============================================================
+   48. レーザー・ミラー (Laser Mirror)
+   ============================================================ */
+let laserCanvas, laserCtx;
+let laserAngle = 0;
+let isLaserRunning = false;
+
+function initLaserGame() {
+  laserCanvas = document.getElementById('laser-canvas');
+  laserCtx = laserCanvas.getContext('2d');
+  laserCanvas.width = laserCanvas.clientWidth;
+  laserCanvas.height = laserCanvas.clientHeight;
+
+  laserAngle = 0;
+  isLaserRunning = true;
+
+  laserCanvas.onpointerdown = (e) => {
+    laserAngle += 0.25;
+    window.sounds.playTap();
+    if (Math.abs(Math.sin(laserAngle)) > 0.92) {
+      isLaserRunning = false;
+      window.sounds.playGunshot();
+      showModal(`💥 コア照射！`, `レーザー反射で見事ターゲットを破壊！`, () => {
+        initLaserGame();
+      });
+    }
+  };
+
+  requestAnimationFrame(laserLoop);
+}
+
+function laserLoop() {
+  if (currentScreen !== 'screen-laser' || !isLaserRunning) return;
+
+  const ctx = laserCtx;
+  const w = laserCanvas.width;
+  const h = laserCanvas.height;
+
+  ctx.fillStyle = '#0f172a';
+  ctx.fillRect(0, 0, w, h);
+
+  // ミラー
+  ctx.save();
+  ctx.translate(w / 2, h / 2);
+  ctx.rotate(laserAngle);
+  ctx.fillStyle = '#38bdf8';
+  ctx.fillRect(-60, -6, 120, 12);
+  ctx.restore();
+
+  // レーザー光線
+  ctx.strokeStyle = '#ef4444';
+  ctx.lineWidth = 4;
+  ctx.beginPath();
+  ctx.moveTo(w / 2, 40);
+  ctx.lineTo(w / 2, h / 2);
+  ctx.stroke();
+
+  requestAnimationFrame(laserLoop);
+}
+
+/* ============================================================
+   49. カンガルー・ポゴ (Kangaroo Pogo)
+   ============================================================ */
+let pogoCanvas, pogoCtx;
+let pogoScore1 = 0, pogoScore2 = 0;
+let isPogoRunning = false;
+
+function initPogoGame() {
+  pogoCanvas = document.getElementById('pogo-canvas');
+  pogoCtx = pogoCanvas.getContext('2d');
+  pogoCanvas.width = pogoCanvas.clientWidth;
+  pogoCanvas.height = pogoCanvas.clientHeight;
+
+  pogoScore1 = 0;
+  pogoScore2 = 0;
+  isPogoRunning = true;
+
+  pogoCanvas.onpointerdown = (e) => {
+    const y = e.clientY - pogoCanvas.getBoundingClientRect().top;
+    window.sounds.playJump();
+    if (y < pogoCanvas.height / 2) pogoScore1++; else pogoScore2++;
+
+    if (pogoScore1 >= 10 || pogoScore2 >= 10) {
+      isPogoRunning = false;
+      window.sounds.playSuccess();
+      const winner = pogoScore1 >= 10 ? 'プレイヤー 1' : 'プレイヤー 2';
+      showModal(`🦘 ${winner} の大跳躍勝利！`, `ポゴジャンプでコインを10枚獲得！`, () => {
+        initPogoGame();
+      });
+    }
+  };
+
+  requestAnimationFrame(pogoLoop);
+}
+
+function pogoLoop() {
+  if (currentScreen !== 'screen-pogo' || !isPogoRunning) return;
+
+  const ctx = pogoCtx;
+  const w = pogoCanvas.width;
+  const h = pogoCanvas.height;
+
+  ctx.fillStyle = '#0f172a';
+  ctx.fillRect(0, 0, w, h);
+
+  ctx.font = 'bold 20px sans-serif';
+  ctx.fillStyle = '#ef4444';
+  ctx.fillText(`P1: ${pogoScore1}/10`, 30, 35);
+  ctx.fillStyle = '#3b82f6';
+  ctx.fillText(`P2: ${pogoScore2}/10`, 30, h - 25);
+
+  ctx.font = '60px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('🦘', w / 2, h * 0.35 + Math.sin(performance.now() * 0.01) * 30);
+  ctx.fillText('🦘', w / 2, h * 0.65 + Math.cos(performance.now() * 0.01) * 30);
+
+  requestAnimationFrame(pogoLoop);
+}
+
+/* ============================================================
+   50. フェンシング・デュエル (Fencing Duel)
+   ============================================================ */
+let fencingCanvas, fencingCtx;
+let fencingDist = 100;
+let isFencingRunning = false;
+
+function initFencingGame() {
+  fencingCanvas = document.getElementById('fencing-canvas');
+  fencingCtx = fencingCanvas.getContext('2d');
+  fencingCanvas.width = fencingCanvas.clientWidth;
+  fencingCanvas.height = fencingCanvas.clientHeight;
+
+  fencingDist = 100;
+  isFencingRunning = true;
+
+  fencingCanvas.onpointerdown = (e) => {
+    if (!isFencingRunning) return;
+    const y = e.clientY - fencingCanvas.getBoundingClientRect().top;
+    const player = y < fencingCanvas.height / 2 ? 1 : 2;
+
+    window.sounds.playSlash();
+    if (fencingDist < 40) {
+      isFencingRunning = false;
+      window.sounds.playSuccess();
+      const winner = player === 1 ? 'プレイヤー 1' : 'プレイヤー 2';
+      showModal(`🤺 クード・グラース！`, `${winner} の電光石火の突きが決まりました！`, () => {
+        initFencingGame();
+      });
+    }
+  };
+
+  requestAnimationFrame(fencingLoop);
+}
+
+function fencingLoop() {
+  if (currentScreen !== 'screen-fencing' || !isFencingRunning) return;
+
+  const ctx = fencingCtx;
+  const w = fencingCanvas.width;
+  const h = fencingCanvas.height;
+
+  fencingDist = 30 + Math.abs(Math.sin(performance.now() * 0.003)) * 80;
+
+  ctx.fillStyle = '#0f172a';
+  ctx.fillRect(0, 0, w, h);
+
+  ctx.font = 'bold 20px sans-serif';
+  ctx.fillStyle = '#facc15';
+  ctx.textAlign = 'center';
+  ctx.fillText(`間合い: ${Math.round(fencingDist)}cm (近づいた瞬間に突け!)`, w / 2, 50);
+
+  ctx.font = '60px sans-serif';
+  ctx.fillText('🤺', w / 2 - fencingDist, h / 2);
+  ctx.fillText('🤺', w / 2 + fencingDist, h / 2);
+
+  requestAnimationFrame(fencingLoop);
+}
+
 
 
 
