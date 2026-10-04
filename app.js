@@ -896,10 +896,12 @@ function twisterRenderLoop() {
   ctx.font = 'bold 16px sans-serif';
   ctx.fillStyle = 'rgba(239, 68, 68, 0.7)';
   ctx.textAlign = 'center';
-  ctx.fillText('🔴 プレイヤー 1 エリア（指を離すな！）', w / 2, getTopSafeY());
+  ctx.font = 'bold 15px sans-serif';
+  ctx.fillText('🔴 P1 エリア (指を離すな！)', w / 2, getTopSafeY());
 
   ctx.fillStyle = 'rgba(59, 130, 246, 0.7)';
-  ctx.fillText('🔵 プレイヤー 2 エリア（指を離すな！）', w / 2, h - 20);
+  ctx.font = 'bold 15px sans-serif';
+  ctx.fillText('🔵 P2 エリア (指を離すな！)', w / 2, h - 20);
 
   // ターゲット描画とタッチ判定
   const now = performance.now();
@@ -1934,8 +1936,10 @@ function penaltyLoop() {
   const keeper = penaltyTurn === 1 ? 'P2' : 'P1';
 
   ctx.fillStyle = '#facc15';
-  ctx.fillText(`キーパー (${keeper}): 上の3箇所から守る位置をタップ`, w / 2, h * 0.45);
-  ctx.fillText(`キッカー (${kicker}): 下の3箇所から蹴るコースをタップ`, w / 2, h * 0.55);
+  ctx.font = 'bold 14px sans-serif';
+    ctx.fillText(`キーパー (${keeper}): 守る位置をタップ`, w / 2, h * 0.45);
+  ctx.font = 'bold 14px sans-serif';
+    ctx.fillText(`キッカー (${kicker}): 蹴るコースをタップ`, w / 2, h * 0.55);
 
   // 3分割ガイド
   ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
@@ -2997,9 +3001,9 @@ function dartsLoop() {
   // スコア・残弾
   ctx.font = 'bold 20px sans-serif';
   ctx.fillStyle = '#ef4444';
-  ctx.fillText(`P1: ${dartsScore1}点 (残${dartsThrowsP1}投)`, 58, getTopSafeY());
+  ctx.fillText(`P1: ${dartsScore1}点 (残${dartsThrowsP1})`, 58, getTopSafeY());
   ctx.fillStyle = '#3b82f6';
-  ctx.fillText(`P2: ${dartsScore2}点 (残${dartsThrowsP2}投)`, 30, h - 30);
+  ctx.fillText(`P2: ${dartsScore2}点 (残${dartsThrowsP2})`, 25, h - 30);
 
   // 揺れる照準 (クロスヘア)
   const targetX = midX + Math.cos(dartsCrosshairAngle) * 80;
@@ -4330,7 +4334,8 @@ function curlingLoop() {
   ctx.font = 'bold 20px sans-serif';
   ctx.fillStyle = '#ffffff';
   ctx.textAlign = 'center';
-  ctx.fillText(`プレイヤー ${curlingTurn} の番！タイミングよくタップ！`, w / 2, getTopSafeY());
+  ctx.font = 'bold 15px sans-serif';
+  ctx.fillText(`P${curlingTurn}の番！タイミングよくタップ！`, w / 2, getTopSafeY());
 
   requestAnimationFrame(curlingLoop);
 }
@@ -5364,10 +5369,12 @@ function pitstopLoop() {
   ctx.font = 'bold 22px sans-serif';
   ctx.fillStyle = '#ef4444';
   ctx.textAlign = 'center';
-  ctx.fillText(`P1 残りボルト: ${pitstopBolts1}個 (タップ連打!)`, w / 2, 70);
+  ctx.font = 'bold 16px sans-serif';
+  ctx.fillText(`P1 残りボルト: ${pitstopBolts1}個`, w / 2, getTopSafeY());
 
   ctx.fillStyle = '#3b82f6';
-  ctx.fillText(`P2 残りボルト: ${pitstopBolts2}個 (タップ連打!)`, w / 2, h - 70);
+  ctx.font = 'bold 16px sans-serif';
+  ctx.fillText(`P2 残りボルト: ${pitstopBolts2}個`, w / 2, h - 70);
 
   ctx.font = '70px sans-serif';
   ctx.fillText('🛞', w / 2, h * 0.35);
@@ -5545,7 +5552,8 @@ function fencingLoop() {
   ctx.font = 'bold 20px sans-serif';
   ctx.fillStyle = '#facc15';
   ctx.textAlign = 'center';
-  ctx.fillText(`間合い: ${Math.round(fencingDist)}cm (近づいた瞬間に突け!)`, w / 2, getTopSafeY());
+  ctx.font = 'bold 15px sans-serif';
+  ctx.fillText(`間合い: ${Math.round(fencingDist)}cm (突け!)`, w / 2, getTopSafeY());
 
   ctx.font = '60px sans-serif';
   ctx.fillText('🤺', w / 2 - fencingDist, h / 2);
@@ -5687,17 +5695,20 @@ function stealthlunchLoop() {
   ctx.textAlign = 'center';
 
   if (teacherState === 'writing') {
-    ctx.fillText('👨‍🏫 先生: 黒板に板書中... (今のうちに長押しで食え！)', w / 2, h / 2 - 25);
+    ctx.font = 'bold 14px sans-serif';
+    ctx.fillText('👨‍🏫 先生: 板書中... (長押しで早弁！)', w / 2, h / 2 - 25);
     ctx.font = '40px sans-serif';
     ctx.fillText('✍️ 👨‍🏫', w / 2, h / 2 + 30);
   } else if (teacherState === 'warn') {
     ctx.fillStyle = '#facc15';
-    ctx.fillText('⚠️ 先生: 「ん？なんか物音が...」(離せ！)', w / 2, h / 2 - 25);
+    ctx.font = 'bold 14px sans-serif';
+    ctx.fillText('⚠️ 先生: 「ん？物音が...」(指を離せ！)', w / 2, h / 2 - 25);
     ctx.font = '40px sans-serif';
     ctx.fillText('❓ 👨‍🏫 💦', w / 2, h / 2 + 30);
   } else {
     ctx.fillStyle = '#ef4444';
-    ctx.fillText('👀 先生: ジーッ... (見てるぞ！動くな！)', w / 2, h / 2 - 25);
+    ctx.font = 'bold 14px sans-serif';
+    ctx.fillText('👀 先生: ジーッ... (動くな！)', w / 2, h / 2 - 25);
     ctx.font = '40px sans-serif';
     ctx.fillText('👓 😠 💢', w / 2, h / 2 + 30);
   }
@@ -6216,11 +6227,13 @@ function stopwatchLoop() {
   // P1 zone
   ctx.font = 'bold 20px sans-serif';
   ctx.fillStyle = stopP1Time !== null ? '#4ade80' : '#f87171';
-  ctx.fillText(stopP1Time !== null ? `P1: 確定！` : 'P1: 10秒だと思ったらタップ！', w / 2, getTopSafeY());
+  ctx.font = 'bold 15px sans-serif';
+  ctx.fillText(stopP1Time !== null ? `P1: 確定！` : 'P1: 10秒でタップ！', w / 2, getTopSafeY());
 
   // P2 zone
   ctx.fillStyle = stopP2Time !== null ? '#4ade80' : '#60a5fa';
-  ctx.fillText(stopP2Time !== null ? `P2: 確定！` : 'P2: 10秒だと思ったらタップ！', w / 2, h - 70);
+  ctx.font = 'bold 15px sans-serif';
+  ctx.fillText(stopP2Time !== null ? `P2: 確定！` : 'P2: 10秒でタップ！', w / 2, h - 70);
 
   requestAnimationFrame(stopwatchLoop);
 }
@@ -6644,7 +6657,8 @@ function electricWireLoop() {
   ctx.font = 'bold 18px sans-serif';
   ctx.fillStyle = '#ffffff';
   ctx.textAlign = 'center';
-  ctx.fillText('⚡ 指でリングをゴール(右端)へ運べ！', w / 2, h / 2);
+  ctx.font = 'bold 15px sans-serif';
+  ctx.fillText('⚡ リングをゴールへ運べ！', w / 2, h / 2);
 
   requestAnimationFrame(electricWireLoop);
 }
@@ -6766,9 +6780,9 @@ function suikaDropLoop() {
   ctx.font = 'bold 18px sans-serif';
   ctx.fillStyle = '#f87171';
   ctx.textAlign = 'left';
-  ctx.fillText(`P1: ${suikaScore1}点 (タップで果物を落とす)`, 58, getTopSafeY());
+  ctx.fillText(`P1: ${suikaScore1}点`, 58, getTopSafeY());
   ctx.fillStyle = '#60a5fa';
-  ctx.fillText(`P2: ${suikaScore2}点 (タップで果物を落とす)`, 20, h / 2 + 30);
+  ctx.fillText(`P2: ${suikaScore2}点`, 25, h / 2 + 30);
 
   requestAnimationFrame(suikaDropLoop);
 }
@@ -6860,6 +6874,7 @@ function snoozeLoop() {
   ctx.font = 'bold 16px sans-serif';
   ctx.fillStyle = '#facc15';
   ctx.textAlign = 'center';
+  ctx.font = 'bold 14px sans-serif';
   ctx.fillText('👨‍🏫 授業中 (連打で起きろ！)', w / 2, h / 2 + 6);
 
   // P1 Eye (Top)
@@ -7091,7 +7106,7 @@ function flipbookLoop() {
   ctx.fillRect(40, flipY - 10, w - 80, h / 2 - (flipY + 10));
   ctx.font = 'bold 18px sans-serif';
   ctx.fillStyle = '#ef4444';
-  ctx.fillText(`P1 ページ: ${flipP1Page}/100 (タップ連打でめくれ！)`, 58, flipY + 15);
+  ctx.fillText(`P1: ${flipP1Page}/100 ページ`, 58, flipY + 15);
 
   // Animated stickman running
   const frame1 = Math.floor(flipP1Page / 5) % 4;
@@ -7106,7 +7121,7 @@ function flipbookLoop() {
   ctx.font = 'bold 18px sans-serif';
   ctx.fillStyle = '#3b82f6';
   ctx.textAlign = 'left';
-  ctx.fillText(`P2 ページ: ${flipP2Page}/100 (タップ連打でめくれ！)`, 50, h / 2 + 60);
+  ctx.fillText(`P2: ${flipP2Page}/100 ページ`, 25, h / 2 + 60);
 
   const frame2 = Math.floor(flipP2Page / 5) % 4;
   ctx.font = '54px sans-serif';
@@ -7217,8 +7232,8 @@ function paperPlaneLoop() {
   ctx.font = 'bold 18px sans-serif';
   ctx.fillStyle = '#ffffff';
   ctx.textAlign = 'left';
-  ctx.fillText(`P1 飛行距離: ${Math.round(plane1.dist)}m ${plane1.flying ? '🚀' : '(タップで発射)'}`, 58, getTopSafeY());
-  ctx.fillText(`P2 飛行距離: ${Math.round(plane2.dist)}m ${plane2.flying ? '🚀' : '(タップで発射)'}`, 20, h / 2 + 30);
+  ctx.fillText(`P1: ${Math.round(plane1.dist)}m ${plane1.flying ? '🚀' : ''}`, 58, getTopSafeY());
+  ctx.fillText(`P2: ${Math.round(plane2.dist)}m ${plane2.flying ? '🚀' : ''}`, 25, h / 2 + 30);
 
   requestAnimationFrame(paperPlaneLoop);
 }
@@ -7453,7 +7468,8 @@ function cupShuffleLoop() {
 
   ctx.textAlign = 'center';
   ctx.fillStyle = '#facc15';
-  ctx.fillText(isShuffling ? 'シャッフル中... 目を離すな！' : 'コインが入ったカップをタップ！', w / 2, getTopSafeY() + 25);
+  ctx.font = 'bold 14px sans-serif';
+  ctx.fillText(isShuffling ? 'シャッフル中...！' : 'コインのカップをタップ！', w / 2, getTopSafeY() + 25);
 
   // Draw cups
   cups.forEach((c, idx) => {
@@ -7755,8 +7771,8 @@ function hockeyShotLoop() {
   ctx.font = 'bold 18px sans-serif';
   ctx.fillStyle = '#ffffff';
   ctx.textAlign = 'left';
-  ctx.fillText(`P1: ${shotScore1}点 (キーパーの隙間をタップ！)`, 58, getTopSafeY());
-  ctx.fillText(`P2: ${shotScore2}点 (キーパーの隙間をタップ！)`, 20, h - 30);
+  ctx.fillText(`P1: ${shotScore1}点`, 58, getTopSafeY());
+  ctx.fillText(`P2: ${shotScore2}点`, 25, h - 30);
 
   requestAnimationFrame(hockeyShotLoop);
 }
@@ -7854,8 +7870,8 @@ function goldfishLoop() {
   ctx.font = 'bold 16px sans-serif';
   ctx.fillStyle = '#ffffff';
   ctx.textAlign = 'left';
-  ctx.fillText(`P1: ${goldP1Score}匹 (ポイ耐久: ${Math.max(0, goldP1Durability)}%)`, 20, 30);
-  ctx.fillText(`P2: ${goldP2Score}匹 (ポイ耐久: ${Math.max(0, goldP2Durability)}%)`, 20, h - 20);
+  ctx.fillText(`P1: ${goldP1Score}匹 (${Math.max(0, goldP1Durability)}%)`, 58, getTopSafeY());
+  ctx.fillText(`P2: ${goldP2Score}匹 (${Math.max(0, goldP2Durability)}%)`, 25, h - 20);
 
   // Draw Fishes
   ctx.font = '36px sans-serif';
@@ -7937,7 +7953,7 @@ function chalkDustLoop() {
   ctx.fillStyle = '#f87171';
   ctx.textAlign = 'left';
   const chalkCleanY = getTopSafeY();
-  ctx.fillText(`P1 チョーク粉: ${dustP1}% (タップ連打で吸い取れ！)`, 58, chalkCleanY);
+  ctx.fillText(`P1 粉: ${dustP1}%`, 58, chalkCleanY);
   ctx.fillStyle = `rgba(255, 255, 255, ${dustP1 / 120})`;
   ctx.fillRect(30, chalkCleanY + 12, w - 60, h / 2 - (chalkCleanY + 25));
   ctx.font = '48px sans-serif';
@@ -7948,7 +7964,7 @@ function chalkDustLoop() {
   ctx.fillStyle = '#60a5fa';
   ctx.font = 'bold 18px sans-serif';
   ctx.textAlign = 'left';
-  ctx.fillText(`P2 チョーク粉: ${dustP2}% (タップ連打で吸い取れ！)`, 25, h / 2 + 40);
+  ctx.fillText(`P2 粉: ${dustP2}%`, 25, h / 2 + 40);
   ctx.fillStyle = `rgba(255, 255, 255, ${dustP2 / 120})`;
   ctx.fillRect(30, h / 2 + 60, w - 60, h / 2 - 80);
   ctx.font = '48px sans-serif';
@@ -8025,9 +8041,9 @@ function rubberBandLoop() {
   ctx.font = 'bold 18px sans-serif';
   ctx.fillStyle = '#f87171';
   ctx.textAlign = 'left';
-  ctx.fillText(`P1: ${rubberP1Score}/3点 (的を狙ってタップ！)`, 58, getTopSafeY());
+  ctx.fillText(`P1: ${rubberP1Score}/3点`, 58, getTopSafeY());
   ctx.fillStyle = '#60a5fa';
-  ctx.fillText(`P2: ${rubberP2Score}/3点 (的を狙ってタップ！)`, 25, h - 30);
+  ctx.fillText(`P2: ${rubberP2Score}/3点`, 25, h - 30);
 
   // Rubber band icons
   ctx.font = '36px sans-serif';
@@ -8117,9 +8133,9 @@ function bookTowerLoop() {
   ctx.font = 'bold 18px sans-serif';
   ctx.fillStyle = '#f87171';
   ctx.textAlign = 'left';
-  ctx.fillText(`P1 タワー: ${bookFloor1}/5冊 (中央で落とせ！)`, 58, getTopSafeY());
+  ctx.fillText(`P1: ${bookFloor1}/5冊`, 58, getTopSafeY());
   ctx.fillStyle = '#60a5fa';
-  ctx.fillText(`P2 タワー: ${bookFloor2}/5冊 (中央で落とせ！)`, 25, h - 30);
+  ctx.fillText(`P2: ${bookFloor2}/5冊`, 25, h - 30);
 
   requestAnimationFrame(bookTowerLoop);
 }
@@ -8203,9 +8219,9 @@ function penSpinLoop() {
   ctx.font = 'bold 18px sans-serif';
   ctx.fillStyle = '#f87171';
   ctx.textAlign = 'left';
-  ctx.fillText(`P1 回転数: ${penSpin1}/20回転 (タップで加速！)`, 58, getTopSafeY());
+  ctx.fillText(`P1: ${penSpin1}/20回転`, 58, getTopSafeY());
   ctx.fillStyle = '#60a5fa';
-  ctx.fillText(`P2 回転数: ${penSpin2}/20回転 (タップで加速！)`, 25, h - 30);
+  ctx.fillText(`P2: ${penSpin2}/20回転`, 25, h - 30);
 
   requestAnimationFrame(penSpinLoop);
 }
@@ -8277,7 +8293,8 @@ function deskCurlingLoop() {
   ctx.font = 'bold 20px sans-serif';
   ctx.fillStyle = '#ffffff';
   ctx.textAlign = 'center';
-  ctx.fillText(curlP1Turn ? '👉 P1の番: 中心を狙ってタップ！' : '👉 P2の番: 中心を狙ってタップ！', w / 2, getTopSafeY());
+  ctx.font = 'bold 15px sans-serif';
+  ctx.fillText(curlP1Turn ? '👉 P1の番 (タップ！)' : '👉 P2の番 (タップ！)', w / 2, getTopSafeY());
 
   requestAnimationFrame(deskCurlingLoop);
 }
@@ -8368,8 +8385,10 @@ function calculatorLoop() {
   ctx.font = '28px sans-serif';
   ctx.textAlign = 'center';
   ctx.fillStyle = '#ffffff';
-  ctx.fillText('数字ゾーン (タップして回答)', w / 2, 90);
-  ctx.fillText('数字ゾーン (タップして回答)', w / 2, h - 70);
+  ctx.font = 'bold 13px sans-serif';
+  ctx.fillText('数字をタップして回答', w / 2, 90);
+  ctx.font = 'bold 13px sans-serif';
+  ctx.fillText('数字をタップして回答', w / 2, h - 70);
 
   requestAnimationFrame(calculatorLoop);
 }
@@ -8455,9 +8474,9 @@ function lunchBreadLoop() {
   ctx.font = 'bold 18px sans-serif';
   ctx.fillStyle = '#f87171';
   ctx.textAlign = 'left';
-  ctx.fillText(`P1: ${breadP1Score}/3本 (パンが出た瞬間に奪取！)`, 58, getTopSafeY());
+  ctx.fillText(`P1: ${breadP1Score}/3本`, 58, getTopSafeY());
   ctx.fillStyle = '#60a5fa';
-  ctx.fillText(`P2: ${breadP2Score}/3本 (パンが出た瞬間に奪取！)`, 25, h - 30);
+  ctx.fillText(`P2: ${breadP2Score}/3本`, 25, h - 30);
 
   requestAnimationFrame(lunchBreadLoop);
 }
@@ -8533,9 +8552,9 @@ function eyeDropsLoop() {
   ctx.font = 'bold 18px sans-serif';
   ctx.fillStyle = '#f87171';
   ctx.textAlign = 'left';
-  ctx.fillText(`P1: ${eyeScore1}/3滴 (目を開けた瞬間に点眼！)`, 58, getTopSafeY());
+  ctx.fillText(`P1: ${eyeScore1}/3滴`, 58, getTopSafeY());
   ctx.fillStyle = '#60a5fa';
-  ctx.fillText(`P2: ${eyeScore2}/3滴 (目を開けた瞬間に点眼！)`, 25, h - 30);
+  ctx.fillText(`P2: ${eyeScore2}/3滴`, 25, h - 30);
 
   // Drops
   ctx.font = '36px sans-serif';
@@ -8612,9 +8631,9 @@ function doubleDutchLoop() {
   ctx.font = 'bold 18px sans-serif';
   ctx.fillStyle = '#f87171';
   ctx.textAlign = 'left';
-  ctx.fillText(`P1: ${dutchScore1}/10回 (リズムよくタップ！)`, 58, getTopSafeY());
+  ctx.fillText(`P1: ${dutchScore1}/10回`, 58, getTopSafeY());
   ctx.fillStyle = '#60a5fa';
-  ctx.fillText(`P2: ${dutchScore2}/10回 (リズムよくタップ！)`, 25, h - 30);
+  ctx.fillText(`P2: ${dutchScore2}/10回`, 25, h - 30);
 
   requestAnimationFrame(doubleDutchLoop);
 }
@@ -8694,9 +8713,9 @@ function rocketLaunchLoop() {
   ctx.font = 'bold 18px sans-serif';
   ctx.fillStyle = '#f87171';
   ctx.textAlign = 'left';
-  ctx.fillText(`P1 高度: ${rockAlt1}km / 500km (連打で噴射！)`, 58, getTopSafeY());
+  ctx.fillText(`P1: ${rockAlt1}km / 500km`, 58, getTopSafeY());
   ctx.fillStyle = '#60a5fa';
-  ctx.fillText(`P2 高度: ${rockAlt2}km / 500km (連打で噴射！)`, 25, h - 30);
+  ctx.fillText(`P2: ${rockAlt2}km / 500km`, 25, h - 30);
 
   requestAnimationFrame(rocketLaunchLoop);
 }
