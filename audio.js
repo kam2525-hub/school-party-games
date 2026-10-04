@@ -53,6 +53,7 @@ class SoundManager {
 
     osc.start(now);
     osc.stop(now + 0.05);
+    this.vibrate(12);
   }
 
   playSuccess() {
@@ -279,6 +280,7 @@ class SoundManager {
       osc.start(st);
       osc.stop(st + 0.15);
     });
+    this.vibrate(25);
   }
 }
 

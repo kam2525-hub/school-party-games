@@ -3,10 +3,15 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="休み時間PTY">
   <meta name="theme-color" content="#0f172a">
   <title>休み時間パーティー！ - 1台で遊べるミニゲーム集</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -24,6 +29,13 @@
       <div class="app-title">
         <h1>🎮 休み時間パーティー</h1>
         <p>1台のスマホでみんなで盛り上がろう！【全80ゲーム収録】</p>
+      </div>
+
+      <!-- アプリ化ボタン -->
+      <div style="text-align: center; margin-bottom: 16px;">
+        <button id="btn-install-app" class="btn-install" onclick="showInstallGuide()">
+          📲 ホーム画面に追加（全画面アプリ化）
+        </button>
       </div>
 
       <!-- カテゴリタブ -->
@@ -1329,6 +1341,32 @@
     <!-- 81. ロケット打上バトル画面 -->
     <div id="screen-rocketlaunch" class="screen">
       <canvas id="rocketlaunch-canvas"></canvas>
+    </div>
+
+    <!-- PWAインストール案内モーダル -->
+    <div id="modal-install" class="overlay-modal" style="display: none;">
+      <div class="install-box">
+        <div style="font-size: 44px; margin-bottom: 8px;">📲</div>
+        <h2 style="font-size: 20px; font-weight: 800; margin-bottom: 8px;">ホーム画面に追加して遊ぶ</h2>
+        <p style="font-size: 13px; color: var(--text-secondary); line-height: 1.5; margin-bottom: 16px;">
+          アドレスバーが非表示になり、本物のスマホゲームアプリのように全画面でサクサク遊べます！
+        </p>
+        
+        <div id="install-guide-ios" style="text-align: left; background: rgba(255,255,255,0.06); padding: 12px 16px; border-radius: 12px; margin-bottom: 16px; font-size: 13px; line-height: 1.6;">
+          <div style="font-weight: 700; color: #38bdf8; margin-bottom: 4px;">🍎 iPhone (Safari) の場合:</div>
+          1. 画面下の <strong>共有ボタン</strong> (四角から上矢印 [↑]) をタップ<br>
+          2. メニューから <strong>「ホーム画面に追加」</strong> を選択<br>
+          3. 右上の <strong>「追加」</strong> をタップで完了！
+        </div>
+
+        <div id="install-guide-android" style="text-align: left; background: rgba(255,255,255,0.06); padding: 12px 16px; border-radius: 12px; margin-bottom: 16px; font-size: 13px; line-height: 1.6;">
+          <div style="font-weight: 700; color: #4ade80; margin-bottom: 4px;">🤖 Android (Chrome) の場合:</div>
+          1. 右上の <strong>メニュー</strong> (縦の3点 [︙]) をタップ<br>
+          2. <strong>「アプリをインストール」</strong> または <strong>「ホーム画面に追加」</strong> を選択
+        </div>
+
+        <button class="btn-primary" style="width: 100%; padding: 12px;" onclick="closeInstallGuide()">閉じる</button>
+      </div>
     </div>
 
     <!-- 結果・通知モーダル -->

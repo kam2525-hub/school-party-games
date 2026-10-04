@@ -670,4 +670,39 @@ canvas {
   pointer-events: none;
 }
 
+/* アプリ化インストールボタン＆案内モーダル */
+.btn-install {
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.25), rgba(168, 85, 247, 0.25));
+  border: 1px solid rgba(168, 85, 247, 0.5);
+  color: #c084fc;
+  padding: 8px 18px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.1s, background-color 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  box-shadow: 0 4px 12px rgba(168, 85, 247, 0.15);
+}
+
+.btn-install:active {
+  transform: scale(0.95);
+  background: rgba(168, 85, 247, 0.4);
+}
+
+.install-box {
+  background: var(--card-bg);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 20px;
+  padding: 24px;
+  max-width: 360px;
+  width: 90%;
+  text-align: center;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
+  box-sizing: border-box;
+}
+
+
 

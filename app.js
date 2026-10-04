@@ -8700,3 +8700,89 @@ function rocketLaunchLoop() {
 
   requestAnimationFrame(rocketLaunchLoop);
 }
+
+/* ============================================================
+   PWA（ホーム画面に追加・アプリ化）＆スマホタッチ最適化
+   ============================================================ */
+
+let deferredInstallPrompt = null;
+
+// Android / Chrome 等のネイティブインストールプロンプト保持
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredInstallPrompt = e;
+  const btn = document.getElementById('btn-install-app');
+  if (btn) btn.style.display = 'inline-flex';
+});
+
+function showInstallGuide() {
+  if (deferredInstallPrompt) {
+    deferredInstallPrompt.prompt();
+    deferredInstallPrompt.userChoice.then((choiceResult) => {
+      if (choiceResult.outcome === 'accepted') {
+        const btn = document.getElementById('btn-install-app');
+        if (btn) btn.style.display = 'none';
+      }
+      deferredInstallPrompt = null;
+    });
+    return;
+  }
+
+  const modal = document.getElementById('modal-install');
+  const guideIos = document.getElementById('install-guide-ios');
+  const guideAndroid = document.getElementById('install-guide-android');
+  
+  const isIos = /iphone|ipad|ipod/i.test(navigator.userAgent);
+  if (guideIos && guideAndroid) {
+    if (isIos) {
+      guideIos.style.display = 'block';
+      guideAndroid.style.display = 'none';
+    } else {
+      guideIos.style.display = 'none';
+      guideAndroid.style.display = 'block';
+    }
+  }
+
+  if (modal) modal.style.display = 'flex';
+}
+
+function closeInstallGuide() {
+  const modal = document.getElementById('modal-install');
+  if (modal) modal.style.display = 'none';
+}
+
+// サービスワーカー登録（オフラインプレイ＆PWA化）
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js').catch((err) => {
+      console.log('ServiceWorker registration note:', err);
+    });
+  });
+}
+
+// スマホでの初回タッチ時にオーディオコンテキストをアンロック
+window.addEventListener('touchstart', () => {
+  if (window.sounds) window.sounds.init();
+}, { once: true });
+
+window.addEventListener('pointerdown', () => {
+  if (window.sounds) window.sounds.init();
+}, { once: true });
+
+// 連打系ゲームでのスマホ画面ピンチズーム・ダブルタップ拡大を無効化
+document.addEventListener('gesturestart', (e) => e.preventDefault());
+document.addEventListener('gesturechange', (e) => e.preventDefault());
+document.addEventListener('gestureend', (e) => e.preventDefault());
+
+let lastTouchEndTimer = 0;
+document.addEventListener('touchend', (e) => {
+  const now = performance.now();
+  if (now - lastTouchEndTimer <= 300) {
+    // フォームやボタン以外の連打ズームを抑止
+    if (!['INPUT', 'TEXTAREA'].includes(e.target.tagName)) {
+      e.preventDefault();
+    }
+  }
+  lastTouchEndTimer = now;
+}, { passive: false });
+
