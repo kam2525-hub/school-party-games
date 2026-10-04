@@ -27,7 +27,7 @@
 
       <!-- カテゴリタブ -->
       <div class="category-tabs">
-        <button class="tab-btn active" onclick="filterCategory('all')">すべて (20)</button>
+        <button class="tab-btn active" onclick="filterCategory('all')">すべて (30)</button>
         <button class="tab-btn" onclick="filterCategory('action')">💥 アクション</button>
         <button class="tab-btn" onclick="filterCategory('brain')">🧠 脳トレ・反射</button>
         <button class="tab-btn" onclick="filterCategory('party')">🎲 パーティー</button>
@@ -211,6 +211,96 @@
           <div class="card-info">
             <h3>戦車デュエル <span class="card-badge badge-2p">2人対戦</span></h3>
             <p>タップで旋回・前進＆砲撃！障害物に隠れて相手の戦車を撃破せよ！</p>
+          </div>
+        </div>
+
+        <!-- ゲーム21: バスケシュート対決 -->
+        <div class="game-card" data-category="action" onclick="startGame('basket')">
+          <div class="card-icon" style="background: rgba(249, 115, 22, 0.15); color: #fb923c;">🏀</div>
+          <div class="card-info">
+            <h3>バスケシュート対決 <span class="card-badge badge-2p">2人対面</span></h3>
+            <p>スワイプしてゴールを狙え！角度と強さをコントロールしてフリースロー！</p>
+          </div>
+        </div>
+
+        <!-- ゲーム22: ダーツ・ブルズアイ -->
+        <div class="game-card" data-category="brain" onclick="startGame('darts')">
+          <div class="card-icon" style="background: rgba(239, 68, 68, 0.15); color: #f87171;">🎯</div>
+          <div class="card-info">
+            <h3>ダーツ・ブルズアイ <span class="card-badge badge-2p">2人対戦</span></h3>
+            <p>揺れるクロスヘアを中央のBULLに合わせてタイミングタップ！</p>
+          </div>
+        </div>
+
+        <!-- ゲーム23: 大縄跳びサバイバル -->
+        <div class="game-card" data-category="action" onclick="startGame('rope')">
+          <div class="card-icon" style="background: rgba(16, 185, 129, 0.15); color: #34d399;">🦘</div>
+          <div class="card-info">
+            <h3>大縄跳びサバイバル <span class="card-badge badge-2p">2人対戦</span></h3>
+            <p>回転する縄を足元でタイミングよくジャンプ！引っかかったらアウト！</p>
+          </div>
+        </div>
+
+        <!-- ゲーム24: ブロック崩しクラッシュ -->
+        <div class="game-card" data-category="action" onclick="startGame('breakout')">
+          <div class="card-icon" style="background: rgba(14, 165, 233, 0.15); color: #38bdf8;">🧱</div>
+          <div class="card-info">
+            <h3>ブロック崩しクラッシュ <span class="card-badge badge-2p">2人対戦</span></h3>
+            <p>上下からボールを打ち合い、中央の壁ブロックを崩して相手陣地に侵入！</p>
+          </div>
+        </div>
+
+        <!-- ゲーム25: UFOキャッチャー -->
+        <div class="game-card" data-category="action" onclick="startGame('ufo')">
+          <div class="card-icon" style="background: rgba(168, 85, 247, 0.15); color: #c084fc;">🛸</div>
+          <div class="card-info">
+            <h3>UFOキャッチャー <span class="card-badge badge-2p">2人対面</span></h3>
+            <p>左右に動くUFOからクレーン投下！中央の宝石を奪い合え！</p>
+          </div>
+        </div>
+
+        <!-- ゲーム26: ボクシング・パンチ -->
+        <div class="game-card" data-category="brain" onclick="startGame('boxing')">
+          <div class="card-icon" style="background: rgba(244, 63, 94, 0.15); color: #fb7185;">🥊</div>
+          <div class="card-info">
+            <h3>ボクシング・パンチ <span class="card-badge badge-2p">2人対面</span></h3>
+            <p>相手のガードが解けた隙を狙ってストレート！KOを奪い取れ！</p>
+          </div>
+        </div>
+
+        <!-- ゲーム27: ハイウェイドライブ -->
+        <div class="game-card" data-category="action" onclick="startGame('highway')">
+          <div class="card-icon" style="background: rgba(234, 179, 8, 0.15); color: #facc15;">🏎️</div>
+          <div class="card-info">
+            <h3>ハイウェイドライブ <span class="card-badge badge-2p">2人対戦</span></h3>
+            <p>左右タップで車線変更！対向車を避けて高速道路を疾走！</p>
+          </div>
+        </div>
+
+        <!-- ゲーム28: リズムビート -->
+        <div class="game-card" data-category="brain" onclick="startGame('rhythm')">
+          <div class="card-icon" style="background: rgba(139, 92, 246, 0.15); color: #a78bfa;">🥁</div>
+          <div class="card-info">
+            <h3>リズムビート <span class="card-badge badge-2p">2人対面</span></h3>
+            <p>ラインに重なるノーツをパーフェクトタイミングで叩け！音ゲー勝負！</p>
+          </div>
+        </div>
+
+        <!-- ゲーム29: 地雷チキンレース -->
+        <div class="game-card" data-category="party" onclick="startGame('mines')">
+          <div class="card-icon" style="background: rgba(239, 68, 68, 0.15); color: #ef4444;">💣</div>
+          <div class="card-info">
+            <h3>地雷チキンレース <span class="card-badge badge-2p">2人対戦</span></h3>
+            <p>交互にパネルをオープン！裏に隠れたドクロ地雷を踏んだら即爆発！</p>
+          </div>
+        </div>
+
+        <!-- ゲーム30: アーチェリー・エイム -->
+        <div class="game-card" data-category="brain" onclick="startGame('archery')">
+          <div class="card-icon" style="background: rgba(34, 197, 94, 0.15); color: #4ade80;">🏹</div>
+          <div class="card-info">
+            <h3>アーチェリー・エイム <span class="card-badge badge-2p">2人対面</span></h3>
+            <p>風の影響を計算して弓を引き絞れ！黄色いセンター的を狙い撃て！</p>
           </div>
         </div>
       </div>
@@ -475,6 +565,60 @@
     <!-- 21. 戦車デュエル画面 -->
     <div id="screen-tank" class="screen">
       <canvas id="tank-canvas"></canvas>
+    </div>
+
+    <!-- 22. バスケシュート画面 -->
+    <div id="screen-basket" class="screen">
+      <canvas id="basket-canvas"></canvas>
+    </div>
+
+    <!-- 23. ダーツ・ブルズアイ画面 -->
+    <div id="screen-darts" class="screen">
+      <canvas id="darts-canvas"></canvas>
+    </div>
+
+    <!-- 24. 大縄跳び画面 -->
+    <div id="screen-rope" class="screen">
+      <canvas id="rope-canvas"></canvas>
+    </div>
+
+    <!-- 25. ブロック崩しクラッシュ画面 -->
+    <div id="screen-breakout" class="screen">
+      <canvas id="breakout-canvas"></canvas>
+    </div>
+
+    <!-- 26. UFOキャッチャー画面 -->
+    <div id="screen-ufo" class="screen">
+      <canvas id="ufo-canvas"></canvas>
+    </div>
+
+    <!-- 27. ボクシング・パンチ画面 -->
+    <div id="screen-boxing" class="screen">
+      <canvas id="boxing-canvas"></canvas>
+    </div>
+
+    <!-- 28. ハイウェイドライブ画面 -->
+    <div id="screen-highway" class="screen">
+      <canvas id="highway-canvas"></canvas>
+    </div>
+
+    <!-- 29. リズムビート画面 -->
+    <div id="screen-rhythm" class="screen">
+      <canvas id="rhythm-canvas"></canvas>
+    </div>
+
+    <!-- 30. 地雷チキンレース画面 -->
+    <div id="screen-mines" class="screen">
+      <div class="pass-play-container">
+        <h2 class="game-title-header">💣 地雷チキンレース</h2>
+        <div style="font-size: 16px; margin-bottom: 12px; color: #facc15;" id="mines-turn-label">プレイヤー 1 の番</div>
+        <div class="mines-grid" id="mines-grid"></div>
+      </div>
+    </div>
+
+    <!-- 31. アーチェリー・エイム画面 -->
+    <div id="screen-archery" class="screen">
+      <canvas id="archery-canvas"></canvas>
     </div>
 
     <!-- 結果・通知モーダル -->

@@ -536,10 +536,57 @@ html, body {
 }
 
 /* 新キャンバス共通 */
-#pong-canvas, #penalty-canvas, #racer-canvas, #lumber-canvas, #jump-canvas, #fishing-canvas, #slash-canvas, #tank-canvas {
+#pong-canvas, #penalty-canvas, #racer-canvas, #lumber-canvas, #jump-canvas, #fishing-canvas, #slash-canvas, #tank-canvas,
+#basket-canvas, #darts-canvas, #rope-canvas, #breakout-canvas, #ufo-canvas, #boxing-canvas, #highway-canvas, #rhythm-canvas, #archery-canvas {
   width: 100%;
   height: 100%;
   touch-action: none;
+}
+
+/* 地雷チキンレース (5x5グリッド) */
+.mines-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 10px;
+  width: 100%;
+  max-width: 320px;
+}
+
+.mine-cell {
+  aspect-ratio: 1;
+  background: var(--card-bg);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  color: #ffffff;
+  font-size: 24px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform 0.1s, background-color 0.2s;
+}
+
+.mine-cell:active {
+  transform: scale(0.92);
+}
+
+.mine-cell.safe {
+  background: rgba(16, 185, 129, 0.25);
+  border-color: #10b981;
+  pointer-events: none;
+}
+
+.mine-cell.exploded {
+  background: #ef4444;
+  border-color: #fca5a5;
+  animation: shake 0.3s;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-6px); }
+  75% { transform: translateX(6px); }
 }
 
 /* スピード数字タッチ (4x4グリッド) */

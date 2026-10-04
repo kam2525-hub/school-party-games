@@ -170,6 +170,46 @@ function startGame(gameKey) {
       showScreen('screen-tank');
       initTankGame();
       break;
+    case 'basket':
+      showScreen('screen-basket');
+      initBasketGame();
+      break;
+    case 'darts':
+      showScreen('screen-darts');
+      initDartsGame();
+      break;
+    case 'rope':
+      showScreen('screen-rope');
+      initRopeGame();
+      break;
+    case 'breakout':
+      showScreen('screen-breakout');
+      initBreakoutGame();
+      break;
+    case 'ufo':
+      showScreen('screen-ufo');
+      initUfoGame();
+      break;
+    case 'boxing':
+      showScreen('screen-boxing');
+      initBoxingGame();
+      break;
+    case 'highway':
+      showScreen('screen-highway');
+      initHighwayGame();
+      break;
+    case 'rhythm':
+      showScreen('screen-rhythm');
+      initRhythmGame();
+      break;
+    case 'mines':
+      showScreen('screen-mines');
+      initMinesGame();
+      break;
+    case 'archery':
+      showScreen('screen-archery');
+      initArcheryGame();
+      break;
   }
 }
 
@@ -714,7 +754,9 @@ window.addEventListener('resize', () => {
   [
     twisterCanvas, hockeyCanvas, knifeCanvas, spaceCanvas,
     pongCanvas, penaltyCanvas, racerCanvas, lumberCanvas,
-    jumpCanvas, fishingCanvas, slashCanvas, tankCanvas
+    jumpCanvas, fishingCanvas, slashCanvas, tankCanvas,
+    basketCanvas, dartsCanvas, ropeCanvas, breakoutCanvas,
+    ufoCanvas, boxingCanvas, highwayCanvas, rhythmCanvas, archeryCanvas
   ].forEach(c => {
     if (c) {
       c.width = c.clientWidth;
@@ -2528,5 +2570,1045 @@ function tankLoop() {
 
   requestAnimationFrame(tankLoop);
 }
+
+/* ============================================================
+   21. バスケシュート対決 (Basketball Shootout)
+   ============================================================ */
+let basketCanvas, basketCtx;
+let basketScore1 = 0, basketScore2 = 0;
+let basketBall = null; // { x, y, vx, vy, player }
+let isBasketRunning = false;
+
+function initBasketGame() {
+  basketCanvas = document.getElementById('basket-canvas');
+  basketCtx = basketCanvas.getContext('2d');
+  basketCanvas.width = basketCanvas.clientWidth;
+  basketCanvas.height = basketCanvas.clientHeight;
+
+  basketScore1 = 0;
+  basketScore2 = 0;
+  basketBall = null;
+  isBasketRunning = true;
+
+  let dragStart = null;
+  basketCanvas.onpointerdown = (e) => {
+    const rect = basketCanvas.getBoundingClientRect();
+    dragStart = { x: e.clientX - rect.left, y: e.clientY - rect.top };
+  };
+
+  basketCanvas.onpointerup = (e) => {
+    if (!dragStart || !isBasketRunning || basketBall) return;
+    const rect = basketCanvas.getBoundingClientRect();
+    const endX = e.clientX - rect.left;
+    const endY = e.clientY - rect.top;
+    const dx = endX - dragStart.x;
+    const dy = endY - dragStart.y;
+    const player = dragStart.y < basketCanvas.height / 2 ? 1 : 2;
+
+    basketBall = {
+      x: dragStart.x,
+      y: dragStart.y,
+      vx: Math.max(-10, Math.min(10, dx * 0.15)),
+      vy: Math.max(-16, Math.min(16, dy * 0.18)),
+      player: player,
+      radius: 16
+    };
+    window.sounds.playJump();
+    dragStart = null;
+  };
+
+  requestAnimationFrame(basketLoop);
+}
+
+function basketLoop() {
+  if (currentScreen !== 'screen-basket' || !isBasketRunning) return;
+
+  const ctx = basketCtx;
+  const w = basketCanvas.width;
+  const h = basketCanvas.height;
+  const midY = h / 2;
+
+  // ボール物理
+  if (basketBall) {
+    basketBall.x += basketBall.vx;
+    basketBall.y += basketBall.vy;
+    basketBall.vy += 0.45; // 重力
+
+    // 壁反射
+    if (basketBall.x - basketBall.radius < 0 || basketBall.x + basketBall.radius > w) {
+      basketBall.vx = -basketBall.vx * 0.8;
+    }
+
+    // リング判定 (中央にリング)
+    const hoopX = w / 2;
+    const hoopY = midY;
+    if (Math.hypot(basketBall.x - hoopX, basketBall.y - hoopY) < 24 && basketBall.vy > 0) {
+      window.sounds.playSuccess();
+      if (basketBall.player === 1) basketScore1++; else basketScore2++;
+      basketBall = null;
+      checkBasketWinner();
+    } else if (basketBall.y > h + 40 || basketBall.y < -40) {
+      basketBall = null;
+    }
+  }
+
+  // 描画
+  ctx.fillStyle = '#0f172a';
+  ctx.fillRect(0, 0, w, h);
+
+  // スコア
+  ctx.font = 'bold 22px sans-serif';
+  ctx.fillStyle = '#ef4444';
+  ctx.fillText(`P1: ${basketScore1}/3`, 30, 40);
+  ctx.fillStyle = '#3b82f6';
+  ctx.fillText(`P2: ${basketScore2}/3`, 30, h - 30);
+
+  // バスケットリング (中央)
+  ctx.fillStyle = '#ea580c';
+  ctx.fillRect(w / 2 - 25, midY - 4, 50, 8);
+  ctx.strokeStyle = '#ffffff';
+  ctx.lineWidth = 3;
+  ctx.strokeRect(w / 2 - 20, midY + 4, 40, 24);
+
+  // ガイド文字
+  ctx.font = 'bold 15px sans-serif';
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+  ctx.textAlign = 'center';
+  ctx.fillText('指でスワイプしてシュート！', w / 2, midY - 60);
+
+  // ボール描画
+  if (basketBall) {
+    ctx.beginPath();
+    ctx.arc(basketBall.x, basketBall.y, basketBall.radius, 0, Math.PI * 2);
+    ctx.fillStyle = '#f97316';
+    ctx.fill();
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = '#000000';
+    ctx.stroke();
+  }
+
+  requestAnimationFrame(basketLoop);
+}
+
+function checkBasketWinner() {
+  if (basketScore1 >= 3 || basketScore2 >= 3) {
+    isBasketRunning = false;
+    const winner = basketScore1 >= 3 ? 'プレイヤー 1' : 'プレイヤー 2';
+    showModal(`🏀 ${winner} の勝利！`, `見事3本シュートを決めました！`, () => {
+      initBasketGame();
+    });
+  }
+}
+
+/* ============================================================
+   22. ダーツ・ブルズアイ (Darts Bullseye)
+   ============================================================ */
+let dartsCanvas, dartsCtx;
+let dartsCrosshairAngle = 0;
+let dartsThrowsP1 = 3, dartsThrowsP2 = 3;
+let dartsScore1 = 0, dartsScore2 = 0;
+let isDartsRunning = false;
+
+function initDartsGame() {
+  dartsCanvas = document.getElementById('darts-canvas');
+  dartsCtx = dartsCanvas.getContext('2d');
+  dartsCanvas.width = dartsCanvas.clientWidth;
+  dartsCanvas.height = dartsCanvas.clientHeight;
+
+  dartsThrowsP1 = 3;
+  dartsThrowsP2 = 3;
+  dartsScore1 = 0;
+  dartsScore2 = 0;
+  dartsCrosshairAngle = 0;
+  isDartsRunning = true;
+
+  dartsCanvas.onpointerdown = (e) => {
+    if (!isDartsRunning) return;
+    const y = e.clientY - dartsCanvas.getBoundingClientRect().top;
+    const midY = dartsCanvas.height / 2;
+    const w = dartsCanvas.width;
+    const cx = w / 2 + Math.cos(dartsCrosshairAngle) * 80;
+    const cy = midY + Math.sin(dartsCrosshairAngle * 1.5) * 80;
+    const distToCenter = Math.hypot(cx - w / 2, cy - midY);
+
+    let pts = 10;
+    if (distToCenter < 18) pts = 50; // BULL!
+    else if (distToCenter < 45) pts = 30;
+
+    if (y < midY && dartsThrowsP1 > 0) {
+      dartsThrowsP1--;
+      dartsScore1 += pts;
+      window.sounds.playCoin();
+    } else if (y >= midY && dartsThrowsP2 > 0) {
+      dartsThrowsP2--;
+      dartsScore2 += pts;
+      window.sounds.playCoin();
+    }
+
+    if (dartsThrowsP1 === 0 && dartsThrowsP2 === 0) {
+      isDartsRunning = false;
+      window.sounds.playSuccess();
+      const winner = dartsScore1 > dartsScore2 ? 'プレイヤー 1' : (dartsScore2 > dartsScore1 ? 'プレイヤー 2' : '引き分け');
+      showModal(`🎯 ダーツ決着！`, `${winner} の勝利！\n(P1: ${dartsScore1}点 - P2: ${dartsScore2}点)`, () => {
+        initDartsGame();
+      });
+    }
+  };
+
+  requestAnimationFrame(dartsLoop);
+}
+
+function dartsLoop() {
+  if (currentScreen !== 'screen-darts' || !isDartsRunning) return;
+
+  const ctx = dartsCtx;
+  const w = dartsCanvas.width;
+  const h = dartsCanvas.height;
+  const midX = w / 2;
+  const midY = h / 2;
+
+  dartsCrosshairAngle += 0.055;
+
+  ctx.fillStyle = '#0f172a';
+  ctx.fillRect(0, 0, w, h);
+
+  // ダーツ的 (同心円)
+  [ { r: 90, c: '#ffffff' }, { r: 65, c: '#ef4444' }, { r: 40, c: '#10b981' }, { r: 16, c: '#eab308' } ].forEach(ring => {
+    ctx.beginPath();
+    ctx.arc(midX, midY, ring.r, 0, Math.PI * 2);
+    ctx.fillStyle = ring.c;
+    ctx.fill();
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = '#0f172a';
+    ctx.stroke();
+  });
+
+  // スコア・残弾
+  ctx.font = 'bold 20px sans-serif';
+  ctx.fillStyle = '#ef4444';
+  ctx.fillText(`P1: ${dartsScore1}点 (残${dartsThrowsP1}投)`, 30, 40);
+  ctx.fillStyle = '#3b82f6';
+  ctx.fillText(`P2: ${dartsScore2}点 (残${dartsThrowsP2}投)`, 30, h - 30);
+
+  // 揺れる照準 (クロスヘア)
+  const targetX = midX + Math.cos(dartsCrosshairAngle) * 80;
+  const targetY = midY + Math.sin(dartsCrosshairAngle * 1.5) * 80;
+
+  ctx.strokeStyle = '#38bdf8';
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.arc(targetX, targetY, 14, 0, Math.PI * 2);
+  ctx.moveTo(targetX - 22, targetY); ctx.lineTo(targetX + 22, targetY);
+  ctx.moveTo(targetX, targetY - 22); ctx.lineTo(targetX, targetY + 22);
+  ctx.stroke();
+
+  requestAnimationFrame(dartsLoop);
+}
+
+/* ============================================================
+   23. 大縄跳びサバイバル (Jump Rope)
+   ============================================================ */
+let ropeCanvas, ropeCtx;
+let ropeAngle = 0;
+let isRopeJumping1 = false, isRopeJumping2 = false;
+let isRopeRunning = false;
+
+function initRopeGame() {
+  ropeCanvas = document.getElementById('rope-canvas');
+  ropeCtx = ropeCanvas.getContext('2d');
+  ropeCanvas.width = ropeCanvas.clientWidth;
+  ropeCanvas.height = ropeCanvas.clientHeight;
+
+  ropeAngle = 0;
+  isRopeJumping1 = false;
+  isRopeJumping2 = false;
+  isRopeRunning = true;
+
+  ropeCanvas.onpointerdown = (e) => {
+    const y = e.clientY - ropeCanvas.getBoundingClientRect().top;
+    if (y < ropeCanvas.height / 2 && !isRopeJumping1) {
+      isRopeJumping1 = true;
+      window.sounds.playJump();
+      setTimeout(() => { isRopeJumping1 = false; }, 360);
+    } else if (y >= ropeCanvas.height / 2 && !isRopeJumping2) {
+      isRopeJumping2 = true;
+      window.sounds.playJump();
+      setTimeout(() => { isRopeJumping2 = false; }, 360);
+    }
+  };
+
+  requestAnimationFrame(ropeLoop);
+}
+
+function ropeLoop() {
+  if (currentScreen !== 'screen-rope' || !isRopeRunning) return;
+
+  const ctx = ropeCtx;
+  const w = ropeCanvas.width;
+  const h = ropeCanvas.height;
+  const midX = w / 2;
+  const midY = h / 2;
+
+  ropeAngle += 0.065;
+  const ropeY = midY + Math.sin(ropeAngle) * 90;
+  const isRopeAtBottom = Math.sin(ropeAngle) > 0.88;
+
+  ctx.fillStyle = '#0f172a';
+  ctx.fillRect(0, 0, w, h);
+
+  // 縄の描画 (放物線)
+  ctx.beginPath();
+  ctx.moveTo(40, midY);
+  ctx.quadraticCurveTo(midX, ropeY, w - 40, midY);
+  ctx.lineWidth = 6;
+  ctx.strokeStyle = '#facc15';
+  ctx.stroke();
+
+  // キャラクター P1 (上) & P2 (下)
+  const char1Y = isRopeJumping1 ? midY - 45 : midY;
+  ctx.fillStyle = '#ef4444';
+  ctx.beginPath();
+  ctx.arc(midX - 45, char1Y, 18, 0, Math.PI * 2);
+  ctx.fill();
+
+  const char2Y = isRopeJumping2 ? midY - 45 : midY;
+  ctx.fillStyle = '#3b82f6';
+  ctx.beginPath();
+  ctx.arc(midX + 45, char2Y, 18, 0, Math.PI * 2);
+  ctx.fill();
+
+  // 判定
+  if (isRopeAtBottom) {
+    if (!isRopeJumping1) {
+      isRopeRunning = false;
+      window.sounds.playError();
+      showModal(`💥 引っかかった！`, `プレイヤー 2 の勝利！P1が縄に足を取られました！`, () => {
+        initRopeGame();
+      });
+      return;
+    }
+    if (!isRopeJumping2) {
+      isRopeRunning = false;
+      window.sounds.playError();
+      showModal(`💥 引っかかった！`, `プレイヤー 1 の勝利！P2が縄に足を取られました！`, () => {
+        initRopeGame();
+      });
+      return;
+    }
+  }
+
+  requestAnimationFrame(ropeLoop);
+}
+
+/* ============================================================
+   24. ブロック崩しクラッシュ (Breakout Clash)
+   ============================================================ */
+let breakoutCanvas, breakoutCtx;
+let breakoutBlocks = [];
+let breakoutBall = { x: 0, y: 0, vx: 3.5, vy: 4.5, radius: 9 };
+let breakoutPaddle1 = 0, breakoutPaddle2 = 0;
+let isBreakoutRunning = false;
+
+function initBreakoutGame() {
+  breakoutCanvas = document.getElementById('breakout-canvas');
+  breakoutCtx = breakoutCanvas.getContext('2d');
+  breakoutCanvas.width = breakoutCanvas.clientWidth;
+  breakoutCanvas.height = breakoutCanvas.clientHeight;
+
+  const w = breakoutCanvas.width;
+  const h = breakoutCanvas.height;
+
+  breakoutPaddle1 = (w - 70) / 2;
+  breakoutPaddle2 = (w - 70) / 2;
+  breakoutBall = { x: w / 2, y: h / 2, vx: 3.5, vy: 4.5, radius: 9 };
+  isBreakoutRunning = true;
+
+  // 中央にブロック配置
+  breakoutBlocks = [];
+  const rows = 3;
+  const cols = 6;
+  const blockW = (w - 40) / cols;
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      breakoutBlocks.push({
+        x: 20 + c * blockW,
+        y: h / 2 - 30 + r * 20,
+        w: blockW - 4,
+        h: 16,
+        alive: true
+      });
+    }
+  }
+
+  breakoutCanvas.ontouchmove = (e) => {
+    e.preventDefault();
+    const rect = breakoutCanvas.getBoundingClientRect();
+    for (let i = 0; i < e.touches.length; i++) {
+      const t = e.touches[i];
+      const tx = t.clientX - rect.left;
+      const ty = t.clientY - rect.top;
+      if (ty < h / 2) breakoutPaddle1 = Math.max(0, Math.min(w - 70, tx - 35));
+      else breakoutPaddle2 = Math.max(0, Math.min(w - 70, tx - 35));
+    }
+  };
+
+  requestAnimationFrame(breakoutLoop);
+}
+
+function breakoutLoop() {
+  if (currentScreen !== 'screen-breakout' || !isBreakoutRunning) return;
+
+  const ctx = breakoutCtx;
+  const w = breakoutCanvas.width;
+  const h = breakoutCanvas.height;
+
+  breakoutBall.x += breakoutBall.vx;
+  breakoutBall.y += breakoutBall.vy;
+
+  // 左右壁
+  if (breakoutBall.x - breakoutBall.radius < 0 || breakoutBall.x + breakoutBall.radius > w) {
+    breakoutBall.vx = -breakoutBall.vx;
+    window.sounds.playTap();
+  }
+
+  // パドル衝突
+  if (breakoutBall.y - breakoutBall.radius <= 35 && breakoutBall.vy < 0) {
+    if (breakoutBall.x >= breakoutPaddle1 && breakoutBall.x <= breakoutPaddle1 + 70) {
+      breakoutBall.vy = -breakoutBall.vy;
+      window.sounds.playTap();
+    }
+  }
+  if (breakoutBall.y + breakoutBall.radius >= h - 35 && breakoutBall.vy > 0) {
+    if (breakoutBall.x >= breakoutPaddle2 && breakoutBall.x <= breakoutPaddle2 + 70) {
+      breakoutBall.vy = -breakoutBall.vy;
+      window.sounds.playTap();
+    }
+  }
+
+  // ブロック衝突
+  breakoutBlocks.forEach(b => {
+    if (b.alive) {
+      if (breakoutBall.x > b.x && breakoutBall.x < b.x + b.w && breakoutBall.y > b.y && breakoutBall.y < b.y + b.h) {
+        b.alive = false;
+        breakoutBall.vy = -breakoutBall.vy;
+        window.sounds.playCoin();
+      }
+    }
+  });
+
+  // 勝敗
+  if (breakoutBall.y < 0) {
+    isBreakoutRunning = false;
+    window.sounds.playSuccess();
+    showModal(`🎉 プレイヤー 2 の勝利！`, `相手の守備を突破しました！`, () => {
+      initBreakoutGame();
+    });
+    return;
+  } else if (breakoutBall.y > h) {
+    isBreakoutRunning = false;
+    window.sounds.playSuccess();
+    showModal(`🎉 プレイヤー 1 の勝利！`, `相手の守備を突破しました！`, () => {
+      initBreakoutGame();
+    });
+    return;
+  }
+
+  // 描画
+  ctx.fillStyle = '#0f172a';
+  ctx.fillRect(0, 0, w, h);
+
+  // ブロック
+  breakoutBlocks.forEach(b => {
+    if (b.alive) {
+      ctx.fillStyle = '#38bdf8';
+      ctx.fillRect(b.x, b.y, b.w, b.h);
+    }
+  });
+
+  // パドル
+  ctx.fillStyle = '#ef4444';
+  ctx.fillRect(breakoutPaddle1, 20, 70, 14);
+  ctx.fillStyle = '#3b82f6';
+  ctx.fillRect(breakoutPaddle2, h - 34, 70, 14);
+
+  // ボール
+  ctx.beginPath();
+  ctx.arc(breakoutBall.x, breakoutBall.y, breakoutBall.radius, 0, Math.PI * 2);
+  ctx.fillStyle = '#ffffff';
+  ctx.fill();
+
+  requestAnimationFrame(breakoutLoop);
+}
+
+/* ============================================================
+   25. UFOキャッチャー (UFO Grabber)
+   ============================================================ */
+let ufoCanvas, ufoCtx;
+let ufoX1 = 50, ufoX2 = 50;
+let ufoArmY1 = 0, ufoArmY2 = 0;
+let isUfoGrabbing1 = false, isUfoGrabbing2 = false;
+let ufoScore1 = 0, ufoScore2 = 0;
+let isUfoRunning = false;
+
+function initUfoGame() {
+  ufoCanvas = document.getElementById('ufo-canvas');
+  ufoCtx = ufoCanvas.getContext('2d');
+  ufoCanvas.width = ufoCanvas.clientWidth;
+  ufoCanvas.height = ufoCanvas.clientHeight;
+
+  ufoScore1 = 0;
+  ufoScore2 = 0;
+  isUfoGrabbing1 = false;
+  isUfoGrabbing2 = false;
+  isUfoRunning = true;
+
+  ufoCanvas.onpointerdown = (e) => {
+    const y = e.clientY - ufoCanvas.getBoundingClientRect().top;
+    if (y < ufoCanvas.height / 2 && !isUfoGrabbing1) isUfoGrabbing1 = true;
+    else if (y >= ufoCanvas.height / 2 && !isUfoGrabbing2) isUfoGrabbing2 = true;
+  };
+
+  requestAnimationFrame(ufoLoop);
+}
+
+function ufoLoop() {
+  if (currentScreen !== 'screen-ufo' || !isUfoRunning) return;
+
+  const ctx = ufoCtx;
+  const w = ufoCanvas.width;
+  const h = ufoCanvas.height;
+  const midY = h / 2;
+
+  // UFO巡回
+  ufoX1 = w / 2 + Math.sin(performance.now() * 0.003) * (w * 0.4);
+  ufoX2 = w / 2 + Math.cos(performance.now() * 0.003) * (w * 0.4);
+
+  if (isUfoGrabbing1) {
+    ufoArmY1 += 8;
+    if (ufoArmY1 >= midY - 60) {
+      // 掴み判定
+      if (Math.abs(ufoX1 - w / 2) < 40) {
+        ufoScore1++;
+        window.sounds.playCoin();
+      }
+      isUfoGrabbing1 = false;
+      ufoArmY1 = 0;
+      checkUfoWinner();
+    }
+  }
+
+  if (isUfoGrabbing2) {
+    ufoArmY2 += 8;
+    if (ufoArmY2 >= midY - 60) {
+      if (Math.abs(ufoX2 - w / 2) < 40) {
+        ufoScore2++;
+        window.sounds.playCoin();
+      }
+      isUfoGrabbing2 = false;
+      ufoArmY2 = 0;
+      checkUfoWinner();
+    }
+  }
+
+  // 描画
+  ctx.fillStyle = '#0f172a';
+  ctx.fillRect(0, 0, w, h);
+
+  // お宝 (中央の宝石)
+  ctx.font = '36px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('💎', w / 2, midY);
+
+  // スコア
+  ctx.font = 'bold 20px sans-serif';
+  ctx.fillStyle = '#ef4444';
+  ctx.fillText(`P1: ${ufoScore1}/3`, 30, 40);
+  ctx.fillStyle = '#3b82f6';
+  ctx.fillText(`P2: ${ufoScore2}/3`, 30, h - 30);
+
+  // UFO 1
+  ctx.fillStyle = '#ef4444';
+  ctx.fillRect(ufoX1 - 25, 40, 50, 18);
+  if (isUfoGrabbing1) {
+    ctx.strokeStyle = '#ffffff';
+    ctx.strokeRect(ufoX1 - 6, 58, 12, ufoArmY1);
+  }
+
+  // UFO 2
+  ctx.fillStyle = '#3b82f6';
+  ctx.fillRect(ufoX2 - 25, h - 58, 50, 18);
+  if (isUfoGrabbing2) {
+    ctx.strokeStyle = '#ffffff';
+    ctx.strokeRect(ufoX2 - 6, h - 58 - ufoArmY2, 12, ufoArmY2);
+  }
+
+  requestAnimationFrame(ufoLoop);
+}
+
+function checkUfoWinner() {
+  if (ufoScore1 >= 3 || ufoScore2 >= 3) {
+    isUfoRunning = false;
+    window.sounds.playSuccess();
+    const winner = ufoScore1 >= 3 ? 'プレイヤー 1' : 'プレイヤー 2';
+    showModal(`🛸 ${winner} の勝利！`, `お宝宝石を3つ回収しました！`, () => {
+      initUfoGame();
+    });
+  }
+}
+
+/* ============================================================
+   26. ボクシング・パンチ (Boxing Clash)
+   ============================================================ */
+let boxingCanvas, boxingCtx;
+let boxingScore1 = 0, boxingScore2 = 0;
+let boxingGuard1 = true, boxingGuard2 = true;
+let isBoxingRunning = false;
+
+function initBoxingGame() {
+  boxingCanvas = document.getElementById('boxing-canvas');
+  boxingCtx = boxingCanvas.getContext('2d');
+  boxingCanvas.width = boxingCanvas.clientWidth;
+  boxingCanvas.height = boxingCanvas.clientHeight;
+
+  boxingScore1 = 0;
+  boxingScore2 = 0;
+  boxingGuard1 = true;
+  boxingGuard2 = true;
+  isBoxingRunning = true;
+
+  boxingCanvas.onpointerdown = (e) => {
+    const y = e.clientY - boxingCanvas.getBoundingClientRect().top;
+    if (y < boxingCanvas.height / 2) {
+      // P1パンチ！
+      boxingGuard1 = false;
+      window.sounds.playSlash();
+      if (!boxingGuard2) {
+        boxingScore1++;
+        window.sounds.playGunshot();
+      }
+      setTimeout(() => { boxingGuard1 = true; }, 400);
+    } else {
+      // P2パンチ！
+      boxingGuard2 = false;
+      window.sounds.playSlash();
+      if (!boxingGuard1) {
+        boxingScore2++;
+        window.sounds.playGunshot();
+      }
+      setTimeout(() => { boxingGuard2 = true; }, 400);
+    }
+
+    if (boxingScore1 >= 3 || boxingScore2 >= 3) {
+      isBoxingRunning = false;
+      window.sounds.playSuccess();
+      const winner = boxingScore1 >= 3 ? 'プレイヤー 1' : 'プレイヤー 2';
+      showModal(`🥊 K.O.! ${winner} の勝利！`, `豪快なクリーンヒットで相手をノックアウト！`, () => {
+        initBoxingGame();
+      });
+    }
+  };
+
+  requestAnimationFrame(boxingLoop);
+}
+
+function boxingLoop() {
+  if (currentScreen !== 'screen-boxing' || !isBoxingRunning) return;
+
+  const ctx = boxingCtx;
+  const w = boxingCanvas.width;
+  const h = boxingCanvas.height;
+
+  ctx.fillStyle = '#0f172a';
+  ctx.fillRect(0, 0, w, h);
+
+  ctx.font = 'bold 22px sans-serif';
+  ctx.fillStyle = '#ef4444';
+  ctx.fillText(`P1: ${boxingScore1}/3`, 30, 40);
+  ctx.fillStyle = '#3b82f6';
+  ctx.fillText(`P2: ${boxingScore2}/3`, 30, h - 30);
+
+  // P1ボクサー
+  ctx.font = '60px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText(boxingGuard1 ? '🛡️' : '🥊', w / 2, h * 0.35);
+
+  // P2ボクサー
+  ctx.fillText(boxingGuard2 ? '🛡️' : '🥊', w / 2, h * 0.65);
+
+  requestAnimationFrame(boxingLoop);
+}
+
+/* ============================================================
+   27. ハイウェイドライブ (Highway Racer)
+   ============================================================ */
+let highwayCanvas, highwayCtx;
+let highwayLane1 = 1, highwayLane2 = 1; // 0, 1, 2
+let highwayEnemies = [];
+let isHighwayRunning = false;
+
+function initHighwayGame() {
+  highwayCanvas = document.getElementById('highway-canvas');
+  highwayCtx = highwayCanvas.getContext('2d');
+  highwayCanvas.width = highwayCanvas.clientWidth;
+  highwayCanvas.height = highwayCanvas.clientHeight;
+
+  highwayLane1 = 1;
+  highwayLane2 = 1;
+  highwayEnemies = [];
+  isHighwayRunning = true;
+
+  highwayCanvas.onpointerdown = (e) => {
+    const x = e.clientX - highwayCanvas.getBoundingClientRect().left;
+    const y = e.clientY - highwayCanvas.getBoundingClientRect().top;
+    const w = highwayCanvas.width;
+    const lane = Math.floor(x / (w / 3));
+
+    if (y < highwayCanvas.height / 2) highwayLane1 = Math.max(0, Math.min(2, lane));
+    else highwayLane2 = Math.max(0, Math.min(2, lane));
+    window.sounds.playTap();
+  };
+
+  requestAnimationFrame(highwayLoop);
+}
+
+function highwayLoop() {
+  if (currentScreen !== 'screen-highway' || !isHighwayRunning) return;
+
+  const ctx = highwayCtx;
+  const w = highwayCanvas.width;
+  const h = highwayCanvas.height;
+  const laneW = w / 3;
+
+  // 敵車生成
+  if (Math.random() < 0.035) {
+    highwayEnemies.push({ lane: Math.floor(Math.random() * 3), y: -30, vy: 5 });
+  }
+
+  ctx.fillStyle = '#1e293b';
+  ctx.fillRect(0, 0, w, h);
+
+  // 車線ライン
+  ctx.strokeStyle = '#facc15';
+  ctx.setLineDash([12, 12]);
+  ctx.beginPath();
+  ctx.moveTo(laneW, 0); ctx.lineTo(laneW, h);
+  ctx.moveTo(laneW * 2, 0); ctx.lineTo(laneW * 2, h);
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  // 自車 P1 (上)
+  ctx.fillStyle = '#ef4444';
+  ctx.fillRect(highwayLane1 * laneW + laneW * 0.25, h * 0.25, laneW * 0.5, 45);
+
+  // 自車 P2 (下)
+  ctx.fillStyle = '#3b82f6';
+  ctx.fillRect(highwayLane2 * laneW + laneW * 0.25, h * 0.75, laneW * 0.5, 45);
+
+  // 敵車と衝突判定
+  let hitPlayer = null;
+  for (let i = highwayEnemies.length - 1; i >= 0; i--) {
+    const en = highwayEnemies[i];
+    en.y += en.vy;
+
+    ctx.fillStyle = '#64748b';
+    ctx.fillRect(en.lane * laneW + laneW * 0.25, en.y, laneW * 0.5, 45);
+
+    if (en.lane === highwayLane1 && Math.abs(en.y - h * 0.25) < 40) hitPlayer = 1;
+    if (en.lane === highwayLane2 && Math.abs(en.y - h * 0.75) < 40) hitPlayer = 2;
+
+    if (en.y > h + 50) highwayEnemies.splice(i, 1);
+  }
+
+  if (hitPlayer && isHighwayRunning) {
+    isHighwayRunning = false;
+    window.sounds.playExplosion();
+    const winner = hitPlayer === 1 ? 'プレイヤー 2' : 'プレイヤー 1';
+    showModal(`💥 事故発生！`, `${winner} の勝利！安全運転を完遂しました！`, () => {
+      initHighwayGame();
+    });
+    return;
+  }
+
+  requestAnimationFrame(highwayLoop);
+}
+
+/* ============================================================
+   28. リズムビート (Rhythm Beat)
+   ============================================================ */
+let rhythmCanvas, rhythmCtx;
+let rhythmNotes1 = [], rhythmNotes2 = [];
+let rhythmScore1 = 0, rhythmScore2 = 0;
+let isRhythmRunning = false;
+
+function initRhythmGame() {
+  rhythmCanvas = document.getElementById('rhythm-canvas');
+  rhythmCtx = rhythmCanvas.getContext('2d');
+  rhythmCanvas.width = rhythmCanvas.clientWidth;
+  rhythmCanvas.height = rhythmCanvas.clientHeight;
+
+  rhythmScore1 = 0;
+  rhythmScore2 = 0;
+  rhythmNotes1 = [];
+  rhythmNotes2 = [];
+  isRhythmRunning = true;
+
+  rhythmCanvas.onpointerdown = (e) => {
+    const y = e.clientY - rhythmCanvas.getBoundingClientRect().top;
+    const midY = rhythmCanvas.height / 2;
+
+    if (y < midY) {
+      // P1判定 (ラインは y: 60)
+      for (let i = 0; i < rhythmNotes1.length; i++) {
+        if (Math.abs(rhythmNotes1[i].y - 60) < 30) {
+          rhythmScore1 += 100;
+          window.sounds.playCoin();
+          rhythmNotes1.splice(i, 1);
+          break;
+        }
+      }
+    } else {
+      // P2判定 (ラインは y: h - 60)
+      const lineY = rhythmCanvas.height - 60;
+      for (let i = 0; i < rhythmNotes2.length; i++) {
+        if (Math.abs(rhythmNotes2[i].y - lineY) < 30) {
+          rhythmScore2 += 100;
+          window.sounds.playCoin();
+          rhythmNotes2.splice(i, 1);
+          break;
+        }
+      }
+    }
+
+    if (rhythmScore1 >= 500 || rhythmScore2 >= 500) {
+      isRhythmRunning = false;
+      window.sounds.playSuccess();
+      const winner = rhythmScore1 >= 500 ? 'プレイヤー 1' : 'プレイヤー 2';
+      showModal(`🎵 FULL COMBO!`, `${winner} の勝利！見事なリズムキープ！`, () => {
+        initRhythmGame();
+      });
+    }
+  };
+
+  requestAnimationFrame(rhythmLoop);
+}
+
+function rhythmLoop() {
+  if (currentScreen !== 'screen-rhythm' || !isRhythmRunning) return;
+
+  const ctx = rhythmCtx;
+  const w = rhythmCanvas.width;
+  const h = rhythmCanvas.height;
+
+  if (Math.random() < 0.04) rhythmNotes1.push({ y: h / 2 - 20, vy: -4 });
+  if (Math.random() < 0.04) rhythmNotes2.push({ y: h / 2 + 20, vy: 4 });
+
+  ctx.fillStyle = '#0f172a';
+  ctx.fillRect(0, 0, w, h);
+
+  // 判定ライン
+  ctx.strokeStyle = '#38bdf8';
+  ctx.lineWidth = 4;
+  ctx.beginPath();
+  ctx.moveTo(30, 60); ctx.lineTo(w - 30, 60);
+  ctx.moveTo(30, h - 60); ctx.lineTo(w - 30, h - 60);
+  ctx.stroke();
+
+  // スコア
+  ctx.font = 'bold 20px sans-serif';
+  ctx.fillStyle = '#ef4444';
+  ctx.fillText(`P1: ${rhythmScore1}`, 30, 30);
+  ctx.fillStyle = '#3b82f6';
+  ctx.fillText(`P2: ${rhythmScore2}`, 30, h - 20);
+
+  // ノーツ
+  ctx.fillStyle = '#f43f5e';
+  rhythmNotes1.forEach(n => {
+    n.y += n.vy;
+    ctx.beginPath();
+    ctx.arc(w / 2, n.y, 16, 0, Math.PI * 2);
+    ctx.fill();
+  });
+
+  ctx.fillStyle = '#3b82f6';
+  rhythmNotes2.forEach(n => {
+    n.y += n.vy;
+    ctx.beginPath();
+    ctx.arc(w / 2, n.y, 16, 0, Math.PI * 2);
+    ctx.fill();
+  });
+
+  requestAnimationFrame(rhythmLoop);
+}
+
+/* ============================================================
+   29. 地雷チキンレース (Minefield Duel)
+   ============================================================ */
+let minesTurn = 1;
+let minesData = []; // 25マス
+let isMinesRunning = false;
+
+function initMinesGame() {
+  minesTurn = 1;
+  isMinesRunning = true;
+  document.getElementById('mines-turn-label').textContent = 'プレイヤー 1 の番';
+
+  // 25マス中、4個が地雷
+  minesData = Array(25).fill(false);
+  let placed = 0;
+  while (placed < 4) {
+    const idx = Math.floor(Math.random() * 25);
+    if (!minesData[idx]) {
+      minesData[idx] = true;
+      placed++;
+    }
+  }
+
+  const container = document.getElementById('mines-grid');
+  container.innerHTML = '';
+  for (let i = 0; i < 25; i++) {
+    const cell = document.createElement('div');
+    cell.className = 'mine-cell';
+    cell.textContent = '?';
+    cell.onclick = () => handleMineClick(i, cell);
+    container.appendChild(cell);
+  }
+}
+
+function handleMineClick(idx, cell) {
+  if (!isMinesRunning) return;
+
+  if (minesData[idx]) {
+    // 地雷爆発！
+    isMinesRunning = false;
+    cell.classList.add('exploded');
+    cell.textContent = '💣';
+    window.sounds.playExplosion();
+    const winner = minesTurn === 1 ? 'プレイヤー 2' : 'プレイヤー 1';
+    showModal(`💥 ドッカーン！`, `地雷を踏んでしまいました！\n${winner} の勝利！`, () => {
+      initMinesGame();
+    });
+  } else {
+    // 安全！
+    cell.classList.add('safe');
+    cell.textContent = '💎';
+    window.sounds.playCoin();
+    minesTurn = minesTurn === 1 ? 2 : 1;
+    document.getElementById('mines-turn-label').textContent = `プレイヤー ${minesTurn} の番`;
+  }
+}
+
+/* ============================================================
+   30. アーチェリー・エイム (Archery Duel)
+   ============================================================ */
+let archeryCanvas, archeryCtx;
+let archeryScore1 = 0, archeryScore2 = 0;
+let archeryArrow = null;
+let archeryWind = 0;
+let isArcheryRunning = false;
+
+function initArcheryGame() {
+  archeryCanvas = document.getElementById('archery-canvas');
+  archeryCtx = archeryCanvas.getContext('2d');
+  archeryCanvas.width = archeryCanvas.clientWidth;
+  archeryCanvas.height = archeryCanvas.clientHeight;
+
+  archeryScore1 = 0;
+  archeryScore2 = 0;
+  archeryWind = Math.round((Math.random() - 0.5) * 6);
+  isArcheryRunning = true;
+
+  archeryCanvas.onpointerdown = (e) => {
+    if (!isArcheryRunning || archeryArrow) return;
+    const y = e.clientY - archeryCanvas.getBoundingClientRect().top;
+    const player = y < archeryCanvas.height / 2 ? 1 : 2;
+
+    archeryArrow = {
+      x: archeryCanvas.width / 2,
+      y: player === 1 ? 40 : archeryCanvas.height - 40,
+      vy: player === 1 ? 8 : -8,
+      player: player
+    };
+    window.sounds.playSlash();
+  };
+
+  requestAnimationFrame(archeryLoop);
+}
+
+function archeryLoop() {
+  if (currentScreen !== 'screen-archery' || !isArcheryRunning) return;
+
+  const ctx = archeryCtx;
+  const w = archeryCanvas.width;
+  const h = archeryCanvas.height;
+  const midX = w / 2;
+  const midY = h / 2;
+
+  // 矢の移動
+  if (archeryArrow) {
+    archeryArrow.x += archeryWind * 0.4;
+    archeryArrow.y += archeryArrow.vy;
+
+    if (Math.abs(archeryArrow.y - midY) < 15) {
+      // 的に命中
+      const dist = Math.abs(archeryArrow.x - midX);
+      let pts = 10;
+      if (dist < 15) pts = 50; // センター
+      else if (dist < 35) pts = 30;
+
+      window.sounds.playCoin();
+      if (archeryArrow.player === 1) archeryScore1 += pts; else archeryScore2 += pts;
+      archeryArrow = null;
+      archeryWind = Math.round((Math.random() - 0.5) * 6); // 風向き更新
+
+      if (archeryScore1 >= 100 || archeryScore2 >= 100) {
+        isArcheryRunning = false;
+        window.sounds.playSuccess();
+        const winner = archeryScore1 >= 100 ? 'プレイヤー 1' : 'プレイヤー 2';
+        showModal(`🏹 ${winner} の勝利！`, `見事なエイムで100ポイント到達！`, () => {
+          initArcheryGame();
+        });
+        return;
+      }
+    } else if (archeryArrow.y < 0 || archeryArrow.y > h) {
+      archeryArrow = null;
+    }
+  }
+
+  ctx.fillStyle = '#0f172a';
+  ctx.fillRect(0, 0, w, h);
+
+  // 的 (中央)
+  [ { r: 60, c: '#ffffff' }, { r: 40, c: '#ef4444' }, { r: 20, c: '#facc15' } ].forEach(ring => {
+    ctx.beginPath();
+    ctx.arc(midX, midY, ring.r, 0, Math.PI * 2);
+    ctx.fillStyle = ring.c;
+    ctx.fill();
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = '#0f172a';
+    ctx.stroke();
+  });
+
+  // 風表示
+  ctx.font = 'bold 16px sans-serif';
+  ctx.fillStyle = '#38bdf8';
+  ctx.textAlign = 'center';
+  ctx.fillText(`風: ${archeryWind > 0 ? '右 → ' : (archeryWind < 0 ? '左 ← ' : '無風 ')}${Math.abs(archeryWind)}m`, midX, midY - 80);
+
+  // スコア
+  ctx.fillStyle = '#ef4444';
+  ctx.textAlign = 'left';
+  ctx.fillText(`P1: ${archeryScore1}/100`, 30, 40);
+  ctx.fillStyle = '#3b82f6';
+  ctx.fillText(`P2: ${archeryScore2}/100`, 30, h - 30);
+
+  // 矢描画
+  if (archeryArrow) {
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(archeryArrow.x - 2, archeryArrow.y - 12, 4, 24);
+  }
+
+  requestAnimationFrame(archeryLoop);
+}
+
 
 
