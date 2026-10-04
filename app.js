@@ -889,7 +889,7 @@ function twisterRenderLoop() {
   ctx.font = 'bold 16px sans-serif';
   ctx.fillStyle = 'rgba(239, 68, 68, 0.7)';
   ctx.textAlign = 'center';
-  ctx.fillText('🔴 プレイヤー 1 エリア（指を離すな！）', w / 2, 30);
+  ctx.fillText('🔴 プレイヤー 1 エリア（指を離すな！）', w / 2, 78);
 
   ctx.fillStyle = 'rgba(59, 130, 246, 0.7)';
   ctx.fillText('🔵 プレイヤー 2 エリア（指を離すな！）', w / 2, h - 20);
@@ -1282,7 +1282,7 @@ function handleKnifeShoot(e) {
   if (y < midY && knifeKnivesP1 > 0) {
     // P1 (上から下へ発射)
     knifeKnivesP1--;
-    knifeFlying = { x: knifeCanvas.width / 2, y: 60, vy: 18, player: 1 };
+    knifeFlying = { x: knifeCanvas.width / 2, y: 75, vy: 18, player: 1 };
     window.sounds.playTap();
   } else if (y >= midY && knifeKnivesP2 > 0) {
     // P2 (下から上へ発射)
@@ -1360,7 +1360,7 @@ function knifeLoop() {
   ctx.font = 'bold 20px sans-serif';
   ctx.fillStyle = '#ef4444';
   ctx.textAlign = 'left';
-  ctx.fillText(`P1 残り: ${knifeKnivesP1}本`, 20, 36);
+  ctx.fillText(`P1 残り: ${knifeKnivesP1}本`, 25, 78);
 
   ctx.fillStyle = '#3b82f6';
   ctx.fillText(`P2 残り: ${knifeKnivesP2}本`, 20, h - 24);
@@ -1572,10 +1572,10 @@ function spaceLoop() {
   ctx.font = 'bold 16px sans-serif';
   ctx.fillStyle = '#ef4444';
   ctx.textAlign = 'center';
-  ctx.fillText('🔴 プレイヤー 1', midX / 2, 30);
+  ctx.fillText('🔴 プレイヤー 1', midX / 2, 78);
 
   ctx.fillStyle = '#3b82f6';
-  ctx.fillText('🔵 プレイヤー 2', midX + midX / 2, 30);
+  ctx.fillText('🔵 プレイヤー 2', midX + midX / 2, 78);
 
   // 隕石の更新と判定
   let hitPlayer = null;
@@ -1720,7 +1720,7 @@ function pongLoop() {
   }
 
   // P1パドル衝突 (上側 y: 25)
-  const p1Y = 25;
+  const p1Y = 75;
   if (pongBall.y - pongBall.radius <= p1Y + pongP1.height && pongBall.y + pongBall.radius >= p1Y) {
     if (pongBall.x >= pongP1.x && pongBall.x <= pongP1.x + pongP1.width && pongBall.vy < 0) {
       pongBall.vy = -pongBall.vy * 1.05;
@@ -1740,7 +1740,7 @@ function pongLoop() {
   }
 
   // ゴールアウト
-  if (pongBall.y < 0) {
+  if (pongBall.y < 55) {
     pongScore2++;
     window.sounds.playSuccess();
     checkPongWinner();
@@ -1919,7 +1919,7 @@ function penaltyLoop() {
   ctx.font = 'bold 20px sans-serif';
   ctx.fillStyle = '#ffffff';
   ctx.textAlign = 'center';
-  ctx.fillText(`Round ${penaltyRound}/3 | P1 [${penaltyScore1}] - [${penaltyScore2}] P2`, w / 2, 35);
+  ctx.fillText(`Round ${penaltyRound}/3 | P1 [${penaltyScore1}] - [${penaltyScore2}] P2`, w / 2, 78);
 
   // 指示
   ctx.font = 'bold 16px sans-serif';
@@ -2037,7 +2037,7 @@ function racerLoop() {
   ctx.font = 'bold 22px sans-serif';
   ctx.fillStyle = '#ef4444';
   ctx.textAlign = 'left';
-  ctx.fillText(`P1: ${racerCar1.lap}/3 周`, 20, 36);
+  ctx.fillText(`P1: ${racerCar1.lap}/3 周`, 25, 78);
 
   ctx.fillStyle = '#3b82f6';
   ctx.fillText(`P2: ${racerCar2.lap}/3 周`, 20, h - 24);
@@ -2182,7 +2182,7 @@ function lumberLoop() {
   // スコア
   ctx.font = 'bold 22px sans-serif';
   ctx.fillStyle = '#ef4444';
-  ctx.fillText(`P1: ${lumberScore1}/20`, 30, 40);
+  ctx.fillText(`P1: ${lumberScore1}/20`, 30, 78);
   ctx.fillStyle = '#3b82f6';
   ctx.fillText(`P2: ${lumberScore2}/20`, 30, h - 30);
 
@@ -2572,7 +2572,7 @@ function slashLoop() {
   ctx.font = 'bold 22px sans-serif';
   ctx.fillStyle = '#ef4444';
   ctx.textAlign = 'left';
-  ctx.fillText(`P1: ${slashScore1} 切断`, 20, 36);
+  ctx.fillText(`P1: ${slashScore1} 切断`, 25, 78);
 
   ctx.fillStyle = '#3b82f6';
   ctx.fillText(`P2: ${slashScore2} 切断`, 20, h - 24);
@@ -2863,7 +2863,7 @@ function basketLoop() {
   // スコア
   ctx.font = 'bold 22px sans-serif';
   ctx.fillStyle = '#ef4444';
-  ctx.fillText(`P1: ${basketScore1}/3`, 30, 40);
+  ctx.fillText(`P1: ${basketScore1}/3`, 30, 78);
   ctx.fillStyle = '#3b82f6';
   ctx.fillText(`P2: ${basketScore2}/3`, 30, h - 30);
 
@@ -2990,7 +2990,7 @@ function dartsLoop() {
   // スコア・残弾
   ctx.font = 'bold 20px sans-serif';
   ctx.fillStyle = '#ef4444';
-  ctx.fillText(`P1: ${dartsScore1}点 (残${dartsThrowsP1}投)`, 30, 40);
+  ctx.fillText(`P1: ${dartsScore1}点 (残${dartsThrowsP1}投)`, 30, 78);
   ctx.fillStyle = '#3b82f6';
   ctx.fillText(`P2: ${dartsScore2}点 (残${dartsThrowsP2}投)`, 30, h - 30);
 
@@ -3176,7 +3176,7 @@ function breakoutLoop() {
   }
 
   // パドル衝突
-  if (breakoutBall.y - breakoutBall.radius <= 35 && breakoutBall.vy < 0) {
+  if (breakoutBall.y - breakoutBall.radius <= 89 && breakoutBall.vy < 0 && breakoutBall.y >= 70) {
     if (breakoutBall.x >= breakoutPaddle1 && breakoutBall.x <= breakoutPaddle1 + 70) {
       breakoutBall.vy = -breakoutBall.vy;
       window.sounds.playTap();
@@ -3201,7 +3201,7 @@ function breakoutLoop() {
   });
 
   // 勝敗
-  if (breakoutBall.y < 0) {
+  if (breakoutBall.y < 55) {
     isBreakoutRunning = false;
     window.sounds.playSuccess();
     showModal(`🎉 プレイヤー 2 の勝利！`, `相手の守備を突破しました！`, () => {
@@ -3231,7 +3231,7 @@ function breakoutLoop() {
 
   // パドル
   ctx.fillStyle = '#ef4444';
-  ctx.fillRect(breakoutPaddle1, 20, 70, 14);
+  ctx.fillRect(breakoutPaddle1, 75, 70, 14);
   ctx.fillStyle = '#3b82f6';
   ctx.fillRect(breakoutPaddle2, h - 34, 70, 14);
 
@@ -3326,16 +3326,16 @@ function ufoLoop() {
   // スコア
   ctx.font = 'bold 20px sans-serif';
   ctx.fillStyle = '#ef4444';
-  ctx.fillText(`P1: ${ufoScore1}/3`, 30, 40);
+  ctx.fillText(`P1: ${ufoScore1}/3`, 30, 78);
   ctx.fillStyle = '#3b82f6';
   ctx.fillText(`P2: ${ufoScore2}/3`, 30, h - 30);
 
   // UFO 1
   ctx.fillStyle = '#ef4444';
-  ctx.fillRect(ufoX1 - 25, 40, 50, 18);
+  ctx.fillRect(ufoX1 - 25, 75, 50, 18);
   if (isUfoGrabbing1) {
     ctx.strokeStyle = '#ffffff';
-    ctx.strokeRect(ufoX1 - 6, 58, 12, ufoArmY1);
+    ctx.strokeRect(ufoX1 - 6, 93, 12, ufoArmY1);
   }
 
   // UFO 2
@@ -3427,7 +3427,7 @@ function boxingLoop() {
 
   ctx.font = 'bold 22px sans-serif';
   ctx.fillStyle = '#ef4444';
-  ctx.fillText(`P1: ${boxingScore1}/3`, 30, 40);
+  ctx.fillText(`P1: ${boxingScore1}/3`, 30, 78);
   ctx.fillStyle = '#3b82f6';
   ctx.fillText(`P2: ${boxingScore2}/3`, 30, h - 30);
 
@@ -3563,7 +3563,7 @@ function initRhythmGame() {
     if (y < midY) {
       // P1判定 (ラインは y: 60)
       for (let i = 0; i < rhythmNotes1.length; i++) {
-        if (Math.abs(rhythmNotes1[i].y - 60) < 30) {
+        if (Math.abs(rhythmNotes1[i].y - 85) < 30) {
           rhythmScore1 += 100;
           window.sounds.playCoin();
           rhythmNotes1.splice(i, 1);
@@ -3613,14 +3613,14 @@ function rhythmLoop() {
   ctx.strokeStyle = '#38bdf8';
   ctx.lineWidth = 4;
   ctx.beginPath();
-  ctx.moveTo(30, 60); ctx.lineTo(w - 30, 60);
+  ctx.moveTo(30, 85); ctx.lineTo(w - 30, 85);
   ctx.moveTo(30, h - 60); ctx.lineTo(w - 30, h - 60);
   ctx.stroke();
 
   // スコア
   ctx.font = 'bold 20px sans-serif';
   ctx.fillStyle = '#ef4444';
-  ctx.fillText(`P1: ${rhythmScore1}`, 30, 30);
+  ctx.fillText(`P1: ${rhythmScore1}`, 30, 65);
   ctx.fillStyle = '#3b82f6';
   ctx.fillText(`P2: ${rhythmScore2}`, 30, h - 20);
 
@@ -3801,7 +3801,7 @@ function archeryLoop() {
   // スコア
   ctx.fillStyle = '#ef4444';
   ctx.textAlign = 'left';
-  ctx.fillText(`P1: ${archeryScore1}/100`, 30, 40);
+  ctx.fillText(`P1: ${archeryScore1}/100`, 30, 78);
   ctx.fillStyle = '#3b82f6';
   ctx.fillText(`P2: ${archeryScore2}/100`, 30, h - 30);
 
@@ -3913,7 +3913,7 @@ function cricketLoop() {
   // スコア
   ctx.font = 'bold 20px sans-serif';
   ctx.fillStyle = '#ef4444';
-  ctx.fillText(`P1: ${cricketScore1} (残${cricketHitsP1})`, 30, 35);
+  ctx.fillText(`P1: ${cricketScore1} (残${cricketHitsP1})`, 30, 78);
   ctx.fillStyle = '#3b82f6';
   ctx.fillText(`P2: ${cricketScore2} (残${cricketHitsP2})`, 30, h - 25);
 
@@ -4036,7 +4036,7 @@ function hurdleLoop() {
 
   // 進捗バー
   ctx.fillStyle = '#ef4444';
-  ctx.fillRect(20, 20, (hurdlePos1 / 1100) * (w - 40), 6);
+  ctx.fillRect(20, 75, (hurdlePos1 / 1100) * (w - 40), 6);
   ctx.fillStyle = '#3b82f6';
   ctx.fillRect(20, h - 20, (hurdlePos2 / 1100) * (w - 40), 6);
 
@@ -4218,7 +4218,7 @@ function invadersLoop() {
   // スコア
   ctx.font = 'bold 20px sans-serif';
   ctx.fillStyle = '#ef4444';
-  ctx.fillText(`P1: ${invaderScore1}/5`, 30, 35);
+  ctx.fillText(`P1: ${invaderScore1}/5`, 30, 78);
   ctx.fillStyle = '#3b82f6';
   ctx.fillText(`P2: ${invaderScore2}/5`, 30, h - 25);
 
@@ -4320,7 +4320,7 @@ function curlingLoop() {
   ctx.font = 'bold 20px sans-serif';
   ctx.fillStyle = '#ffffff';
   ctx.textAlign = 'center';
-  ctx.fillText(`プレイヤー ${curlingTurn} の番！タイミングよくタップ！`, w / 2, 60);
+  ctx.fillText(`プレイヤー ${curlingTurn} の番！タイミングよくタップ！`, w / 2, 80);
 
   requestAnimationFrame(curlingLoop);
 }
@@ -4516,7 +4516,7 @@ function catchLoop() {
   if (catchBall.x < 15 || catchBall.x > w - 15) catchBall.vx = -catchBall.vx;
 
   // キャッチ判定 P1 (上)
-  if (catchBall.y <= 40 && catchBall.vy < 0) {
+  if (catchBall.y <= 90 && catchBall.vy < 0 && catchBall.y >= 65) {
     if (Math.abs(catchBall.x - catchGlove1) < 45) {
       catchBall.vy = -catchBall.vy * 1.05;
       window.sounds.playTap();
@@ -4532,7 +4532,7 @@ function catchLoop() {
   }
 
   // 後逸判定
-  if (catchBall.y < 0) {
+  if (catchBall.y < 55) {
     isCatchRunning = false;
     window.sounds.playSuccess();
     showModal(`⚾ ポロリ！`, `プレイヤー 2 の勝利！P1が捕球できませんでした！`, () => {
@@ -4553,7 +4553,7 @@ function catchLoop() {
 
   // グローブ P1 & P2
   ctx.fillStyle = '#ef4444';
-  ctx.fillRect(catchGlove1 - 35, 25, 70, 16);
+  ctx.fillRect(catchGlove1 - 35, 75, 70, 16);
   ctx.fillStyle = '#3b82f6';
   ctx.fillRect(catchGlove2 - 35, h - 41, 70, 16);
 
@@ -4660,7 +4660,7 @@ function initSeesawGame() {
   seesawScore1 = 0;
   seesawScore2 = 0;
   seesawSide = 'left';
-  seesawStar = { x: seesawCanvas.width / 2, y: 70 };
+  seesawStar = { x: seesawCanvas.width / 2, y: 95 };
   isSeesawRunning = true;
 
   seesawCanvas.onpointerdown = (e) => {
@@ -4702,12 +4702,12 @@ function seesawLoop() {
   // 星
   ctx.font = '36px sans-serif';
   ctx.textAlign = 'center';
-  ctx.fillText('⭐', midX, 70);
+  ctx.fillText('⭐', midX, 95);
 
   // スコア
   ctx.font = 'bold 20px sans-serif';
   ctx.fillStyle = '#ef4444';
-  ctx.fillText(`P1: ${seesawScore1}/5`, 30, 35);
+  ctx.fillText(`P1: ${seesawScore1}/5`, 30, 78);
   ctx.fillStyle = '#3b82f6';
   ctx.fillText(`P2: ${seesawScore2}/5`, 30, h - 25);
 
@@ -4851,7 +4851,7 @@ function bowlingLoop() {
   // スコア
   ctx.font = 'bold 20px sans-serif';
   ctx.fillStyle = '#ef4444';
-  ctx.fillText(`P1: ${bowlingScore1}/6`, 30, 35);
+  ctx.fillText(`P1: ${bowlingScore1}/6`, 30, 78);
   ctx.fillStyle = '#3b82f6';
   ctx.fillText(`P2: ${bowlingScore2}/6`, 30, h - 25);
 
@@ -5127,7 +5127,7 @@ function axeLoop() {
   // スコア
   ctx.font = 'bold 20px sans-serif';
   ctx.fillStyle = '#ef4444';
-  ctx.fillText(`P1: ${axeScore1}/100`, 30, 35);
+  ctx.fillText(`P1: ${axeScore1}/100`, 30, 78);
   ctx.fillStyle = '#3b82f6';
   ctx.fillText(`P2: ${axeScore2}/100`, 30, h - 25);
 
@@ -5200,7 +5200,7 @@ function balloonLoop() {
 
   ctx.font = 'bold 20px sans-serif';
   ctx.fillStyle = '#ef4444';
-  ctx.fillText(`P1: ${balloonScore1}/8`, 30, 35);
+  ctx.fillText(`P1: ${balloonScore1}/8`, 30, 78);
   ctx.fillStyle = '#3b82f6';
   ctx.fillText(`P2: ${balloonScore2}/8`, 30, h - 25);
 
@@ -5472,7 +5472,7 @@ function pogoLoop() {
 
   ctx.font = 'bold 20px sans-serif';
   ctx.fillStyle = '#ef4444';
-  ctx.fillText(`P1: ${pogoScore1}/10`, 30, 35);
+  ctx.fillText(`P1: ${pogoScore1}/10`, 30, 78);
   ctx.fillStyle = '#3b82f6';
   ctx.fillText(`P2: ${pogoScore2}/10`, 30, h - 25);
 
@@ -5534,7 +5534,7 @@ function fencingLoop() {
   ctx.font = 'bold 20px sans-serif';
   ctx.fillStyle = '#facc15';
   ctx.textAlign = 'center';
-  ctx.fillText(`間合い: ${Math.round(fencingDist)}cm (近づいた瞬間に突け!)`, w / 2, 50);
+  ctx.fillText(`間合い: ${Math.round(fencingDist)}cm (近づいた瞬間に突け!)`, w / 2, 78);
 
   ctx.font = '60px sans-serif';
   ctx.fillText('🤺', w / 2 - fencingDist, h / 2);
@@ -5693,11 +5693,11 @@ function stealthlunchLoop() {
 
   // Player 1 (Top)
   ctx.fillStyle = '#334155';
-  ctx.fillRect(20, 20, w - 40, h / 2 - 90);
+  ctx.fillRect(20, 75, w - 40, h / 2 - 120);
   ctx.fillStyle = '#f87171';
   ctx.font = 'bold 18px sans-serif';
   ctx.textAlign = 'left';
-  ctx.fillText('P1 (長押しで早弁)', 35, 45);
+  ctx.fillText('P1 (長押しで早弁)', 35, 95);
   ctx.font = '36px sans-serif';
   ctx.fillText(p1Holding ? '😋 🍱🥢' : '🤫 🍱', w / 2 - 40, h * 0.25);
   // P1 Progress bar
@@ -6010,7 +6010,7 @@ function edgeStopperLoop() {
 
   ctx.font = 'bold 18px sans-serif';
   ctx.fillStyle = '#f87171';
-  ctx.fillText('P1: タップでブレーキ！', 30, 40);
+  ctx.fillText('P1: タップでブレーキ！', 30, 78);
   ctx.fillStyle = '#60a5fa';
   ctx.fillText('P2: タップでブレーキ！', 30, h - 30);
 
@@ -6102,7 +6102,7 @@ function whackAMoleLoop() {
   ctx.font = 'bold 22px sans-serif';
   ctx.fillStyle = '#f87171';
   ctx.textAlign = 'left';
-  ctx.fillText(`P1: ${moleScore1}/10`, 30, 40);
+  ctx.fillText(`P1: ${moleScore1}/10`, 30, 78);
   ctx.fillStyle = '#60a5fa';
   ctx.fillText(`P2: ${moleScore2}/10`, 30, h - 30);
 
@@ -6204,7 +6204,7 @@ function stopwatchLoop() {
   // P1 zone
   ctx.font = 'bold 20px sans-serif';
   ctx.fillStyle = stopP1Time !== null ? '#4ade80' : '#f87171';
-  ctx.fillText(stopP1Time !== null ? `P1: 確定！` : 'P1: 10秒だと思ったらタップ！', w / 2, 70);
+  ctx.fillText(stopP1Time !== null ? `P1: 確定！` : 'P1: 10秒だと思ったらタップ！', w / 2, 80);
 
   // P2 zone
   ctx.fillStyle = stopP2Time !== null ? '#4ade80' : '#60a5fa';
@@ -6307,7 +6307,7 @@ function zombieLoop() {
   ctx.font = 'bold 18px sans-serif';
   ctx.fillStyle = '#f87171';
   ctx.textAlign = 'left';
-  ctx.fillText(`P1 防衛ライフ: ${'❤️'.repeat(zombieScore1)}`, 20, 32);
+  ctx.fillText(`P1 防衛ライフ: ${'❤️'.repeat(zombieScore1)}`, 25, 78);
   ctx.fillStyle = '#60a5fa';
   ctx.fillText(`P2 防衛ライフ: ${'❤️'.repeat(zombieScore2)}`, 20, h - 20);
 
@@ -6412,7 +6412,7 @@ function coinTossLoop() {
   // Scores
   ctx.fillStyle = '#f87171';
   ctx.textAlign = 'left';
-  ctx.fillText(`P1: ${coinScore1}点`, 30, 40);
+  ctx.fillText(`P1: ${coinScore1}点`, 30, 78);
   ctx.fillStyle = '#60a5fa';
   ctx.fillText(`P2: ${coinScore2}点`, 30, h - 30);
 
@@ -6537,7 +6537,7 @@ function craneLoop() {
   ctx.font = 'bold 18px sans-serif';
   ctx.fillStyle = '#f87171';
   ctx.textAlign = 'left';
-  ctx.fillText(`P1: ${craneScore1}/300点`, 20, 30);
+  ctx.fillText(`P1: ${craneScore1}/300点`, 25, 78);
   ctx.fillStyle = '#60a5fa';
   ctx.fillText(`P2: ${craneScore2}/300点`, 20, h - 15);
 
@@ -6754,7 +6754,7 @@ function suikaDropLoop() {
   ctx.font = 'bold 18px sans-serif';
   ctx.fillStyle = '#f87171';
   ctx.textAlign = 'left';
-  ctx.fillText(`P1: ${suikaScore1}点 (タップで果物を落とす)`, 20, 30);
+  ctx.fillText(`P1: ${suikaScore1}点 (タップで果物を落とす)`, 25, 78);
   ctx.fillStyle = '#60a5fa';
   ctx.fillText(`P2: ${suikaScore2}点 (タップで果物を落とす)`, 20, h / 2 + 30);
 
@@ -6854,11 +6854,11 @@ function snoozeLoop() {
   ctx.fillStyle = '#f87171';
   ctx.font = 'bold 18px sans-serif';
   ctx.textAlign = 'left';
-  ctx.fillText(`P1 覚醒度: ${Math.round(snoozeP1Energy)}%`, 25, 40);
+  ctx.fillText(`P1 覚醒度: ${Math.round(snoozeP1Energy)}%`, 25, 75);
   ctx.fillStyle = '#475569';
-  ctx.fillRect(25, 55, w - 50, 16);
+  ctx.fillRect(25, 85, w - 50, 16);
   ctx.fillStyle = '#ef4444';
-  ctx.fillRect(25, 55, (w - 50) * (snoozeP1Energy / 100), 16);
+  ctx.fillRect(25, 85, (w - 50) * (snoozeP1Energy / 100), 16);
   ctx.font = '48px sans-serif';
   ctx.textAlign = 'center';
   ctx.fillText(snoozeP1Energy > 50 ? '😳' : '🥱', w / 2, h * 0.25);
@@ -7074,10 +7074,10 @@ function flipbookLoop() {
 
   // P1 Book (Top)
   ctx.fillStyle = '#f8fafc';
-  ctx.fillRect(40, 30, w - 80, h / 2 - 60);
+  ctx.fillRect(40, 65, w - 80, h / 2 - 80);
   ctx.font = 'bold 18px sans-serif';
   ctx.fillStyle = '#ef4444';
-  ctx.fillText(`P1 ページ: ${flipP1Page}/100 (タップ連打でめくれ！)`, 50, 60);
+  ctx.fillText(`P1 ページ: ${flipP1Page}/100 (タップ連打でめくれ！)`, 50, 85);
 
   // Animated stickman running
   const frame1 = Math.floor(flipP1Page / 5) % 4;
@@ -7203,7 +7203,7 @@ function paperPlaneLoop() {
   ctx.font = 'bold 18px sans-serif';
   ctx.fillStyle = '#ffffff';
   ctx.textAlign = 'left';
-  ctx.fillText(`P1 飛行距離: ${Math.round(plane1.dist)}m ${plane1.flying ? '🚀' : '(タップで発射)'}`, 20, 30);
+  ctx.fillText(`P1 飛行距離: ${Math.round(plane1.dist)}m ${plane1.flying ? '🚀' : '(タップで発射)'}`, 25, 78);
   ctx.fillText(`P2 飛行距離: ${Math.round(plane2.dist)}m ${plane2.flying ? '🚀' : '(タップで発射)'}`, 20, h / 2 + 30);
 
   requestAnimationFrame(paperPlaneLoop);
@@ -7433,13 +7433,13 @@ function cupShuffleLoop() {
   ctx.font = 'bold 20px sans-serif';
   ctx.fillStyle = '#f87171';
   ctx.textAlign = 'left';
-  ctx.fillText(`P1: ${cupScore1}/3点`, 30, 40);
+  ctx.fillText(`P1: ${cupScore1}/3点`, 30, 78);
   ctx.fillStyle = '#60a5fa';
   ctx.fillText(`P2: ${cupScore2}/3点`, 30, h - 30);
 
   ctx.textAlign = 'center';
   ctx.fillStyle = '#facc15';
-  ctx.fillText(isShuffling ? 'シャッフル中... 目を離すな！' : 'コインが入ったカップをタップ！', w / 2, 80);
+  ctx.fillText(isShuffling ? 'シャッフル中... 目を離すな！' : 'コインが入ったカップをタップ！', w / 2, 105);
 
   // Draw cups
   cups.forEach((c, idx) => {
@@ -7534,14 +7534,14 @@ function ufoRescueLoop() {
   ctx.font = 'bold 18px sans-serif';
   ctx.fillStyle = '#f87171';
   ctx.textAlign = 'left';
-  ctx.fillText(`P1: ${ufo1Score}/500点`, 30, 40);
+  ctx.fillText(`P1: ${ufo1Score}/500点`, 30, 78);
   ctx.fillStyle = '#60a5fa';
   ctx.fillText(`P2: ${ufo2Score}/500点`, 30, h - 30);
 
   // Draw UFOs
   ctx.font = '48px sans-serif';
   ctx.textAlign = 'center';
-  ctx.fillText('🛸', w / 2, 70);
+  ctx.fillText('🛸', w / 2, 95);
   ctx.fillText('🛸', w / 2, h - 60);
 
   // Draw aliens
@@ -7655,7 +7655,7 @@ function pinballLoop() {
   ctx.font = 'bold 20px sans-serif';
   ctx.fillStyle = '#f87171';
   ctx.textAlign = 'left';
-  ctx.fillText(`P1: ${pinScore1}/3点`, 30, 40);
+  ctx.fillText(`P1: ${pinScore1}/3点`, 30, 78);
   ctx.fillStyle = '#60a5fa';
   ctx.fillText(`P2: ${pinScore2}/3点`, 30, h - 30);
 
@@ -7741,7 +7741,7 @@ function hockeyShotLoop() {
   ctx.font = 'bold 18px sans-serif';
   ctx.fillStyle = '#ffffff';
   ctx.textAlign = 'left';
-  ctx.fillText(`P1: ${shotScore1}点 (キーパーの隙間をタップ！)`, 20, 40);
+  ctx.fillText(`P1: ${shotScore1}点 (キーパーの隙間をタップ！)`, 25, 78);
   ctx.fillText(`P2: ${shotScore2}点 (キーパーの隙間をタップ！)`, 20, h - 30);
 
   requestAnimationFrame(hockeyShotLoop);
@@ -7922,9 +7922,9 @@ function chalkDustLoop() {
   ctx.font = 'bold 18px sans-serif';
   ctx.fillStyle = '#f87171';
   ctx.textAlign = 'left';
-  ctx.fillText(`P1 チョーク粉: ${dustP1}% (タップ連打で吸い取れ！)`, 25, 40);
+  ctx.fillText(`P1 チョーク粉: ${dustP1}% (タップ連打で吸い取れ！)`, 25, 75);
   ctx.fillStyle = `rgba(255, 255, 255, ${dustP1 / 120})`;
-  ctx.fillRect(30, 60, w - 60, h / 2 - 80);
+  ctx.fillRect(30, 85, w - 60, h / 2 - 95);
   ctx.font = '48px sans-serif';
   ctx.textAlign = 'center';
   ctx.fillText('🧹 💨', w / 2, h * 0.25);
@@ -8010,13 +8010,13 @@ function rubberBandLoop() {
   ctx.font = 'bold 18px sans-serif';
   ctx.fillStyle = '#f87171';
   ctx.textAlign = 'left';
-  ctx.fillText(`P1: ${rubberP1Score}/3点 (的を狙ってタップ！)`, 25, 40);
+  ctx.fillText(`P1: ${rubberP1Score}/3点 (的を狙ってタップ！)`, 25, 78);
   ctx.fillStyle = '#60a5fa';
   ctx.fillText(`P2: ${rubberP2Score}/3点 (的を狙ってタップ！)`, 25, h - 30);
 
   // Rubber band icons
   ctx.font = '36px sans-serif';
-  ctx.fillText('🏹 💫', w / 2, 80);
+  ctx.fillText('🏹 💫', w / 2, 105);
   ctx.fillText('🏹 💫', w / 2, h - 70);
 
   requestAnimationFrame(rubberBandLoop);
@@ -8102,7 +8102,7 @@ function bookTowerLoop() {
   ctx.font = 'bold 18px sans-serif';
   ctx.fillStyle = '#f87171';
   ctx.textAlign = 'left';
-  ctx.fillText(`P1 タワー: ${bookFloor1}/5冊 (中央で落とせ！)`, 25, 40);
+  ctx.fillText(`P1 タワー: ${bookFloor1}/5冊 (中央で落とせ！)`, 25, 78);
   ctx.fillStyle = '#60a5fa';
   ctx.fillText(`P2 タワー: ${bookFloor2}/5冊 (中央で落とせ！)`, 25, h - 30);
 
@@ -8188,7 +8188,7 @@ function penSpinLoop() {
   ctx.font = 'bold 18px sans-serif';
   ctx.fillStyle = '#f87171';
   ctx.textAlign = 'left';
-  ctx.fillText(`P1 回転数: ${penSpin1}/20回転 (タップで加速！)`, 25, 40);
+  ctx.fillText(`P1 回転数: ${penSpin1}/20回転 (タップで加速！)`, 25, 78);
   ctx.fillStyle = '#60a5fa';
   ctx.fillText(`P2 回転数: ${penSpin2}/20回転 (タップで加速！)`, 25, h - 30);
 
@@ -8262,7 +8262,7 @@ function deskCurlingLoop() {
   ctx.font = 'bold 20px sans-serif';
   ctx.fillStyle = '#ffffff';
   ctx.textAlign = 'center';
-  ctx.fillText(curlP1Turn ? '👉 P1の番: 中心を狙ってタップ！' : '👉 P2の番: 中心を狙ってタップ！', w / 2, 40);
+  ctx.fillText(curlP1Turn ? '👉 P1の番: 中心を狙ってタップ！' : '👉 P2の番: 中心を狙ってタップ！', w / 2, 78);
 
   requestAnimationFrame(deskCurlingLoop);
 }
@@ -8345,7 +8345,7 @@ function calculatorLoop() {
   ctx.font = 'bold 18px sans-serif';
   ctx.fillStyle = '#f87171';
   ctx.textAlign = 'left';
-  ctx.fillText(`P1: ${calcP1Score}/3問`, 25, 40);
+  ctx.fillText(`P1: ${calcP1Score}/3問`, 25, 78);
   ctx.fillStyle = '#60a5fa';
   ctx.fillText(`P2: ${calcP2Score}/3問`, 25, h - 30);
 
@@ -8440,7 +8440,7 @@ function lunchBreadLoop() {
   ctx.font = 'bold 18px sans-serif';
   ctx.fillStyle = '#f87171';
   ctx.textAlign = 'left';
-  ctx.fillText(`P1: ${breadP1Score}/3本 (パンが出た瞬間に奪取！)`, 25, 40);
+  ctx.fillText(`P1: ${breadP1Score}/3本 (パンが出た瞬間に奪取！)`, 25, 78);
   ctx.fillStyle = '#60a5fa';
   ctx.fillText(`P2: ${breadP2Score}/3本 (パンが出た瞬間に奪取！)`, 25, h - 30);
 
@@ -8518,13 +8518,13 @@ function eyeDropsLoop() {
   ctx.font = 'bold 18px sans-serif';
   ctx.fillStyle = '#f87171';
   ctx.textAlign = 'left';
-  ctx.fillText(`P1: ${eyeScore1}/3滴 (目を開けた瞬間に点眼！)`, 25, 40);
+  ctx.fillText(`P1: ${eyeScore1}/3滴 (目を開けた瞬間に点眼！)`, 25, 78);
   ctx.fillStyle = '#60a5fa';
   ctx.fillText(`P2: ${eyeScore2}/3滴 (目を開けた瞬間に点眼！)`, 25, h - 30);
 
   // Drops
   ctx.font = '36px sans-serif';
-  ctx.fillText('💧', w / 2, 90);
+  ctx.fillText('💧', w / 2, 110);
   ctx.fillText('💧', w / 2, h - 70);
 
   requestAnimationFrame(eyeDropsLoop);
@@ -8597,7 +8597,7 @@ function doubleDutchLoop() {
   ctx.font = 'bold 18px sans-serif';
   ctx.fillStyle = '#f87171';
   ctx.textAlign = 'left';
-  ctx.fillText(`P1: ${dutchScore1}/10回 (リズムよくタップ！)`, 25, 40);
+  ctx.fillText(`P1: ${dutchScore1}/10回 (リズムよくタップ！)`, 25, 78);
   ctx.fillStyle = '#60a5fa';
   ctx.fillText(`P2: ${dutchScore2}/10回 (リズムよくタップ！)`, 25, h - 30);
 
@@ -8679,7 +8679,7 @@ function rocketLaunchLoop() {
   ctx.font = 'bold 18px sans-serif';
   ctx.fillStyle = '#f87171';
   ctx.textAlign = 'left';
-  ctx.fillText(`P1 高度: ${rockAlt1}km / 500km (連打で噴射！)`, 25, 40);
+  ctx.fillText(`P1 高度: ${rockAlt1}km / 500km (連打で噴射！)`, 25, 78);
   ctx.fillStyle = '#60a5fa';
   ctx.fillText(`P2 高度: ${rockAlt2}km / 500km (連打で噴射！)`, 25, h - 30);
 
