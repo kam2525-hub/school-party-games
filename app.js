@@ -330,6 +330,46 @@ function startGame(gameKey) {
       showScreen('screen-suikadrop');
       initSuikaDropGame();
       break;
+    case 'snooze':
+      showScreen('screen-snooze');
+      initSnoozeGame();
+      break;
+    case 'ruler':
+      showScreen('screen-ruler');
+      initRulerGame();
+      break;
+    case 'flipbook':
+      showScreen('screen-flipbook');
+      initFlipbookGame();
+      break;
+    case 'paperplane':
+      showScreen('screen-paperplane');
+      initPaperPlaneGame();
+      break;
+    case 'thumbsumo':
+      showScreen('screen-thumbsumo');
+      initThumbSumoGame();
+      break;
+    case 'cupshuffle':
+      showScreen('screen-cupshuffle');
+      initCupShuffleGame();
+      break;
+    case 'uforescue':
+      showScreen('screen-uforescue');
+      initUfoRescueGame();
+      break;
+    case 'pinball':
+      showScreen('screen-pinball');
+      initPinballGame();
+      break;
+    case 'hockeyshot':
+      showScreen('screen-hockeyshot');
+      initHockeyShotGame();
+      break;
+    case 'goldfish':
+      showScreen('screen-goldfish');
+      initGoldfishGame();
+      break;
   }
 }
 
@@ -6679,4 +6719,1096 @@ function suikaDropLoop() {
   ctx.fillText(`P2: ${suikaScore2}点 (タップで果物を落とす)`, 20, h / 2 + 30);
 
   requestAnimationFrame(suikaDropLoop);
+}
+
+/* ============================================================
+   61. 居眠りサバイバル (Classroom Snooze)
+   ============================================================ */
+let snoozeCanvas, snoozeCtx;
+let snoozeP1Energy = 100, snoozeP2Energy = 100;
+let chalkX = 0, chalkY = 0, chalkVx = 0, chalkVy = 0, chalkActive = false;
+let isSnoozeRunning = false;
+
+function initSnoozeGame() {
+  snoozeCanvas = document.getElementById('snooze-canvas');
+  snoozeCtx = snoozeCanvas.getContext('2d');
+  snoozeCanvas.width = snoozeCanvas.clientWidth;
+  snoozeCanvas.height = snoozeCanvas.clientHeight;
+
+  snoozeP1Energy = 100;
+  snoozeP2Energy = 100;
+  chalkActive = false;
+  isSnoozeRunning = true;
+
+  snoozeCanvas.onpointerdown = (e) => {
+    if (!isSnoozeRunning) return;
+    const y = e.clientY - snoozeCanvas.getBoundingClientRect().top;
+    if (y < snoozeCanvas.height / 2) {
+      snoozeP1Energy = Math.min(100, snoozeP1Energy + 12);
+    } else {
+      snoozeP2Energy = Math.min(100, snoozeP2Energy + 12);
+    }
+    window.sounds.playTap();
+  };
+
+  requestAnimationFrame(snoozeLoop);
+}
+
+function snoozeLoop() {
+  if (currentScreen !== 'screen-snooze' || !isSnoozeRunning) return;
+
+  const ctx = snoozeCtx;
+  const w = snoozeCanvas.width;
+  const h = snoozeCanvas.height;
+
+  // Energy drains continuously
+  snoozeP1Energy -= 0.28;
+  snoozeP2Energy -= 0.28;
+
+  if (snoozeP1Energy <= 0 || snoozeP2Energy <= 0) {
+    isSnoozeRunning = false;
+    window.sounds.playExplosion();
+    const winner = snoozeP1Energy > 0 ? 'プレイヤー 1' : 'プレイヤー 2';
+    showModal('😴 睡魔に敗北！', `居眠りして机に突っ伏した！\n${winner} の耐えきり勝利！`, () => {
+      initSnoozeGame();
+    });
+    return;
+  }
+
+  // Random Chalk throw
+  if (!chalkActive && Math.random() < 0.02) {
+    chalkActive = true;
+    chalkX = w / 2;
+    chalkY = h / 2;
+    chalkVx = (Math.random() - 0.5) * 6;
+    chalkVy = (Math.random() > 0.5 ? 1 : -1) * 7;
+    window.sounds.playGunshot();
+  }
+
+  if (chalkActive) {
+    chalkX += chalkVx;
+    chalkY += chalkVy;
+    if (chalkY < 40) {
+      snoozeP1Energy -= 25;
+      chalkActive = false;
+      window.sounds.playSlash();
+    } else if (chalkY > h - 40) {
+      snoozeP2Energy -= 25;
+      chalkActive = false;
+      window.sounds.playSlash();
+    }
+  }
+
+  ctx.fillStyle = '#0f172a';
+  ctx.fillRect(0, 0, w, h);
+
+  // Teacher chalk desk in middle
+  ctx.fillStyle = '#334155';
+  ctx.fillRect(w / 2 - 80, h / 2 - 25, 160, 50);
+  ctx.font = 'bold 16px sans-serif';
+  ctx.fillStyle = '#facc15';
+  ctx.textAlign = 'center';
+  ctx.fillText('👨‍🏫 授業中 (連打で起きろ！)', w / 2, h / 2 + 6);
+
+  // P1 Eye (Top)
+  ctx.fillStyle = '#f87171';
+  ctx.font = 'bold 18px sans-serif';
+  ctx.textAlign = 'left';
+  ctx.fillText(`P1 覚醒度: ${Math.round(snoozeP1Energy)}%`, 25, 40);
+  ctx.fillStyle = '#475569';
+  ctx.fillRect(25, 55, w - 50, 16);
+  ctx.fillStyle = '#ef4444';
+  ctx.fillRect(25, 55, (w - 50) * (snoozeP1Energy / 100), 16);
+  ctx.font = '48px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText(snoozeP1Energy > 50 ? '😳' : '🥱', w / 2, h * 0.25);
+
+  // P2 Eye (Bottom)
+  ctx.fillStyle = '#60a5fa';
+  ctx.font = 'bold 18px sans-serif';
+  ctx.textAlign = 'left';
+  ctx.fillText(`P2 覚醒度: ${Math.round(snoozeP2Energy)}%`, 25, h - 65);
+  ctx.fillStyle = '#475569';
+  ctx.fillRect(25, h - 50, w - 50, 16);
+  ctx.fillStyle = '#3b82f6';
+  ctx.fillRect(25, h - 50, (w - 50) * (snoozeP2Energy / 100), 16);
+  ctx.font = '48px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText(snoozeP2Energy > 50 ? '😳' : '🥱', w / 2, h * 0.75);
+
+  // Draw Chalk
+  if (chalkActive) {
+    ctx.font = '28px sans-serif';
+    ctx.fillText('🖍️ チョーク！', chalkX, chalkY);
+  }
+
+  requestAnimationFrame(snoozeLoop);
+}
+
+/* ============================================================
+   62. 定規飛ばしバトル (Ruler Fling)
+   ============================================================ */
+let rulerCanvas, rulerCtx;
+let ruler1, ruler2;
+let rulerDrag = null;
+let isRulerRunning = false;
+
+function initRulerGame() {
+  rulerCanvas = document.getElementById('ruler-canvas');
+  rulerCtx = rulerCanvas.getContext('2d');
+  rulerCanvas.width = rulerCanvas.clientWidth;
+  rulerCanvas.height = rulerCanvas.clientHeight;
+
+  const w = rulerCanvas.width;
+  const h = rulerCanvas.height;
+
+  ruler1 = { x: w / 2, y: h * 0.25, vx: 0, vy: 0, w: 90, h: 22, color: '#f87171' };
+  ruler2 = { x: w / 2, y: h * 0.75, vx: 0, vy: 0, w: 90, h: 22, color: '#60a5fa' };
+  rulerDrag = null;
+  isRulerRunning = true;
+
+  rulerCanvas.onpointerdown = (e) => {
+    if (!isRulerRunning) return;
+    const rect = rulerCanvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+
+    if (Math.hypot(x - ruler1.x, y - ruler1.y) < 50) {
+      rulerDrag = { ruler: ruler1, startX: ruler1.x, startY: ruler1.y, curX: x, curY: y };
+    } else if (Math.hypot(x - ruler2.x, y - ruler2.y) < 50) {
+      rulerDrag = { ruler: ruler2, startX: ruler2.x, startY: ruler2.y, curX: x, curY: y };
+    }
+  };
+
+  rulerCanvas.onpointermove = (e) => {
+    if (!rulerDrag) return;
+    const rect = rulerCanvas.getBoundingClientRect();
+    rulerDrag.curX = e.clientX - rect.left;
+    rulerDrag.curY = e.clientY - rect.top;
+  };
+
+  rulerCanvas.onpointerup = () => {
+    if (!rulerDrag) return;
+    const dx = rulerDrag.startX - rulerDrag.curX;
+    const dy = rulerDrag.startY - rulerDrag.curY;
+    const power = Math.min(Math.hypot(dx, dy), 100) * 0.25;
+    const angle = Math.atan2(dy, dx);
+
+    rulerDrag.ruler.vx = Math.cos(angle) * power;
+    rulerDrag.ruler.vy = Math.sin(angle) * power;
+    window.sounds.playSlash();
+    rulerDrag = null;
+  };
+
+  requestAnimationFrame(rulerLoop);
+}
+
+function rulerLoop() {
+  if (currentScreen !== 'screen-ruler' || !isRulerRunning) return;
+
+  const ctx = rulerCtx;
+  const w = rulerCanvas.width;
+  const h = rulerCanvas.height;
+
+  [ruler1, ruler2].forEach(r => {
+    r.x += r.vx;
+    r.y += r.vy;
+    r.vx *= 0.95;
+    r.vy *= 0.95;
+  });
+
+  // Collision
+  if (Math.hypot(ruler1.x - ruler2.x, ruler1.y - ruler2.y) < 45) {
+    window.sounds.playGunshot();
+    ruler1.vx = (ruler1.x - ruler2.x) * 0.2;
+    ruler1.vy = (ruler1.y - ruler2.y) * 0.2;
+    ruler2.vx = -ruler1.vx;
+    ruler2.vy = -ruler1.vy;
+  }
+
+  // Bounds
+  const r1Out = ruler1.x < 20 || ruler1.x > w - 20 || ruler1.y < 20 || ruler1.y > h - 20;
+  const r2Out = ruler2.x < 20 || ruler2.x > w - 20 || ruler2.y < 20 || ruler2.y > h - 20;
+
+  if (r1Out || r2Out) {
+    isRulerRunning = false;
+    window.sounds.playSuccess();
+    const winner = r1Out ? 'プレイヤー 2' : 'プレイヤー 1';
+    showModal('📏 机から落下！', `${winner} の定規が生き残りました！`, () => {
+      initRulerGame();
+    });
+    return;
+  }
+
+  // Draw Wood table
+  ctx.fillStyle = '#78350f';
+  ctx.fillRect(0, 0, w, h);
+  ctx.fillStyle = '#92400e';
+  ctx.fillRect(20, 20, w - 40, h - 40);
+
+  if (rulerDrag) {
+    ctx.strokeStyle = '#facc15';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(rulerDrag.startX, rulerDrag.startY);
+    ctx.lineTo(rulerDrag.curX, rulerDrag.curY);
+    ctx.stroke();
+  }
+
+  // Draw Rulers
+  [ruler1, ruler2].forEach(r => {
+    ctx.save();
+    ctx.translate(r.x, r.y);
+    ctx.fillStyle = r.color;
+    ctx.fillRect(-r.w / 2, -r.h / 2, r.w, r.h);
+    ctx.strokeStyle = '#ffffff';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(-r.w / 2, -r.h / 2, r.w, r.h);
+    // Ruler notches
+    ctx.fillStyle = '#ffffff';
+    for (let x = -r.w / 2 + 8; x < r.w / 2; x += 10) {
+      ctx.fillRect(x, -r.h / 2, 2, 6);
+    }
+    ctx.restore();
+  });
+
+  requestAnimationFrame(rulerLoop);
+}
+
+/* ============================================================
+   63. パラパラマンガ・レース (Flipbook Race)
+   ============================================================ */
+let flipCanvas, flipCtx;
+let flipP1Page = 0, flipP2Page = 0;
+let isFlipRunning = false;
+
+function initFlipbookGame() {
+  flipCanvas = document.getElementById('flipbook-canvas');
+  flipCtx = flipCanvas.getContext('2d');
+  flipCanvas.width = flipCanvas.clientWidth;
+  flipCanvas.height = flipCanvas.clientHeight;
+
+  flipP1Page = 0;
+  flipP2Page = 0;
+  isFlipRunning = true;
+
+  flipCanvas.onpointerdown = (e) => {
+    if (!isFlipRunning) return;
+    const y = e.clientY - flipCanvas.getBoundingClientRect().top;
+    if (y < flipCanvas.height / 2) {
+      flipP1Page += 3;
+      if (flipP1Page >= 100) {
+        isFlipRunning = false;
+        window.sounds.playSuccess();
+        showModal('📖 パラパラ完走！', 'プレイヤー 1 が最速で100ページをめくり終えました！', () => {
+          initFlipbookGame();
+        });
+        return;
+      }
+    } else {
+      flipP2Page += 3;
+      if (flipP2Page >= 100) {
+        isFlipRunning = false;
+        window.sounds.playSuccess();
+        showModal('📖 パラパラ完走！', 'プレイヤー 2 が最速で100ページをめくり終えました！', () => {
+          initFlipbookGame();
+        });
+        return;
+      }
+    }
+    window.sounds.playTap();
+  };
+
+  requestAnimationFrame(flipbookLoop);
+}
+
+function flipbookLoop() {
+  if (currentScreen !== 'screen-flipbook' || !isFlipRunning) return;
+
+  const ctx = flipCtx;
+  const w = flipCanvas.width;
+  const h = flipCanvas.height;
+
+  ctx.fillStyle = '#1e293b';
+  ctx.fillRect(0, 0, w, h);
+
+  // P1 Book (Top)
+  ctx.fillStyle = '#f8fafc';
+  ctx.fillRect(40, 30, w - 80, h / 2 - 60);
+  ctx.font = 'bold 18px sans-serif';
+  ctx.fillStyle = '#ef4444';
+  ctx.fillText(`P1 ページ: ${flipP1Page}/100 (タップ連打でめくれ！)`, 50, 60);
+
+  // Animated stickman running
+  const frame1 = Math.floor(flipP1Page / 5) % 4;
+  const stickmen = ['🏃', '🚶', '🤸', '🏃'];
+  ctx.font = '54px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText(stickmen[frame1], 60 + (w - 140) * (flipP1Page / 100), h * 0.25);
+
+  // P2 Book (Bottom)
+  ctx.fillStyle = '#f8fafc';
+  ctx.fillRect(40, h / 2 + 30, w - 80, h / 2 - 60);
+  ctx.font = 'bold 18px sans-serif';
+  ctx.fillStyle = '#3b82f6';
+  ctx.textAlign = 'left';
+  ctx.fillText(`P2 ページ: ${flipP2Page}/100 (タップ連打でめくれ！)`, 50, h / 2 + 60);
+
+  const frame2 = Math.floor(flipP2Page / 5) % 4;
+  ctx.font = '54px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText(stickmen[frame2], 60 + (w - 140) * (flipP2Page / 100), h * 0.75);
+
+  requestAnimationFrame(flipbookLoop);
+}
+
+/* ============================================================
+   64. 紙ヒコーキ・フライト (Paper Plane)
+   ============================================================ */
+let planeCanvas, planeCtx;
+let plane1 = { x: 30, y: 0, vx: 0, vy: 0, dist: 0, flying: false };
+let plane2 = { x: 30, y: 0, vx: 0, vy: 0, dist: 0, flying: false };
+let isPlaneRunning = false;
+
+function initPaperPlaneGame() {
+  planeCanvas = document.getElementById('paperplane-canvas');
+  planeCtx = planeCanvas.getContext('2d');
+  planeCanvas.width = planeCanvas.clientWidth;
+  planeCanvas.height = planeCanvas.clientHeight;
+
+  const h = planeCanvas.height;
+  plane1 = { x: 40, y: h * 0.25, vx: 0, vy: 0, dist: 0, flying: false };
+  plane2 = { x: 40, y: h * 0.75, vx: 0, vy: 0, dist: 0, flying: false };
+  isPlaneRunning = true;
+
+  planeCanvas.onpointerdown = (e) => {
+    if (!isPlaneRunning) return;
+    const y = e.clientY - planeCanvas.getBoundingClientRect().top;
+    if (y < planeCanvas.height / 2 && !plane1.flying) {
+      plane1.flying = true;
+      plane1.vx = 8 + Math.random() * 5;
+      plane1.vy = -3;
+      window.sounds.playGunshot();
+    } else if (y >= planeCanvas.height / 2 && !plane2.flying) {
+      plane2.flying = true;
+      plane2.vx = 8 + Math.random() * 5;
+      plane2.vy = -3;
+      window.sounds.playGunshot();
+    }
+  };
+
+  requestAnimationFrame(paperPlaneLoop);
+}
+
+function paperPlaneLoop() {
+  if (currentScreen !== 'screen-paperplane' || !isPlaneRunning) return;
+
+  const ctx = planeCtx;
+  const w = planeCanvas.width;
+  const h = planeCanvas.height;
+
+  // Plane 1 physics
+  if (plane1.flying) {
+    plane1.x += plane1.vx;
+    plane1.y += plane1.vy;
+    plane1.vy += 0.08; // gravity
+    plane1.vx *= 0.985;
+    plane1.dist += plane1.vx;
+    if (plane1.y > h / 2 - 20) {
+      plane1.flying = false;
+      plane1.vy = 0;
+      plane1.vx = 0;
+      if (!plane2.flying && plane2.dist > 0) evaluatePlaneWinner();
+    }
+  }
+
+  // Plane 2 physics
+  if (plane2.flying) {
+    plane2.x += plane2.vx;
+    plane2.y += plane2.vy;
+    plane2.vy += 0.08;
+    plane2.vx *= 0.985;
+    plane2.dist += plane2.vx;
+    if (plane2.y > h - 20) {
+      plane2.flying = false;
+      plane2.vy = 0;
+      plane2.vx = 0;
+      if (!plane1.flying && plane1.dist > 0) evaluatePlaneWinner();
+    }
+  }
+
+  ctx.fillStyle = '#0284c7';
+  ctx.fillRect(0, 0, w, h);
+
+  // Clouds
+  ctx.font = '36px sans-serif';
+  ctx.fillText('☁️', w * 0.3, h * 0.15);
+  ctx.fillText('☁️', w * 0.7, h * 0.65);
+
+  // Divider
+  ctx.strokeStyle = '#bae6fd';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(0, h / 2);
+  ctx.lineTo(w, h / 2);
+  ctx.stroke();
+
+  // Draw planes
+  ctx.font = '40px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('✈️', plane1.x, plane1.y);
+  ctx.fillText('✈️', plane2.x, plane2.y);
+
+  // Scores
+  ctx.font = 'bold 18px sans-serif';
+  ctx.fillStyle = '#ffffff';
+  ctx.textAlign = 'left';
+  ctx.fillText(`P1 飛行距離: ${Math.round(plane1.dist)}m ${plane1.flying ? '🚀' : '(タップで発射)'}`, 20, 30);
+  ctx.fillText(`P2 飛行距離: ${Math.round(plane2.dist)}m ${plane2.flying ? '🚀' : '(タップで発射)'}`, 20, h / 2 + 30);
+
+  requestAnimationFrame(paperPlaneLoop);
+}
+
+function evaluatePlaneWinner() {
+  isPlaneRunning = false;
+  window.sounds.playSuccess();
+  const winner = plane1.dist > plane2.dist ? 'プレイヤー 1' : 'プレイヤー 2';
+  showModal('✈️ 飛行距離コンテスト！', `${winner} の大勝利！\n(P1: ${Math.round(plane1.dist)}m vs P2: ${Math.round(plane2.dist)}m)`, () => {
+    initPaperPlaneGame();
+  });
+}
+
+/* ============================================================
+   65. 指相撲・サムレスリング (Thumb Sumo)
+   ============================================================ */
+let thumbCanvas, thumbCtx;
+let thumbP1 = { x: 0, y: 0 }, thumbP2 = { x: 0, y: 0 };
+let pinTimer = 0, pinPlayer = 0;
+let isThumbRunning = false;
+
+function initThumbSumoGame() {
+  thumbCanvas = document.getElementById('thumbsumo-canvas');
+  thumbCtx = thumbCanvas.getContext('2d');
+  thumbCanvas.width = thumbCanvas.clientWidth;
+  thumbCanvas.height = thumbCanvas.clientHeight;
+
+  const w = thumbCanvas.width;
+  const h = thumbCanvas.height;
+
+  thumbP1 = { x: w / 2, y: h * 0.35 };
+  thumbP2 = { x: w / 2, y: h * 0.65 };
+  pinTimer = 0;
+  pinPlayer = 0;
+  isThumbRunning = true;
+
+  thumbCanvas.onpointermove = (e) => {
+    if (!isThumbRunning) return;
+    const rect = thumbCanvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+
+    if (y < thumbCanvas.height / 2) {
+      thumbP1.x = x;
+      thumbP1.y = y;
+    } else {
+      thumbP2.x = x;
+      thumbP2.y = y;
+    }
+  };
+
+  requestAnimationFrame(thumbSumoLoop);
+}
+
+function thumbSumoLoop() {
+  if (currentScreen !== 'screen-thumbsumo' || !isThumbRunning) return;
+
+  const ctx = thumbCtx;
+  const w = thumbCanvas.width;
+  const h = thumbCanvas.height;
+
+  // Check pin
+  const dist = Math.hypot(thumbP1.x - thumbP2.x, thumbP1.y - thumbP2.y);
+  if (dist < 40) {
+    if (thumbP1.y > thumbP2.y) {
+      // P1 on top of P2
+      pinPlayer = 1;
+      pinTimer++;
+    } else {
+      pinPlayer = 2;
+      pinTimer++;
+    }
+
+    if (pinTimer % 30 === 0) window.sounds.playGunshot();
+
+    if (pinTimer >= 90) { // 3 seconds (90 frames)
+      isThumbRunning = false;
+      window.sounds.playSuccess();
+      const winner = pinPlayer === 1 ? 'プレイヤー 1' : 'プレイヤー 2';
+      showModal('👍 スリーカウント奪取！', `技あり！${winner} の指相撲勝利！`, () => {
+        initThumbSumoGame();
+      });
+      return;
+    }
+  } else {
+    pinTimer = 0;
+    pinPlayer = 0;
+  }
+
+  ctx.fillStyle = '#312e81';
+  ctx.fillRect(0, 0, w, h);
+
+  // Ring boundary
+  ctx.strokeStyle = '#e0e7ff';
+  ctx.lineWidth = 3;
+  ctx.strokeRect(30, 30, w - 60, h - 60);
+
+  // Status
+  ctx.font = 'bold 20px sans-serif';
+  ctx.fillStyle = '#facc15';
+  ctx.textAlign = 'center';
+  if (pinPlayer > 0) {
+    ctx.fillText(`ホールド中！カウント ${(pinTimer / 30).toFixed(1)} / 3.0`, w / 2, h / 2);
+  } else {
+    ctx.fillText('相手の親指の上に飛び乗れ！', w / 2, h / 2);
+  }
+
+  // Draw thumbs
+  ctx.font = '54px sans-serif';
+  ctx.fillText('👍', thumbP1.x, thumbP1.y);
+  ctx.fillText('👍', thumbP2.x, thumbP2.y);
+
+  requestAnimationFrame(thumbSumoLoop);
+}
+
+/* ============================================================
+   66. シャッフル・カップ (Cup Shuffle)
+   ============================================================ */
+let cupCanvas, cupCtx;
+let cups = [];
+let coinIndex = 1;
+let shuffleCount = 0;
+let isShuffling = false;
+let cupScore1 = 0, cupScore2 = 0;
+let isCupRunning = false;
+
+function initCupShuffleGame() {
+  cupCanvas = document.getElementById('cupshuffle-canvas');
+  cupCtx = cupCanvas.getContext('2d');
+  cupCanvas.width = cupCanvas.clientWidth;
+  cupCanvas.height = cupCanvas.clientHeight;
+
+  const w = cupCanvas.width;
+  const h = cupCanvas.height;
+
+  cups = [
+    { x: w * 0.25, y: h / 2, targetX: w * 0.25 },
+    { x: w * 0.50, y: h / 2, targetX: w * 0.50 },
+    { x: w * 0.75, y: h / 2, targetX: w * 0.75 }
+  ];
+
+  coinIndex = 1;
+  shuffleCount = 10;
+  isShuffling = true;
+  cupScore1 = 0;
+  cupScore2 = 0;
+  isCupRunning = true;
+
+  startCupShuffleSequence();
+
+  cupCanvas.onpointerdown = (e) => {
+    if (!isCupRunning || isShuffling) return;
+    const rect = cupCanvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    const player = y < cupCanvas.height / 2 ? 1 : 2;
+
+    for (let i = 0; i < cups.length; i++) {
+      if (Math.abs(x - cups[i].x) < 45) {
+        if (i === coinIndex) {
+          window.sounds.playSuccess();
+          if (player === 1) cupScore1++;
+          else cupScore2++;
+
+          if (cupScore1 >= 3 || cupScore2 >= 3) {
+            isCupRunning = false;
+            const winner = cupScore1 >= 3 ? 'プレイヤー 1' : 'プレイヤー 2';
+            showModal('🥤 動体視力マスター！', `${winner} の勝利！\n(P1: ${cupScore1}点 vs P2: ${cupScore2}点)`, () => {
+              initCupShuffleGame();
+            });
+            return;
+          } else {
+            shuffleCount = 10;
+            isShuffling = true;
+            setTimeout(startCupShuffleSequence, 600);
+          }
+        } else {
+          window.sounds.playExplosion();
+        }
+        break;
+      }
+    }
+  };
+
+  requestAnimationFrame(cupShuffleLoop);
+}
+
+function startCupShuffleSequence() {
+  if (shuffleCount <= 0) {
+    isShuffling = false;
+    return;
+  }
+  shuffleCount--;
+
+  // Swap two cups
+  const i1 = Math.floor(Math.random() * 3);
+  let i2 = Math.floor(Math.random() * 3);
+  while (i1 === i2) i2 = Math.floor(Math.random() * 3);
+
+  const tmp = cups[i1].targetX;
+  cups[i1].targetX = cups[i2].targetX;
+  cups[i2].targetX = tmp;
+
+  if (coinIndex === i1) coinIndex = i2;
+  else if (coinIndex === i2) coinIndex = i1;
+
+  window.sounds.playTap();
+  setTimeout(startCupShuffleSequence, 200);
+}
+
+function cupShuffleLoop() {
+  if (currentScreen !== 'screen-cupshuffle' || !isCupRunning) return;
+
+  const ctx = cupCtx;
+  const w = cupCanvas.width;
+  const h = cupCanvas.height;
+
+  // Move cups towards target
+  cups.forEach(c => {
+    c.x += (c.targetX - c.x) * 0.25;
+  });
+
+  ctx.fillStyle = '#064e3b';
+  ctx.fillRect(0, 0, w, h);
+
+  ctx.font = 'bold 20px sans-serif';
+  ctx.fillStyle = '#f87171';
+  ctx.textAlign = 'left';
+  ctx.fillText(`P1: ${cupScore1}/3点`, 30, 40);
+  ctx.fillStyle = '#60a5fa';
+  ctx.fillText(`P2: ${cupScore2}/3点`, 30, h - 30);
+
+  ctx.textAlign = 'center';
+  ctx.fillStyle = '#facc15';
+  ctx.fillText(isShuffling ? 'シャッフル中... 目を離すな！' : 'コインが入ったカップをタップ！', w / 2, 80);
+
+  // Draw cups
+  cups.forEach((c, idx) => {
+    ctx.font = '54px sans-serif';
+    ctx.fillText('🥤', c.x, c.y);
+    if (!isShuffling && idx === coinIndex) {
+      ctx.font = '24px sans-serif';
+      ctx.fillText('🪙', c.x, c.y + 35);
+    }
+  });
+
+  requestAnimationFrame(cupShuffleLoop);
+}
+
+/* ============================================================
+   67. UFOレスキュー (UFO Rescue)
+   ============================================================ */
+let ufoResCanvas, ufoResCtx;
+let aliens = [];
+let ufo1Score = 0, ufo2Score = 0;
+let isUfoResRunning = false;
+
+function initUfoRescueGame() {
+  ufoResCanvas = document.getElementById('uforescue-canvas');
+  ufoResCtx = ufoResCanvas.getContext('2d');
+  ufoResCanvas.width = ufoResCanvas.clientWidth;
+  ufoResCanvas.height = ufoResCanvas.clientHeight;
+
+  const w = ufoResCanvas.width;
+  const h = ufoResCanvas.height;
+
+  aliens = [];
+  for (let i = 0; i < 5; i++) {
+    aliens.push({
+      x: 40 + Math.random() * (w - 80),
+      y: h / 2 + (Math.random() - 0.5) * 60,
+      vx: (Math.random() - 0.5) * 4
+    });
+  }
+
+  ufo1Score = 0;
+  ufo2Score = 0;
+  isUfoResRunning = true;
+
+  ufoResCanvas.onpointerdown = (e) => {
+    if (!isUfoResRunning) return;
+    const rect = ufoResCanvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    const player = y < ufoResCanvas.height / 2 ? 1 : 2;
+
+    for (let i = 0; i < aliens.length; i++) {
+      const a = aliens[i];
+      if (Math.abs(x - a.x) < 45) {
+        window.sounds.playGunshot();
+        if (player === 1) ufo1Score += 100;
+        else ufo2Score += 100;
+        a.x = 40 + Math.random() * (ufoResCanvas.width - 80);
+
+        if (ufo1Score >= 500 || ufo2Score >= 500) {
+          isUfoResRunning = false;
+          window.sounds.playSuccess();
+          const winner = ufo1Score >= 500 ? 'プレイヤー 1' : 'プレイヤー 2';
+          showModal('🛸 レスキュー完了！', `${winner} の勝利！\n(P1: ${ufo1Score}点 vs P2: ${ufo2Score}点)`, () => {
+            initUfoRescueGame();
+          });
+        }
+        break;
+      }
+    }
+  };
+
+  requestAnimationFrame(ufoRescueLoop);
+}
+
+function ufoRescueLoop() {
+  if (currentScreen !== 'screen-uforescue' || !isUfoResRunning) return;
+
+  const ctx = ufoResCtx;
+  const w = ufoResCanvas.width;
+  const h = ufoResCanvas.height;
+
+  aliens.forEach(a => {
+    a.x += a.vx;
+    if (a.x < 30 || a.x > w - 30) a.vx *= -1;
+  });
+
+  ctx.fillStyle = '#09090b';
+  ctx.fillRect(0, 0, w, h);
+
+  // Scores
+  ctx.font = 'bold 18px sans-serif';
+  ctx.fillStyle = '#f87171';
+  ctx.textAlign = 'left';
+  ctx.fillText(`P1: ${ufo1Score}/500点`, 30, 40);
+  ctx.fillStyle = '#60a5fa';
+  ctx.fillText(`P2: ${ufo2Score}/500点`, 30, h - 30);
+
+  // Draw UFOs
+  ctx.font = '48px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('🛸', w / 2, 70);
+  ctx.fillText('🛸', w / 2, h - 60);
+
+  // Draw aliens
+  aliens.forEach(a => {
+    ctx.fillText('👽', a.x, a.y);
+  });
+
+  requestAnimationFrame(ufoRescueLoop);
+}
+
+/* ============================================================
+   68. ピンボール・デュエル (Pinball Duel)
+   ============================================================ */
+let pinballCanvas, pinballCtx;
+let pBall = { x: 0, y: 0, vx: 3, vy: 4, r: 12 };
+let pinScore1 = 0, pinScore2 = 0;
+let isPinballRunning = false;
+
+function initPinballGame() {
+  pinballCanvas = document.getElementById('pinball-canvas');
+  pinballCtx = pinballCanvas.getContext('2d');
+  pinballCanvas.width = pinballCanvas.clientWidth;
+  pinballCanvas.height = pinballCanvas.clientHeight;
+
+  const w = pinballCanvas.width;
+  const h = pinballCanvas.height;
+
+  pBall = { x: w / 2, y: h / 2, vx: 3.5, vy: 4, r: 12 };
+  pinScore1 = 0;
+  pinScore2 = 0;
+  isPinballRunning = true;
+
+  pinballCanvas.onpointerdown = (e) => {
+    if (!isPinballRunning) return;
+    const y = e.clientY - pinballCanvas.getBoundingClientRect().top;
+    if (y < pinballCanvas.height / 2 && pBall.y < pinballCanvas.height * 0.35) {
+      pBall.vy = Math.abs(pBall.vy) + 1;
+      pBall.vx = (Math.random() - 0.5) * 8;
+      window.sounds.playGunshot();
+    } else if (y >= pinballCanvas.height / 2 && pBall.y > pinballCanvas.height * 0.65) {
+      pBall.vy = -(Math.abs(pBall.vy) + 1);
+      pBall.vx = (Math.random() - 0.5) * 8;
+      window.sounds.playGunshot();
+    }
+  };
+
+  requestAnimationFrame(pinballLoop);
+}
+
+function pinballLoop() {
+  if (currentScreen !== 'screen-pinball' || !isPinballRunning) return;
+
+  const ctx = pinballCtx;
+  const w = pinballCanvas.width;
+  const h = pinballCanvas.height;
+
+  pBall.x += pBall.vx;
+  pBall.y += pBall.vy;
+
+  // Wall bounce
+  if (pBall.x < pBall.r || pBall.x > w - pBall.r) {
+    pBall.vx *= -1;
+    window.sounds.playTap();
+  }
+
+  // Goals
+  if (pBall.y < 0) {
+    pinScore2++;
+    window.sounds.playSuccess();
+    pBall.x = w / 2;
+    pBall.y = h / 2;
+    pBall.vy = 4;
+  } else if (pBall.y > h) {
+    pinScore1++;
+    window.sounds.playSuccess();
+    pBall.x = w / 2;
+    pBall.y = h / 2;
+    pBall.vy = -4;
+  }
+
+  if (pinScore1 >= 3 || pinScore2 >= 3) {
+    isPinballRunning = false;
+    const winner = pinScore1 >= 3 ? 'プレイヤー 1' : 'プレイヤー 2';
+    showModal('🕹️ ピンボール勝負決着！', `${winner} の勝利！\n(P1: ${pinScore1}点 vs P2: ${pinScore2}点)`, () => {
+      initPinballGame();
+    });
+    return;
+  }
+
+  ctx.fillStyle = '#1e1b4b';
+  ctx.fillRect(0, 0, w, h);
+
+  // Bumpers
+  ctx.beginPath();
+  ctx.arc(w / 2, h / 2, 35, 0, Math.PI * 2);
+  ctx.fillStyle = '#facc15';
+  ctx.fill();
+  if (Math.hypot(pBall.x - w / 2, pBall.y - h / 2) < 47) {
+    pBall.vx *= -1.2;
+    pBall.vy *= -1.2;
+    window.sounds.playSlash();
+  }
+
+  // Draw ball
+  ctx.beginPath();
+  ctx.arc(pBall.x, pBall.y, pBall.r, 0, Math.PI * 2);
+  ctx.fillStyle = '#ffffff';
+  ctx.fill();
+
+  // Scores
+  ctx.font = 'bold 20px sans-serif';
+  ctx.fillStyle = '#f87171';
+  ctx.textAlign = 'left';
+  ctx.fillText(`P1: ${pinScore1}/3点`, 30, 40);
+  ctx.fillStyle = '#60a5fa';
+  ctx.fillText(`P2: ${pinScore2}/3点`, 30, h - 30);
+
+  requestAnimationFrame(pinballLoop);
+}
+
+/* ============================================================
+   69. ホッケー・ペナルティ (Hockey Shot)
+   ============================================================ */
+let hockeyShotCanvas, hockeyShotCtx;
+let goalieX = 150, goalieVx = 4;
+let shotScore1 = 0, shotScore2 = 0;
+let shotAttempts = 0;
+let isHockeyShotRunning = false;
+
+function initHockeyShotGame() {
+  hockeyShotCanvas = document.getElementById('hockeyshot-canvas');
+  hockeyShotCtx = hockeyShotCanvas.getContext('2d');
+  hockeyShotCanvas.width = hockeyShotCanvas.clientWidth;
+  hockeyShotCanvas.height = hockeyShotCanvas.clientHeight;
+
+  goalieX = hockeyShotCanvas.width / 2;
+  goalieVx = 4;
+  shotScore1 = 0;
+  shotScore2 = 0;
+  shotAttempts = 0;
+  isHockeyShotRunning = true;
+
+  hockeyShotCanvas.onpointerdown = (e) => {
+    if (!isHockeyShotRunning) return;
+    const rect = hockeyShotCanvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    const player = y < hockeyShotCanvas.height / 2 ? 1 : 2;
+
+    shotAttempts++;
+    if (Math.abs(x - goalieX) > 40) {
+      // Goal!
+      window.sounds.playSuccess();
+      if (player === 1) shotScore1++;
+      else shotScore2++;
+    } else {
+      // Saved!
+      window.sounds.playSlash();
+    }
+
+    if (shotAttempts >= 6) {
+      isHockeyShotRunning = false;
+      const winner = shotScore1 > shotScore2 ? 'プレイヤー 1' : (shotScore2 > shotScore1 ? 'プレイヤー 2' : '引き分け');
+      showModal('🏒 ペナルティ合戦終了！', `${winner} の勝利！\n(P1: ${shotScore1}点 vs P2: ${shotScore2}点)`, () => {
+        initHockeyShotGame();
+      });
+    }
+  };
+
+  requestAnimationFrame(hockeyShotLoop);
+}
+
+function hockeyShotLoop() {
+  if (currentScreen !== 'screen-hockeyshot' || !isHockeyShotRunning) return;
+
+  const ctx = hockeyShotCtx;
+  const w = hockeyShotCanvas.width;
+  const h = hockeyShotCanvas.height;
+
+  goalieX += goalieVx;
+  if (goalieX < 50 || goalieX > w - 50) goalieVx *= -1;
+
+  ctx.fillStyle = '#0284c7';
+  ctx.fillRect(0, 0, w, h);
+
+  // Goal cage
+  ctx.strokeStyle = '#ef4444';
+  ctx.lineWidth = 4;
+  ctx.strokeRect(40, h / 2 - 40, w - 80, 80);
+
+  // Goalie
+  ctx.font = '48px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('🤺', goalieX, h / 2 + 15);
+
+  // Scores
+  ctx.font = 'bold 18px sans-serif';
+  ctx.fillStyle = '#ffffff';
+  ctx.textAlign = 'left';
+  ctx.fillText(`P1: ${shotScore1}点 (キーパーの隙間をタップ！)`, 20, 40);
+  ctx.fillText(`P2: ${shotScore2}点 (キーパーの隙間をタップ！)`, 20, h - 30);
+
+  requestAnimationFrame(hockeyShotLoop);
+}
+
+/* ============================================================
+   70. 金魚すくいポイバトル (Goldfish Scoop)
+   ============================================================ */
+let goldfishCanvas, goldfishCtx;
+let fishes = [];
+let goldP1Score = 0, goldP2Score = 0;
+let goldP1Durability = 100, goldP2Durability = 100;
+let isGoldRunning = false;
+
+function initGoldfishGame() {
+  goldfishCanvas = document.getElementById('goldfish-canvas');
+  goldfishCtx = goldfishCanvas.getContext('2d');
+  goldfishCanvas.width = goldfishCanvas.clientWidth;
+  goldfishCanvas.height = goldfishCanvas.clientHeight;
+
+  const w = goldfishCanvas.width;
+  const h = goldfishCanvas.height;
+
+  fishes = [];
+  for (let i = 0; i < 8; i++) {
+    fishes.push({
+      x: 40 + Math.random() * (w - 80),
+      y: 60 + Math.random() * (h - 120),
+      vx: (Math.random() - 0.5) * 3,
+      vy: (Math.random() - 0.5) * 3
+    });
+  }
+
+  goldP1Score = 0;
+  goldP2Score = 0;
+  goldP1Durability = 100;
+  goldP2Durability = 100;
+  isGoldRunning = true;
+
+  goldfishCanvas.onpointerdown = (e) => {
+    if (!isGoldRunning) return;
+    const rect = goldfishCanvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    const player = y < goldfishCanvas.height / 2 ? 1 : 2;
+
+    if (player === 1) goldP1Durability -= 12;
+    else goldP2Durability -= 12;
+
+    let hit = false;
+    for (let i = 0; i < fishes.length; i++) {
+      const f = fishes[i];
+      if (Math.hypot(x - f.x, y - f.y) < 35) {
+        hit = true;
+        window.sounds.playSuccess();
+        if (player === 1) goldP1Score++;
+        else goldP2Score++;
+        f.x = 40 + Math.random() * (goldfishCanvas.width - 80);
+        f.y = 60 + Math.random() * (goldfishCanvas.height - 120);
+        break;
+      }
+    }
+
+    if (!hit) window.sounds.playTap();
+
+    if (goldP1Durability <= 0 && goldP2Durability <= 0) {
+      isGoldRunning = false;
+      const winner = goldP1Score > goldP2Score ? 'プレイヤー 1' : (goldP2Score > goldP1Score ? 'プレイヤー 2' : '引き分け');
+      showModal('🐠 ポイ全損・勝負あり！', `${winner} の勝利！\n(P1: ${goldP1Score}匹 vs P2: ${goldP2Score}匹)`, () => {
+        initGoldfishGame();
+      });
+    }
+  };
+
+  requestAnimationFrame(goldfishLoop);
+}
+
+function goldfishLoop() {
+  if (currentScreen !== 'screen-goldfish' || !isGoldRunning) return;
+
+  const ctx = goldfishCtx;
+  const w = goldfishCanvas.width;
+  const h = goldfishCanvas.height;
+
+  fishes.forEach(f => {
+    f.x += f.vx;
+    f.y += f.vy;
+    if (f.x < 30 || f.x > w - 30) f.vx *= -1;
+    if (f.y < 50 || f.y > h - 50) f.vy *= -1;
+  });
+
+  ctx.fillStyle = '#0284c7';
+  ctx.fillRect(0, 0, w, h);
+
+  // Scores & Durability
+  ctx.font = 'bold 16px sans-serif';
+  ctx.fillStyle = '#ffffff';
+  ctx.textAlign = 'left';
+  ctx.fillText(`P1: ${goldP1Score}匹 (ポイ耐久: ${Math.max(0, goldP1Durability)}%)`, 20, 30);
+  ctx.fillText(`P2: ${goldP2Score}匹 (ポイ耐久: ${Math.max(0, goldP2Durability)}%)`, 20, h - 20);
+
+  // Draw Fishes
+  ctx.font = '36px sans-serif';
+  ctx.textAlign = 'center';
+  fishes.forEach(f => {
+    ctx.fillText('🐠', f.x, f.y);
+  });
+
+  requestAnimationFrame(goldfishLoop);
 }
