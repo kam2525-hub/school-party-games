@@ -19,7 +19,9 @@ window.addEventListener('load', () => {
     'cricket', 'hurdle', 'snake', 'invaders', 'curling',
     'memory', 'skate', 'catch', 'blocktennis', 'seesaw',
     'bowling', 'dribble', 'gravity', 'axe', 'balloon',
-    'arm', 'pitstop', 'laser', 'pogo', 'fencing'
+    'arm', 'pitstop', 'laser', 'pogo', 'fencing',
+    'stealthlunch', 'eraser', 'edgestopper', 'whackamole', 'stopwatch',
+    'zombie', 'cointoss', 'crane', 'electricwire', 'suikadrop'
   ];
 
   let successCount = 0;
@@ -57,11 +59,11 @@ cmd = [
     file_url
 ]
 
-print("Launching Edge to verify all 50 games...")
+print("Launching Edge to verify all 60 games...")
 result = subprocess.run(cmd, capture_output=True, text=True, encoding='utf-8', errors='ignore')
 
-if "RESULT: 50/50 GAMES INITIALIZED SUCCESSFULLY" in result.stdout:
-    print("\n[SUCCESS] All 50 mini-games successfully initialized in real Edge browser engine with zero errors!")
+if "RESULT: 60/60 GAMES INITIALIZED SUCCESSFULLY" in result.stdout:
+    print("\n[SUCCESS] All 60 mini-games successfully initialized in real Edge browser engine with zero errors!")
 else:
     print("Browser DOM Dump Output:")
     for line in result.stdout.splitlines()[-15:]:

@@ -22,12 +22,12 @@
     <div id="screen-menu" class="screen active">
       <div class="app-title">
         <h1>🎮 休み時間パーティー</h1>
-        <p>1台のスマホでみんなで盛り上がろう！【全20ゲーム収録】</p>
+        <p>1台のスマホでみんなで盛り上がろう！【全60ゲーム収録】</p>
       </div>
 
       <!-- カテゴリタブ -->
       <div class="category-tabs">
-        <button class="tab-btn active" onclick="filterCategory('all')">すべて (50)</button>
+        <button class="tab-btn active" onclick="filterCategory('all')">すべて (60)</button>
         <button class="tab-btn" onclick="filterCategory('action')">💥 アクション</button>
         <button class="tab-btn" onclick="filterCategory('brain')">🧠 脳トレ・反射</button>
         <button class="tab-btn" onclick="filterCategory('party')">🎲 パーティー</button>
@@ -483,6 +483,96 @@
             <p>間合いを詰めて一瞬の踏み込み突き！相手の隙を突いてポイント奪取！</p>
           </div>
         </div>
+
+        <!-- ゲーム51: 早弁ウォンテッド -->
+        <div class="game-card" data-category="action" onclick="startGame('stealthlunch')">
+          <div class="card-icon" style="background: rgba(245, 158, 11, 0.15); color: #f59e0b;">🍱</div>
+          <div class="card-info">
+            <h3>早弁ウォンテッド <span class="card-badge badge-2p">2人対面</span></h3>
+            <p>先生が黒板に向いている隙に長押しで早弁！振り返ったら離せ！</p>
+          </div>
+        </div>
+
+        <!-- ゲーム52: 机の上の消しゴム落とし -->
+        <div class="game-card" data-category="action" onclick="startGame('eraser')">
+          <div class="card-icon" style="background: rgba(59, 130, 246, 0.15); color: #3b82f6;">✏️</div>
+          <div class="card-info">
+            <h3>机の上の消しゴム落とし <span class="card-badge badge-2p">2人対面</span></h3>
+            <p>消しゴムを引っ張ってデコピン発射！相手を机から押し落とせ！</p>
+          </div>
+        </div>
+
+        <!-- ゲーム53: ギリギリ寸止めチキンレース -->
+        <div class="game-card" data-category="brain" onclick="startGame('edgestopper')">
+          <div class="card-icon" style="background: rgba(239, 68, 68, 0.15); color: #ef4444;">🛑</div>
+          <div class="card-info">
+            <h3>寸止めチキンレース <span class="card-badge badge-2p">2人対面</span></h3>
+            <p>猛スピードの車をタップで急ブレーキ！崖の手前ギリギリを狙え！</p>
+          </div>
+        </div>
+
+        <!-- ゲーム54: モグラたたきデュエル -->
+        <div class="game-card" data-category="action" onclick="startGame('whackamole')">
+          <div class="card-icon" style="background: rgba(16, 185, 129, 0.15); color: #10b981;">🔨</div>
+          <div class="card-info">
+            <h3>モグラたたきデュエル <span class="card-badge badge-2p">2人対戦</span></h3>
+            <p>穴から飛び出すモグラを最速タップ！先に10匹叩いた方の勝ち！</p>
+          </div>
+        </div>
+
+        <!-- ゲーム55: 10秒ピタリ体内時計 -->
+        <div class="game-card" data-category="brain" onclick="startGame('stopwatch')">
+          <div class="card-icon" style="background: rgba(139, 92, 246, 0.15); color: #8b5cf6;">⏱️</div>
+          <div class="card-info">
+            <h3>10秒ピタリ体内時計 <span class="card-badge badge-2p">2人対面</span></h3>
+            <p>消える数字！体内時計を研ぎ澄まして10.00秒ジャストで止めろ！</p>
+          </div>
+        </div>
+
+        <!-- ゲーム56: ゾンビ・ディフェンス -->
+        <div class="game-card" data-category="action" onclick="startGame('zombie')">
+          <div class="card-icon" style="background: rgba(234, 179, 8, 0.15); color: #eab308;">🧟</div>
+          <div class="card-info">
+            <h3>ゾンビ・ディフェンス <span class="card-badge badge-2p">2人対面</span></h3>
+            <p>押し寄せるゾンビをタップ連打で撃退！相手陣地に押し戻せ！</p>
+          </div>
+        </div>
+
+        <!-- ゲーム57: コイントス・キャッチ -->
+        <div class="game-card" data-category="brain" onclick="startGame('cointoss')">
+          <div class="card-icon" style="background: rgba(234, 179, 8, 0.15); color: #facc15;">🪙</div>
+          <div class="card-info">
+            <h3>コイントス・キャッチ <span class="card-badge badge-2p">2人対面</span></h3>
+            <p>高く舞い上がるコイン！落ちてくるタイミングに合わせてナイスキャッチ！</p>
+          </div>
+        </div>
+
+        <!-- ゲーム58: クレーン・キャッチャー -->
+        <div class="game-card" data-category="action" onclick="startGame('crane')">
+          <div class="card-icon" style="background: rgba(236, 72, 153, 0.15); color: #ec4899;">🏗️</div>
+          <div class="card-info">
+            <h3>クレーン・キャッチャー <span class="card-badge badge-2p">2人対面</span></h3>
+            <p>左右に揺れるアームをタイミングよく投下！ぬいぐるみを釣り上げろ！</p>
+          </div>
+        </div>
+
+        <!-- ゲーム59: ビリビリ電導イライラ棒 -->
+        <div class="game-card" data-category="brain" onclick="startGame('electricwire')">
+          <div class="card-icon" style="background: rgba(6, 182, 212, 0.15); color: #06b6d4;">⚡</div>
+          <div class="card-info">
+            <h3>電導イライラ棒 <span class="card-badge badge-2p">2人対戦</span></h3>
+            <p>壁に触れずに曲がりくねったコースを進め！息を呑む指先コントロール！</p>
+          </div>
+        </div>
+
+        <!-- ゲーム60: スイカ・ドロップ・ミニ -->
+        <div class="game-card" data-category="party" onclick="startGame('suikadrop')">
+          <div class="card-icon" style="background: rgba(239, 68, 68, 0.15); color: #ef4444;">🍉</div>
+          <div class="card-info">
+            <h3>スイカ・ドロップ・ミニ <span class="card-badge badge-2p">2人対面</span></h3>
+            <p>フルーツを落としてマージ進化！同じ果物をくっつけてスイカを目指せ！</p>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -908,6 +998,56 @@
     <!-- 51. フェンシング・デュエル画面 -->
     <div id="screen-fencing" class="screen">
       <canvas id="fencing-canvas"></canvas>
+    </div>
+
+    <!-- 52. 早弁ウォンテッド画面 -->
+    <div id="screen-stealthlunch" class="screen">
+      <canvas id="stealthlunch-canvas"></canvas>
+    </div>
+
+    <!-- 53. 机の上の消しゴム落とし画面 -->
+    <div id="screen-eraser" class="screen">
+      <canvas id="eraser-canvas"></canvas>
+    </div>
+
+    <!-- 54. 寸止めチキンレース画面 -->
+    <div id="screen-edgestopper" class="screen">
+      <canvas id="edgestopper-canvas"></canvas>
+    </div>
+
+    <!-- 55. モグラたたきデュエル画面 -->
+    <div id="screen-whackamole" class="screen">
+      <canvas id="whackamole-canvas"></canvas>
+    </div>
+
+    <!-- 56. 10秒ピタリ体内時計画面 -->
+    <div id="screen-stopwatch" class="screen">
+      <canvas id="stopwatch-canvas"></canvas>
+    </div>
+
+    <!-- 57. ゾンビ・ディフェンス画面 -->
+    <div id="screen-zombie" class="screen">
+      <canvas id="zombie-canvas"></canvas>
+    </div>
+
+    <!-- 58. コイントス・キャッチ画面 -->
+    <div id="screen-cointoss" class="screen">
+      <canvas id="cointoss-canvas"></canvas>
+    </div>
+
+    <!-- 59. クレーン・キャッチャー画面 -->
+    <div id="screen-crane" class="screen">
+      <canvas id="crane-canvas"></canvas>
+    </div>
+
+    <!-- 60. 電導イライラ棒画面 -->
+    <div id="screen-electricwire" class="screen">
+      <canvas id="electricwire-canvas"></canvas>
+    </div>
+
+    <!-- 61. スイカ・ドロップ・ミニ画面 -->
+    <div id="screen-suikadrop" class="screen">
+      <canvas id="suikadrop-canvas"></canvas>
     </div>
 
     <!-- 結果・通知モーダル -->

@@ -290,6 +290,46 @@ function startGame(gameKey) {
       showScreen('screen-fencing');
       initFencingGame();
       break;
+    case 'stealthlunch':
+      showScreen('screen-stealthlunch');
+      initStealthLunchGame();
+      break;
+    case 'eraser':
+      showScreen('screen-eraser');
+      initEraserGame();
+      break;
+    case 'edgestopper':
+      showScreen('screen-edgestopper');
+      initEdgeStopperGame();
+      break;
+    case 'whackamole':
+      showScreen('screen-whackamole');
+      initWhackAMoleGame();
+      break;
+    case 'stopwatch':
+      showScreen('screen-stopwatch');
+      initStopwatchGame();
+      break;
+    case 'zombie':
+      showScreen('screen-zombie');
+      initZombieGame();
+      break;
+    case 'cointoss':
+      showScreen('screen-cointoss');
+      initCoinTossGame();
+      break;
+    case 'crane':
+      showScreen('screen-crane');
+      initCraneGame();
+      break;
+    case 'electricwire':
+      showScreen('screen-electricwire');
+      initElectricWireGame();
+      break;
+    case 'suikadrop':
+      showScreen('screen-suikadrop');
+      initSuikaDropGame();
+      break;
   }
 }
 
@@ -5427,3 +5467,1216 @@ function fencingLoop() {
 
 
 
+
+/* ============================================================
+   51. 早弁ウォンテッド (Stealth Lunch)
+   ============================================================ */
+let stealthlunchCanvas, stealthlunchCtx;
+let lunchP1Progress = 0, lunchP2Progress = 0;
+let teacherState = 'writing'; // 'writing', 'warn', 'watching'
+let teacherTimer = 0;
+let p1Holding = false, p2Holding = false;
+let isLunchRunning = false;
+
+function initStealthLunchGame() {
+  stealthlunchCanvas = document.getElementById('stealthlunch-canvas');
+  stealthlunchCtx = stealthlunchCanvas.getContext('2d');
+  stealthlunchCanvas.width = stealthlunchCanvas.clientWidth;
+  stealthlunchCanvas.height = stealthlunchCanvas.clientHeight;
+
+  lunchP1Progress = 0;
+  lunchP2Progress = 0;
+  teacherState = 'writing';
+  teacherTimer = 120 + Math.random() * 100;
+  p1Holding = false;
+  p2Holding = false;
+  isLunchRunning = true;
+
+  stealthlunchCanvas.onpointerdown = (e) => {
+    if (!isLunchRunning) return;
+    const y = e.clientY - stealthlunchCanvas.getBoundingClientRect().top;
+    if (y < stealthlunchCanvas.height / 2) {
+      p1Holding = true;
+    } else {
+      p2Holding = true;
+    }
+    window.sounds.playTap();
+  };
+
+  stealthlunchCanvas.onpointerup = (e) => {
+    const y = e.clientY - stealthlunchCanvas.getBoundingClientRect().top;
+    if (y < stealthlunchCanvas.height / 2) {
+      p1Holding = false;
+    } else {
+      p2Holding = false;
+    }
+  };
+
+  requestAnimationFrame(stealthlunchLoop);
+}
+
+function stealthlunchLoop() {
+  if (currentScreen !== 'screen-stealthlunch' || !isLunchRunning) return;
+
+  const ctx = stealthlunchCtx;
+  const w = stealthlunchCanvas.width;
+  const h = stealthlunchCanvas.height;
+
+  // Teacher AI update
+  teacherTimer--;
+  if (teacherTimer <= 0) {
+    if (teacherState === 'writing') {
+      teacherState = 'warn';
+      teacherTimer = 40; // 0.6s warning
+      window.sounds.playCountdown();
+    } else if (teacherState === 'warn') {
+      teacherState = 'watching';
+      teacherTimer = 60 + Math.random() * 60; // 1-2s watching
+      window.sounds.playGunshot();
+    } else {
+      teacherState = 'writing';
+      teacherTimer = 100 + Math.random() * 120;
+    }
+  }
+
+  // Eating logic
+  if (p1Holding) {
+    if (teacherState === 'watching') {
+      // Caught!
+      isLunchRunning = false;
+      window.sounds.playExplosion();
+      showModal('🚨 先生にバレた！', 'プレイヤー 1 が早弁を見つかりました！\nプレイヤー 2 の勝利！', () => {
+        initStealthLunchGame();
+      });
+      return;
+    } else {
+      lunchP1Progress += 0.4;
+      if (lunchP1Progress >= 100) {
+        isLunchRunning = false;
+        window.sounds.playSuccess();
+        showModal('🍱 完食！', 'プレイヤー 1 が見事に弁当を食べきりました！', () => {
+          initStealthLunchGame();
+        });
+        return;
+      }
+    }
+  }
+
+  if (p2Holding) {
+    if (teacherState === 'watching') {
+      // Caught!
+      isLunchRunning = false;
+      window.sounds.playExplosion();
+      showModal('🚨 先生にバレた！', 'プレイヤー 2 が早弁を見つかりました！\nプレイヤー 1 の勝利！', () => {
+        initStealthLunchGame();
+      });
+      return;
+    } else {
+      lunchP2Progress += 0.4;
+      if (lunchP2Progress >= 100) {
+        isLunchRunning = false;
+        window.sounds.playSuccess();
+        showModal('🍱 完食！', 'プレイヤー 2 が見事に弁当を食べきりました！', () => {
+          initStealthLunchGame();
+        });
+        return;
+      }
+    }
+  }
+
+  // Render
+  ctx.fillStyle = '#1e293b';
+  ctx.fillRect(0, 0, w, h);
+
+  // Middle line (Blackboard / Teacher area)
+  ctx.fillStyle = '#065f46'; // Blackboard color
+  ctx.fillRect(0, h / 2 - 60, w, 120);
+  ctx.fillStyle = '#ffffff';
+  ctx.font = 'bold 16px sans-serif';
+  ctx.textAlign = 'center';
+
+  if (teacherState === 'writing') {
+    ctx.fillText('👨‍🏫 先生: 黒板に板書中... (今のうちに長押しで食え！)', w / 2, h / 2 - 25);
+    ctx.font = '40px sans-serif';
+    ctx.fillText('✍️ 👨‍🏫', w / 2, h / 2 + 30);
+  } else if (teacherState === 'warn') {
+    ctx.fillStyle = '#facc15';
+    ctx.fillText('⚠️ 先生: 「ん？なんか物音が...」(離せ！)', w / 2, h / 2 - 25);
+    ctx.font = '40px sans-serif';
+    ctx.fillText('❓ 👨‍🏫 💦', w / 2, h / 2 + 30);
+  } else {
+    ctx.fillStyle = '#ef4444';
+    ctx.fillText('👀 先生: ジーッ... (見てるぞ！動くな！)', w / 2, h / 2 - 25);
+    ctx.font = '40px sans-serif';
+    ctx.fillText('👓 😠 💢', w / 2, h / 2 + 30);
+  }
+
+  // Player 1 (Top)
+  ctx.fillStyle = '#334155';
+  ctx.fillRect(20, 20, w - 40, h / 2 - 90);
+  ctx.fillStyle = '#f87171';
+  ctx.font = 'bold 18px sans-serif';
+  ctx.textAlign = 'left';
+  ctx.fillText('P1 (長押しで早弁)', 35, 45);
+  ctx.font = '36px sans-serif';
+  ctx.fillText(p1Holding ? '😋 🍱🥢' : '🤫 🍱', w / 2 - 40, h * 0.25);
+  // P1 Progress bar
+  ctx.fillStyle = '#475569';
+  ctx.fillRect(35, h * 0.35, w - 70, 16);
+  ctx.fillStyle = '#ef4444';
+  ctx.fillRect(35, h * 0.35, (w - 70) * (lunchP1Progress / 100), 16);
+
+  // Player 2 (Bottom)
+  ctx.fillStyle = '#334155';
+  ctx.fillRect(20, h / 2 + 70, w - 40, h / 2 - 90);
+  ctx.fillStyle = '#60a5fa';
+  ctx.font = 'bold 18px sans-serif';
+  ctx.textAlign = 'left';
+  ctx.fillText('P2 (長押しで早弁)', 35, h / 2 + 95);
+  ctx.font = '36px sans-serif';
+  ctx.fillText(p2Holding ? '😋 🍱🥢' : '🤫 🍱', w / 2 - 40, h * 0.75);
+  // P2 Progress bar
+  ctx.fillStyle = '#475569';
+  ctx.fillRect(35, h * 0.85, w - 70, 16);
+  ctx.fillStyle = '#3b82f6';
+  ctx.fillRect(35, h * 0.85, (w - 70) * (lunchP2Progress / 100), 16);
+
+  requestAnimationFrame(stealthlunchLoop);
+}
+
+/* ============================================================
+   52. 机の上の消しゴム落とし (Eraser Battle)
+   ============================================================ */
+let eraserCanvas, eraserCtx;
+let eraserP1, eraserP2;
+let eraserAiming = null; // { player, startX, startY, curX, curY }
+let isEraserRunning = false;
+
+function initEraserGame() {
+  eraserCanvas = document.getElementById('eraser-canvas');
+  eraserCtx = eraserCanvas.getContext('2d');
+  eraserCanvas.width = eraserCanvas.clientWidth;
+  eraserCanvas.height = eraserCanvas.clientHeight;
+
+  const w = eraserCanvas.width;
+  const h = eraserCanvas.height;
+
+  eraserP1 = { x: w / 2, y: h * 0.25, vx: 0, vy: 0, r: 24, color: '#ef4444', label: 'MONO 1' };
+  eraserP2 = { x: w / 2, y: h * 0.75, vx: 0, vy: 0, r: 24, color: '#3b82f6', label: 'MONO 2' };
+  eraserAiming = null;
+  isEraserRunning = true;
+
+  eraserCanvas.onpointerdown = (e) => {
+    if (!isEraserRunning) return;
+    const rect = eraserCanvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+
+    // Check hit on P1 or P2
+    const d1 = Math.hypot(x - eraserP1.x, y - eraserP1.y);
+    const d2 = Math.hypot(x - eraserP2.x, y - eraserP2.y);
+    if (d1 < 40) {
+      eraserAiming = { player: 1, startX: eraserP1.x, startY: eraserP1.y, curX: x, curY: y };
+    } else if (d2 < 40) {
+      eraserAiming = { player: 2, startX: eraserP2.x, startY: eraserP2.y, curX: x, curY: y };
+    }
+  };
+
+  eraserCanvas.onpointermove = (e) => {
+    if (!eraserAiming) return;
+    const rect = eraserCanvas.getBoundingClientRect();
+    eraserAiming.curX = e.clientX - rect.left;
+    eraserAiming.curY = e.clientY - rect.top;
+  };
+
+  eraserCanvas.onpointerup = () => {
+    if (!eraserAiming) return;
+    const dx = eraserAiming.startX - eraserAiming.curX;
+    const dy = eraserAiming.startY - eraserAiming.curY;
+    const power = Math.min(Math.hypot(dx, dy), 120) * 0.22;
+    const angle = Math.atan2(dy, dx);
+
+    if (eraserAiming.player === 1) {
+      eraserP1.vx = Math.cos(angle) * power;
+      eraserP1.vy = Math.sin(angle) * power;
+    } else {
+      eraserP2.vx = Math.cos(angle) * power;
+      eraserP2.vy = Math.sin(angle) * power;
+    }
+    window.sounds.playGunshot();
+    eraserAiming = null;
+  };
+
+  requestAnimationFrame(eraserLoop);
+}
+
+function eraserLoop() {
+  if (currentScreen !== 'screen-eraser' || !isEraserRunning) return;
+
+  const ctx = eraserCtx;
+  const w = eraserCanvas.width;
+  const h = eraserCanvas.height;
+
+  // Physics update
+  [eraserP1, eraserP2].forEach(p => {
+    p.x += p.vx;
+    p.y += p.vy;
+    p.vx *= 0.96;
+    p.vy *= 0.96;
+  });
+
+  // Collision between erasers
+  const dist = Math.hypot(eraserP1.x - eraserP2.x, eraserP1.y - eraserP2.y);
+  if (dist < eraserP1.r + eraserP2.r && dist > 0) {
+    window.sounds.playTap();
+    const overlap = (eraserP1.r + eraserP2.r) - dist;
+    const nx = (eraserP1.x - eraserP2.x) / dist;
+    const ny = (eraserP1.y - eraserP2.y) / dist;
+
+    eraserP1.x += nx * overlap * 0.5;
+    eraserP1.y += ny * overlap * 0.5;
+    eraserP2.x -= nx * overlap * 0.5;
+    eraserP2.y -= ny * overlap * 0.5;
+
+    const relVx = eraserP1.vx - eraserP2.vx;
+    const relVy = eraserP1.vy - eraserP2.vy;
+    const dot = relVx * nx + relVy * ny;
+
+    eraserP1.vx -= nx * dot * 1.2;
+    eraserP1.vy -= ny * dot * 1.2;
+    eraserP2.vx += nx * dot * 1.2;
+    eraserP2.vy += ny * dot * 1.2;
+  }
+
+  // Fall off table bounds
+  const deskMargin = 30;
+  const p1Out = eraserP1.x < deskMargin || eraserP1.x > w - deskMargin || eraserP1.y < deskMargin || eraserP1.y > h - deskMargin;
+  const p2Out = eraserP2.x < deskMargin || eraserP2.x > w - deskMargin || eraserP2.y < deskMargin || eraserP2.y > h - deskMargin;
+
+  if (p1Out || p2Out) {
+    isEraserRunning = false;
+    window.sounds.playExplosion();
+    const winner = p1Out ? 'プレイヤー 2' : 'プレイヤー 1';
+    showModal('落選！机から落下！', `${winner} の勝利！\n消しゴムを机の上に残しました！`, () => {
+      initEraserGame();
+    });
+    return;
+  }
+
+  // Draw Wood Desk
+  ctx.fillStyle = '#78350f';
+  ctx.fillRect(0, 0, w, h);
+  ctx.fillStyle = '#b45309';
+  ctx.fillRect(deskMargin, deskMargin, w - deskMargin * 2, h - deskMargin * 2);
+
+  // Desk lines
+  ctx.strokeStyle = '#92400e';
+  ctx.lineWidth = 2;
+  for (let i = deskMargin + 60; i < h - deskMargin; i += 60) {
+    ctx.beginPath();
+    ctx.moveTo(deskMargin, i);
+    ctx.lineTo(w - deskMargin, i);
+    ctx.stroke();
+  }
+
+  // Aiming slingshot line
+  if (eraserAiming) {
+    ctx.strokeStyle = '#facc15';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(eraserAiming.startX, eraserAiming.startY);
+    ctx.lineTo(eraserAiming.curX, eraserAiming.curY);
+    ctx.stroke();
+  }
+
+  // Draw Erasers
+  [eraserP1, eraserP2].forEach(p => {
+    ctx.save();
+    ctx.translate(p.x, p.y);
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(-22, -14, 44, 28);
+    ctx.fillStyle = p.color;
+    ctx.fillRect(-22, -14, 18, 28);
+    ctx.strokeStyle = '#1e293b';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(-22, -14, 44, 28);
+    ctx.fillStyle = '#0f172a';
+    ctx.font = 'bold 9px sans-serif';
+    ctx.fillText(p.label, -4, 4);
+    ctx.restore();
+  });
+
+  requestAnimationFrame(eraserLoop);
+}
+
+/* ============================================================
+   53. ギリギリ寸止めチキンレース (Edge Stopper)
+   ============================================================ */
+let edgeCanvas, edgeCtx;
+let car1X = 0, car2X = 0;
+let car1Speed = 0, car2Speed = 0;
+let car1Stopped = false, car2Stopped = false;
+let isEdgeRunning = false;
+
+function initEdgeStopperGame() {
+  edgeCanvas = document.getElementById('edgestopper-canvas');
+  edgeCtx = edgeCanvas.getContext('2d');
+  edgeCanvas.width = edgeCanvas.clientWidth;
+  edgeCanvas.height = edgeCanvas.clientHeight;
+
+  car1X = 40;
+  car2X = 40;
+  car1Speed = 12 + Math.random() * 4;
+  car2Speed = car1Speed;
+  car1Stopped = false;
+  car2Stopped = false;
+  isEdgeRunning = true;
+
+  edgeCanvas.onpointerdown = (e) => {
+    if (!isEdgeRunning) return;
+    const y = e.clientY - edgeCanvas.getBoundingClientRect().top;
+    if (y < edgeCanvas.height / 2 && !car1Stopped) {
+      car1Stopped = true;
+      window.sounds.playGunshot();
+    } else if (y >= edgeCanvas.height / 2 && !car2Stopped) {
+      car2Stopped = true;
+      window.sounds.playGunshot();
+    }
+
+    if (car1Stopped && car2Stopped) {
+      evaluateEdgeResult();
+    }
+  };
+
+  requestAnimationFrame(edgeStopperLoop);
+}
+
+function evaluateEdgeResult() {
+  isEdgeRunning = false;
+  const cliffX = edgeCanvas.width - 70;
+  const p1Dist = cliffX - car1X;
+  const p2Dist = cliffX - car2X;
+
+  const p1Fell = p1Dist < 0;
+  const p2Fell = p2Dist < 0;
+
+  let msg = '';
+  if (p1Fell && p2Fell) {
+    msg = '両者崖から落下！ドロー！';
+  } else if (p1Fell) {
+    msg = `P1が落下！プレイヤー 2 の勝利！(残り: ${Math.round(p2Dist)}px)`;
+  } else if (p2Fell) {
+    msg = `P2が落下！プレイヤー 1 の勝利！(残り: ${Math.round(p1Dist)}px)`;
+  } else if (p1Dist < p2Dist) {
+    msg = `プレイヤー 1 の勝利！\n(P1: 残り${Math.round(p1Dist)}px vs P2: 残り${Math.round(p2Dist)}px)`;
+  } else {
+    msg = `プレイヤー 2 の勝利！\n(P2: 残り${Math.round(p2Dist)}px vs P1: 残り${Math.round(p1Dist)}px)`;
+  }
+
+  window.sounds.playSuccess();
+  showModal('🛑 チキンレース判定！', msg, () => {
+    initEdgeStopperGame();
+  });
+}
+
+function edgeStopperLoop() {
+  if (currentScreen !== 'screen-edgestopper' || !isEdgeRunning) return;
+
+  const ctx = edgeCtx;
+  const w = edgeCanvas.width;
+  const h = edgeCanvas.height;
+  const cliffX = w - 70;
+
+  if (!car1Stopped) {
+    car1X += car1Speed;
+    if (car1X > w) {
+      car1Stopped = true;
+      if (car2Stopped) evaluateEdgeResult();
+    }
+  }
+  if (!car2Stopped) {
+    car2X += car2Speed;
+    if (car2X > w) {
+      car2Stopped = true;
+      if (car1Stopped) evaluateEdgeResult();
+    }
+  }
+
+  // Draw track
+  ctx.fillStyle = '#0f172a';
+  ctx.fillRect(0, 0, w, h);
+
+  // Cliff line
+  ctx.fillStyle = '#ef4444';
+  ctx.fillRect(cliffX, 0, 8, h);
+  ctx.fillStyle = '#991b1b';
+  ctx.fillRect(cliffX + 8, 0, w - cliffX, h);
+
+  ctx.font = 'bold 16px sans-serif';
+  ctx.fillStyle = '#ffffff';
+  ctx.fillText('崖 (FALL)', cliffX + 15, h / 2);
+
+  // P1 lane
+  ctx.fillStyle = '#334155';
+  ctx.fillRect(20, h * 0.25 - 25, cliffX - 20, 50);
+  ctx.font = '40px sans-serif';
+  ctx.fillText('🏎️', car1X - 25, h * 0.25 + 14);
+
+  // P2 lane
+  ctx.fillStyle = '#334155';
+  ctx.fillRect(20, h * 0.75 - 25, cliffX - 20, 50);
+  ctx.font = '40px sans-serif';
+  ctx.fillText('🏎️', car2X - 25, h * 0.75 + 14);
+
+  ctx.font = 'bold 18px sans-serif';
+  ctx.fillStyle = '#f87171';
+  ctx.fillText('P1: タップでブレーキ！', 30, 40);
+  ctx.fillStyle = '#60a5fa';
+  ctx.fillText('P2: タップでブレーキ！', 30, h - 30);
+
+  requestAnimationFrame(edgeStopperLoop);
+}
+
+/* ============================================================
+   54. モグラたたきデュエル (Whack-a-Mole)
+   ============================================================ */
+let moleCanvas, moleCtx;
+let moles = [];
+let moleScore1 = 0, moleScore2 = 0;
+let isMoleRunning = false;
+
+function initWhackAMoleGame() {
+  moleCanvas = document.getElementById('whackamole-canvas');
+  moleCtx = moleCanvas.getContext('2d');
+  moleCanvas.width = moleCanvas.clientWidth;
+  moleCanvas.height = moleCanvas.clientHeight;
+
+  const w = moleCanvas.width;
+  const h = moleCanvas.height;
+
+  // 6 holes
+  moles = [
+    { x: w * 0.28, y: h * 0.35, active: false, timer: 60 },
+    { x: w * 0.72, y: h * 0.35, active: false, timer: 90 },
+    { x: w * 0.28, y: h * 0.50, active: false, timer: 120 },
+    { x: w * 0.72, y: h * 0.50, active: false, timer: 40 },
+    { x: w * 0.28, y: h * 0.65, active: false, timer: 80 },
+    { x: w * 0.72, y: h * 0.65, active: false, timer: 110 }
+  ];
+
+  moleScore1 = 0;
+  moleScore2 = 0;
+  isMoleRunning = true;
+
+  moleCanvas.onpointerdown = (e) => {
+    if (!isMoleRunning) return;
+    const rect = moleCanvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    const player = y < moleCanvas.height / 2 ? 1 : 2;
+
+    for (const m of moles) {
+      if (m.active && Math.hypot(x - m.x, y - m.y) < 45) {
+        m.active = false;
+        m.timer = 60 + Math.random() * 80;
+        window.sounds.playGunshot();
+        if (player === 1) moleScore1++;
+        else moleScore2++;
+
+        if (moleScore1 >= 10 || moleScore2 >= 10) {
+          isMoleRunning = false;
+          window.sounds.playSuccess();
+          const winner = moleScore1 >= 10 ? 'プレイヤー 1' : 'プレイヤー 2';
+          showModal('🔨 モグラ退治マスター！', `${winner} の勝利！\n(P1: ${moleScore1}匹 vs P2: ${moleScore2}匹)`, () => {
+            initWhackAMoleGame();
+          });
+        }
+        break;
+      }
+    }
+  };
+
+  requestAnimationFrame(whackAMoleLoop);
+}
+
+function whackAMoleLoop() {
+  if (currentScreen !== 'screen-whackamole' || !isMoleRunning) return;
+
+  const ctx = moleCtx;
+  const w = moleCanvas.width;
+  const h = moleCanvas.height;
+
+  // Update moles
+  moles.forEach(m => {
+    m.timer--;
+    if (m.timer <= 0) {
+      m.active = !m.active;
+      m.timer = m.active ? 45 + Math.random() * 40 : 60 + Math.random() * 80;
+    }
+  });
+
+  ctx.fillStyle = '#064e3b';
+  ctx.fillRect(0, 0, w, h);
+
+  // Scores
+  ctx.font = 'bold 22px sans-serif';
+  ctx.fillStyle = '#f87171';
+  ctx.textAlign = 'left';
+  ctx.fillText(`P1: ${moleScore1}/10`, 30, 40);
+  ctx.fillStyle = '#60a5fa';
+  ctx.fillText(`P2: ${moleScore2}/10`, 30, h - 30);
+
+  // Draw holes & moles
+  moles.forEach(m => {
+    ctx.beginPath();
+    ctx.ellipse(m.x, m.y + 10, 40, 20, 0, 0, Math.PI * 2);
+    ctx.fillStyle = '#022c22';
+    ctx.fill();
+
+    if (m.active) {
+      ctx.font = '48px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('🐹', m.x, m.y + 12);
+    }
+  });
+
+  requestAnimationFrame(whackAMoleLoop);
+}
+
+/* ============================================================
+   55. 10秒ピタリ体内時計 (Stopwatch 10s)
+   ============================================================ */
+let stopwatchCanvas, stopwatchCtx;
+let stopStartTime = 0;
+let stopP1Time = null, stopP2Time = null;
+let isStopwatchRunning = false;
+
+function initStopwatchGame() {
+  stopwatchCanvas = document.getElementById('stopwatch-canvas');
+  stopwatchCtx = stopwatchCanvas.getContext('2d');
+  stopwatchCanvas.width = stopwatchCanvas.clientWidth;
+  stopwatchCanvas.height = stopwatchCanvas.clientHeight;
+
+  stopStartTime = performance.now();
+  stopP1Time = null;
+  stopP2Time = null;
+  isStopwatchRunning = true;
+
+  stopwatchCanvas.onpointerdown = (e) => {
+    if (!isStopwatchRunning) return;
+    const now = (performance.now() - stopStartTime) / 1000;
+    const y = e.clientY - stopwatchCanvas.getBoundingClientRect().top;
+
+    if (y < stopwatchCanvas.height / 2 && stopP1Time === null) {
+      stopP1Time = now;
+      window.sounds.playGunshot();
+    } else if (y >= stopwatchCanvas.height / 2 && stopP2Time === null) {
+      stopP2Time = now;
+      window.sounds.playGunshot();
+    }
+
+    if (stopP1Time !== null && stopP2Time !== null) {
+      evaluateStopwatch();
+    }
+  };
+
+  requestAnimationFrame(stopwatchLoop);
+}
+
+function evaluateStopwatch() {
+  isStopwatchRunning = false;
+  const diff1 = Math.abs(10.0 - stopP1Time);
+  const diff2 = Math.abs(10.0 - stopP2Time);
+
+  const winner = diff1 < diff2 ? 'プレイヤー 1' : 'プレイヤー 2';
+  window.sounds.playSuccess();
+  showModal('⏱️ 体内時計結果発表！', `${winner} の勝利！\n目標: 10.000秒\nP1: ${stopP1Time.toFixed(3)}秒 (誤差: ${diff1.toFixed(3)}s)\nP2: ${stopP2Time.toFixed(3)}秒 (誤差: ${diff2.toFixed(3)}s)`, () => {
+    initStopwatchGame();
+  });
+}
+
+function stopwatchLoop() {
+  if (currentScreen !== 'screen-stopwatch' || !isStopwatchRunning) return;
+
+  const ctx = stopwatchCtx;
+  const w = stopwatchCanvas.width;
+  const h = stopwatchCanvas.height;
+  const elapsed = (performance.now() - stopStartTime) / 1000;
+
+  ctx.fillStyle = '#0f172a';
+  ctx.fillRect(0, 0, w, h);
+
+  ctx.font = 'bold 24px sans-serif';
+  ctx.fillStyle = '#38bdf8';
+  ctx.textAlign = 'center';
+  ctx.fillText('目指せ【10.000秒】ピタリ！', w / 2, h / 2 - 80);
+
+  // Time display (blinds after 3 seconds)
+  ctx.font = 'bold 54px monospace';
+  if (elapsed < 3.0) {
+    ctx.fillStyle = '#facc15';
+    ctx.fillText(`${elapsed.toFixed(2)}s`, w / 2, h / 2);
+  } else {
+    ctx.fillStyle = '#94a3b8';
+    ctx.fillText('??.??s (集中...)', w / 2, h / 2);
+  }
+
+  // P1 zone
+  ctx.font = 'bold 20px sans-serif';
+  ctx.fillStyle = stopP1Time !== null ? '#4ade80' : '#f87171';
+  ctx.fillText(stopP1Time !== null ? `P1: 確定！` : 'P1: 10秒だと思ったらタップ！', w / 2, 70);
+
+  // P2 zone
+  ctx.fillStyle = stopP2Time !== null ? '#4ade80' : '#60a5fa';
+  ctx.fillText(stopP2Time !== null ? `P2: 確定！` : 'P2: 10秒だと思ったらタップ！', w / 2, h - 70);
+
+  requestAnimationFrame(stopwatchLoop);
+}
+
+/* ============================================================
+   56. ゾンビ・ディフェンス (Zombie Rush)
+   ============================================================ */
+let zombieCanvas, zombieCtx;
+let zombies = [];
+let zombieScore1 = 3, zombieScore2 = 3; // lives
+let isZombieRunning = false;
+
+function initZombieGame() {
+  zombieCanvas = document.getElementById('zombie-canvas');
+  zombieCtx = zombieCanvas.getContext('2d');
+  zombieCanvas.width = zombieCanvas.clientWidth;
+  zombieCanvas.height = zombieCanvas.clientHeight;
+
+  const w = zombieCanvas.width;
+  const h = zombieCanvas.height;
+
+  zombies = [];
+  for (let i = 0; i < 6; i++) {
+    zombies.push({
+      x: 40 + Math.random() * (w - 80),
+      y: h / 2 + (Math.random() - 0.5) * 80,
+      vy: (Math.random() > 0.5 ? 1 : -1) * (1.2 + Math.random() * 1.5)
+    });
+  }
+
+  zombieScore1 = 3;
+  zombieScore2 = 3;
+  isZombieRunning = true;
+
+  zombieCanvas.onpointerdown = (e) => {
+    if (!isZombieRunning) return;
+    const rect = zombieCanvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+
+    zombies.forEach(z => {
+      if (Math.hypot(x - z.x, y - z.y) < 40) {
+        window.sounds.playGunshot();
+        // Repel zombie in opposite direction
+        z.vy = y < zombieCanvas.height / 2 ? 3.5 : -3.5;
+      }
+    });
+  };
+
+  requestAnimationFrame(zombieLoop);
+}
+
+function zombieLoop() {
+  if (currentScreen !== 'screen-zombie' || !isZombieRunning) return;
+
+  const ctx = zombieCtx;
+  const w = zombieCanvas.width;
+  const h = zombieCanvas.height;
+
+  zombies.forEach(z => {
+    z.y += z.vy;
+    if (z.y < 50) {
+      // P1 hit!
+      zombieScore1--;
+      window.sounds.playExplosion();
+      z.y = h / 2;
+      z.vy = 2;
+    } else if (z.y > h - 50) {
+      // P2 hit!
+      zombieScore2--;
+      window.sounds.playExplosion();
+      z.y = h / 2;
+      z.vy = -2;
+    }
+  });
+
+  if (zombieScore1 <= 0 || zombieScore2 <= 0) {
+    isZombieRunning = false;
+    window.sounds.playSuccess();
+    const winner = zombieScore1 > 0 ? 'プレイヤー 1' : 'プレイヤー 2';
+    showModal('🧟 ゾンビ襲来！', `防衛失敗！\n${winner} の防衛成功・勝利！`, () => {
+      initZombieGame();
+    });
+    return;
+  }
+
+  ctx.fillStyle = '#1c1917';
+  ctx.fillRect(0, 0, w, h);
+
+  // Goal lines
+  ctx.fillStyle = 'rgba(239, 68, 68, 0.3)';
+  ctx.fillRect(0, 0, w, 50);
+  ctx.fillStyle = 'rgba(59, 130, 246, 0.3)';
+  ctx.fillRect(0, h - 50, w, 50);
+
+  ctx.font = 'bold 18px sans-serif';
+  ctx.fillStyle = '#f87171';
+  ctx.textAlign = 'left';
+  ctx.fillText(`P1 防衛ライフ: ${'❤️'.repeat(zombieScore1)}`, 20, 32);
+  ctx.fillStyle = '#60a5fa';
+  ctx.fillText(`P2 防衛ライフ: ${'❤️'.repeat(zombieScore2)}`, 20, h - 20);
+
+  // Draw Zombies
+  zombies.forEach(z => {
+    ctx.font = '36px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('🧟', z.x, z.y + 12);
+  });
+
+  requestAnimationFrame(zombieLoop);
+}
+
+/* ============================================================
+   57. コイントス・キャッチ (Coin Toss)
+   ============================================================ */
+let coinCanvas, coinCtx;
+let coinY = 0, coinVy = 0;
+let coinRound = 1;
+let coinScore1 = 0, coinScore2 = 0;
+let isCoinRunning = false;
+
+function initCoinTossGame() {
+  coinCanvas = document.getElementById('cointoss-canvas');
+  coinCtx = coinCanvas.getContext('2d');
+  coinCanvas.width = coinCanvas.clientWidth;
+  coinCanvas.height = coinCanvas.clientHeight;
+
+  coinRound = 1;
+  coinScore1 = 0;
+  coinScore2 = 0;
+  isCoinRunning = true;
+
+  startCoinRound();
+
+  coinCanvas.onpointerdown = (e) => {
+    if (!isCoinRunning) return;
+    const y = e.clientY - coinCanvas.getBoundingClientRect().top;
+    const targetY = coinCanvas.height / 2;
+    const diff = Math.abs(coinY - targetY);
+
+    if (diff < 35) {
+      window.sounds.playSuccess();
+      const pts = diff < 15 ? 100 : 50;
+      if (y < coinCanvas.height / 2) coinScore1 += pts;
+      else coinScore2 += pts;
+
+      if (coinRound >= 3) {
+        isCoinRunning = false;
+        const winner = coinScore1 > coinScore2 ? 'プレイヤー 1' : (coinScore2 > coinScore1 ? 'プレイヤー 2' : '引き分け');
+        showModal('🪙 トス勝負決着！', `${winner} の勝利！\n(P1: ${coinScore1}点 vs P2: ${coinScore2}点)`, () => {
+          initCoinTossGame();
+        });
+      } else {
+        coinRound++;
+        setTimeout(startCoinRound, 600);
+      }
+    } else {
+      window.sounds.playSlash();
+    }
+  };
+
+  requestAnimationFrame(coinTossLoop);
+}
+
+function startCoinRound() {
+  coinY = 40;
+  coinVy = 6 + Math.random() * 3;
+}
+
+function coinTossLoop() {
+  if (currentScreen !== 'screen-cointoss' || !isCoinRunning) return;
+
+  const ctx = coinCtx;
+  const w = coinCanvas.width;
+  const h = coinCanvas.height;
+
+  coinY += coinVy;
+  if (coinY > h) {
+    // missed, reset
+    startCoinRound();
+  }
+
+  ctx.fillStyle = '#0f172a';
+  ctx.fillRect(0, 0, w, h);
+
+  // Catch line
+  ctx.strokeStyle = '#facc15';
+  ctx.lineWidth = 4;
+  ctx.setLineDash([8, 8]);
+  ctx.beginPath();
+  ctx.moveTo(30, h / 2);
+  ctx.lineTo(w - 30, h / 2);
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  ctx.font = 'bold 18px sans-serif';
+  ctx.fillStyle = '#facc15';
+  ctx.textAlign = 'center';
+  ctx.fillText('ここを通過した瞬間にキャッチ！', w / 2, h / 2 - 15);
+
+  // Scores
+  ctx.fillStyle = '#f87171';
+  ctx.textAlign = 'left';
+  ctx.fillText(`P1: ${coinScore1}点`, 30, 40);
+  ctx.fillStyle = '#60a5fa';
+  ctx.fillText(`P2: ${coinScore2}点`, 30, h - 30);
+
+  // Draw Coin
+  ctx.font = '48px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('🪙', w / 2, coinY);
+
+  requestAnimationFrame(coinTossLoop);
+}
+
+/* ============================================================
+   58. クレーン・キャッチャー (Crane Grab)
+   ============================================================ */
+let craneCanvas, craneCtx;
+let craneX = 0, craneSpeed = 4;
+let claw1Y = 50, claw2Y = 0;
+let claw1Dropping = false, claw2Dropping = false;
+let craneScore1 = 0, craneScore2 = 0;
+let isCraneRunning = false;
+
+function initCraneGame() {
+  craneCanvas = document.getElementById('crane-canvas');
+  craneCtx = craneCanvas.getContext('2d');
+  craneCanvas.width = craneCanvas.clientWidth;
+  craneCanvas.height = craneCanvas.clientHeight;
+
+  craneX = 50;
+  craneSpeed = 4;
+  claw1Y = 60;
+  claw2Y = craneCanvas.height - 60;
+  claw1Dropping = false;
+  claw2Dropping = false;
+  craneScore1 = 0;
+  craneScore2 = 0;
+  isCraneRunning = true;
+
+  craneCanvas.onpointerdown = (e) => {
+    if (!isCraneRunning) return;
+    const y = e.clientY - craneCanvas.getBoundingClientRect().top;
+    if (y < craneCanvas.height / 2 && !claw1Dropping) {
+      claw1Dropping = true;
+      window.sounds.playGunshot();
+    } else if (y >= craneCanvas.height / 2 && !claw2Dropping) {
+      claw2Dropping = true;
+      window.sounds.playGunshot();
+    }
+  };
+
+  requestAnimationFrame(craneLoop);
+}
+
+function craneLoop() {
+  if (currentScreen !== 'screen-crane' || !isCraneRunning) return;
+
+  const ctx = craneCtx;
+  const w = craneCanvas.width;
+  const h = craneCanvas.height;
+
+  // Move crane trolley
+  craneX += craneSpeed;
+  if (craneX > w - 40 || craneX < 40) craneSpeed *= -1;
+
+  // Claws
+  if (claw1Dropping) {
+    claw1Y += 8;
+    if (claw1Y >= h / 2 - 20) {
+      claw1Dropping = false;
+      claw1Y = 60;
+      craneScore1 += 100;
+      window.sounds.playSuccess();
+    }
+  }
+
+  if (claw2Dropping) {
+    claw2Y -= 8;
+    if (claw2Y <= h / 2 + 20) {
+      claw2Dropping = false;
+      claw2Y = h - 60;
+      craneScore2 += 100;
+      window.sounds.playSuccess();
+    }
+  }
+
+  if (craneScore1 >= 300 || craneScore2 >= 300) {
+    isCraneRunning = false;
+    const winner = craneScore1 >= 300 ? 'プレイヤー 1' : 'プレイヤー 2';
+    showModal('🏗️ 景品コンプリート！', `${winner} の勝利！\n(P1: ${craneScore1}点 vs P2: ${craneScore2}点)`, () => {
+      initCraneGame();
+    });
+    return;
+  }
+
+  ctx.fillStyle = '#1e1b4b';
+  ctx.fillRect(0, 0, w, h);
+
+  // Conveyor in middle
+  ctx.fillStyle = '#4338ca';
+  ctx.fillRect(0, h / 2 - 25, w, 50);
+  ctx.font = '32px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('🧸 💎 👑 🧸 💎 👑', w / 2, h / 2 + 10);
+
+  // Claw 1
+  ctx.strokeStyle = '#f87171';
+  ctx.lineWidth = 4;
+  ctx.beginPath();
+  ctx.moveTo(craneX, 40);
+  ctx.lineTo(craneX, claw1Y);
+  ctx.stroke();
+  ctx.fillText('🪝', craneX, claw1Y);
+
+  // Claw 2
+  ctx.strokeStyle = '#60a5fa';
+  ctx.beginPath();
+  ctx.moveTo(craneX, h - 40);
+  ctx.lineTo(craneX, claw2Y);
+  ctx.stroke();
+  ctx.fillText('🪝', craneX, claw2Y);
+
+  // Scores
+  ctx.font = 'bold 18px sans-serif';
+  ctx.fillStyle = '#f87171';
+  ctx.textAlign = 'left';
+  ctx.fillText(`P1: ${craneScore1}/300点`, 20, 30);
+  ctx.fillStyle = '#60a5fa';
+  ctx.fillText(`P2: ${craneScore2}/300点`, 20, h - 15);
+
+  requestAnimationFrame(craneLoop);
+}
+
+/* ============================================================
+   59. ビリビリ電導イライラ棒 (Electric Wire)
+   ============================================================ */
+let wireCanvas, wireCtx;
+let wireP1X = 40, wireP2X = 40;
+let isWireRunning = false;
+
+function initElectricWireGame() {
+  wireCanvas = document.getElementById('electricwire-canvas');
+  wireCtx = wireCanvas.getContext('2d');
+  wireCanvas.width = wireCanvas.clientWidth;
+  wireCanvas.height = wireCanvas.clientHeight;
+
+  wireP1X = 40;
+  wireP2X = 40;
+  isWireRunning = true;
+
+  wireCanvas.onpointermove = (e) => {
+    if (!isWireRunning) return;
+    const rect = wireCanvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+
+    if (y < wireCanvas.height / 2) {
+      wireP1X = x;
+      if (wireP1X >= wireCanvas.width - 50) {
+        isWireRunning = false;
+        window.sounds.playSuccess();
+        showModal('⚡ ゴール到達！', 'プレイヤー 1 の勝利！\n電導迷路をクリアしました！', () => {
+          initElectricWireGame();
+        });
+      }
+    } else {
+      wireP2X = x;
+      if (wireP2X >= wireCanvas.width - 50) {
+        isWireRunning = false;
+        window.sounds.playSuccess();
+        showModal('⚡ ゴール到達！', 'プレイヤー 2 の勝利！\n電導迷路をクリアしました！', () => {
+          initElectricWireGame();
+        });
+      }
+    }
+  };
+
+  requestAnimationFrame(electricWireLoop);
+}
+
+function electricWireLoop() {
+  if (currentScreen !== 'screen-electricwire' || !isWireRunning) return;
+
+  const ctx = wireCtx;
+  const w = wireCanvas.width;
+  const h = wireCanvas.height;
+
+  ctx.fillStyle = '#09090b';
+  ctx.fillRect(0, 0, w, h);
+
+  // Track 1
+  ctx.strokeStyle = '#06b6d4';
+  ctx.lineWidth = 14;
+  ctx.beginPath();
+  ctx.moveTo(30, h * 0.25);
+  ctx.lineTo(w - 30, h * 0.25);
+  ctx.stroke();
+
+  // P1 Ring
+  ctx.fillStyle = '#f87171';
+  ctx.beginPath();
+  ctx.arc(wireP1X, h * 0.25, 18, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Track 2
+  ctx.strokeStyle = '#a855f7';
+  ctx.lineWidth = 14;
+  ctx.beginPath();
+  ctx.moveTo(30, h * 0.75);
+  ctx.lineTo(w - 30, h * 0.75);
+  ctx.stroke();
+
+  // P2 Ring
+  ctx.fillStyle = '#60a5fa';
+  ctx.beginPath();
+  ctx.arc(wireP2X, h * 0.75, 18, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.font = 'bold 18px sans-serif';
+  ctx.fillStyle = '#ffffff';
+  ctx.textAlign = 'center';
+  ctx.fillText('⚡ 指でリングをゴール(右端)へ運べ！', w / 2, h / 2);
+
+  requestAnimationFrame(electricWireLoop);
+}
+
+/* ============================================================
+   60. スイカ・ドロップ・ミニ (Suika Drop)
+   ============================================================ */
+let suikaCanvas, suikaCtx;
+let suikaScore1 = 0, suikaScore2 = 0;
+let fruits = [];
+let isSuikaRunning = false;
+
+const FRUIT_TYPES = [
+  { emoji: '🍒', r: 16, pts: 10 },
+  { emoji: '🍓', r: 22, pts: 20 },
+  { emoji: '🍇', r: 28, pts: 40 },
+  { emoji: '🍊', r: 34, pts: 80 },
+  { emoji: '🍉', r: 44, pts: 200 }
+];
+
+function initSuikaDropGame() {
+  suikaCanvas = document.getElementById('suikadrop-canvas');
+  suikaCtx = suikaCanvas.getContext('2d');
+  suikaCanvas.width = suikaCanvas.clientWidth;
+  suikaCanvas.height = suikaCanvas.clientHeight;
+
+  suikaScore1 = 0;
+  suikaScore2 = 0;
+  fruits = [];
+  isSuikaRunning = true;
+
+  suikaCanvas.onpointerdown = (e) => {
+    if (!isSuikaRunning) return;
+    const rect = suikaCanvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    const player = y < suikaCanvas.height / 2 ? 1 : 2;
+
+    const baseType = Math.floor(Math.random() * 2); // 0 or 1
+    fruits.push({
+      x: x,
+      y: player === 1 ? 50 : suikaCanvas.height / 2 + 50,
+      level: baseType,
+      player: player,
+      vy: 4
+    });
+    window.sounds.playTap();
+  };
+
+  requestAnimationFrame(suikaDropLoop);
+}
+
+function suikaDropLoop() {
+  if (currentScreen !== 'screen-suikadrop' || !isSuikaRunning) return;
+
+  const ctx = suikaCtx;
+  const w = suikaCanvas.width;
+  const h = suikaCanvas.height;
+
+  // Update fruits
+  fruits.forEach(f => {
+    f.y += f.vy;
+    const floorY = f.player === 1 ? h / 2 - 30 : h - 30;
+    if (f.y > floorY) {
+      f.y = floorY;
+      f.vy = 0;
+    }
+  });
+
+  // Check merges
+  for (let i = 0; i < fruits.length; i++) {
+    for (let j = i + 1; j < fruits.length; j++) {
+      const f1 = fruits[i];
+      const f2 = fruits[j];
+      if (f1.player === f2.player && f1.level === f2.level && f1.level < FRUIT_TYPES.length - 1) {
+        if (Math.hypot(f1.x - f2.x, f1.y - f2.y) < FRUIT_TYPES[f1.level].r * 2) {
+          // Merge!
+          f1.level++;
+          fruits.splice(j, 1);
+          window.sounds.playSuccess();
+          const pts = FRUIT_TYPES[f1.level].pts;
+          if (f1.player === 1) suikaScore1 += pts;
+          else suikaScore2 += pts;
+
+          if (f1.level === FRUIT_TYPES.length - 1 || suikaScore1 >= 300 || suikaScore2 >= 300) {
+            isSuikaRunning = false;
+            const winner = suikaScore1 >= suikaScore2 ? 'プレイヤー 1' : 'プレイヤー 2';
+            showModal('🍉 スイカ完成！', `${winner} の勝利！\n(P1: ${suikaScore1}点 vs P2: ${suikaScore2}点)`, () => {
+              initSuikaDropGame();
+            });
+            return;
+          }
+          break;
+        }
+      }
+    }
+  }
+
+  ctx.fillStyle = '#111827';
+  ctx.fillRect(0, 0, w, h);
+
+  // Divider
+  ctx.strokeStyle = '#374151';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(0, h / 2);
+  ctx.lineTo(w, h / 2);
+  ctx.stroke();
+
+  // Draw fruits
+  fruits.forEach(f => {
+    const fData = FRUIT_TYPES[f.level];
+    ctx.font = `${fData.r * 1.5}px sans-serif`;
+    ctx.textAlign = 'center';
+    ctx.fillText(fData.emoji, f.x, f.y);
+  });
+
+  // Scores
+  ctx.font = 'bold 18px sans-serif';
+  ctx.fillStyle = '#f87171';
+  ctx.textAlign = 'left';
+  ctx.fillText(`P1: ${suikaScore1}点 (タップで果物を落とす)`, 20, 30);
+  ctx.fillStyle = '#60a5fa';
+  ctx.fillText(`P2: ${suikaScore2}点 (タップで果物を落とす)`, 20, h / 2 + 30);
+
+  requestAnimationFrame(suikaDropLoop);
+}
