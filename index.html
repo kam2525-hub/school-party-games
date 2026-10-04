@@ -27,7 +27,7 @@
 
       <!-- カテゴリタブ -->
       <div class="category-tabs">
-        <button class="tab-btn active" onclick="filterCategory('all')">すべて (30)</button>
+        <button class="tab-btn active" onclick="filterCategory('all')">すべて (40)</button>
         <button class="tab-btn" onclick="filterCategory('action')">💥 アクション</button>
         <button class="tab-btn" onclick="filterCategory('brain')">🧠 脳トレ・反射</button>
         <button class="tab-btn" onclick="filterCategory('party')">🎲 パーティー</button>
@@ -301,6 +301,96 @@
           <div class="card-info">
             <h3>アーチェリー・エイム <span class="card-badge badge-2p">2人対面</span></h3>
             <p>風の影響を計算して弓を引き絞れ！黄色いセンター的を狙い撃て！</p>
+          </div>
+        </div>
+
+        <!-- ゲーム31: クリケット・バッティング -->
+        <div class="game-card" data-category="action" onclick="startGame('cricket')">
+          <div class="card-icon" style="background: rgba(234, 179, 8, 0.15); color: #facc15;">🏏</div>
+          <div class="card-info">
+            <h3>バッティング・スマッシュ <span class="card-badge badge-2p">2人対戦</span></h3>
+            <p>迫り来る投球をジャストミートで弾き返せ！タイミング打撃勝負！</p>
+          </div>
+        </div>
+
+        <!-- ゲーム32: ハードル走スプリント -->
+        <div class="game-card" data-category="action" onclick="startGame('hurdle')">
+          <div class="card-icon" style="background: rgba(59, 130, 246, 0.15); color: #60a5fa;">🏃</div>
+          <div class="card-info">
+            <h3>ハードル走スプリント <span class="card-badge badge-2p">2人対戦</span></h3>
+            <p>連打で加速＆ハードルをタイミングよくジャンプ！先にゴールを駆け抜けろ！</p>
+          </div>
+        </div>
+
+        <!-- ゲーム33: スネーク・デュエル -->
+        <div class="game-card" data-category="brain" onclick="startGame('snake')">
+          <div class="card-icon" style="background: rgba(16, 185, 129, 0.15); color: #34d399;">🐍</div>
+          <div class="card-info">
+            <h3>スネーク・デュエル <span class="card-badge badge-2p">2人対戦</span></h3>
+            <p>リンゴを食べて体を伸ばせ！相手の体や壁に激突したら即敗北！</p>
+          </div>
+        </div>
+
+        <!-- ゲーム34: スペースインベーダー -->
+        <div class="game-card" data-category="action" onclick="startGame('invaders')">
+          <div class="card-icon" style="background: rgba(168, 85, 247, 0.15); color: #c084fc;">👾</div>
+          <div class="card-info">
+            <h3>スペースインベーダー <span class="card-badge badge-2p">2人対戦</span></h3>
+            <p>左右移動でエイリアンを撃墜！どちらが多くのUFOを落とせるか！</p>
+          </div>
+        </div>
+
+        <!-- ゲーム35: カーリング・ストーン -->
+        <div class="game-card" data-category="brain" onclick="startGame('curling')">
+          <div class="card-icon" style="background: rgba(6, 182, 212, 0.15); color: #22d3ee;">🥌</div>
+          <div class="card-info">
+            <h3>カーリング・ストーン <span class="card-badge badge-2p">2人対面</span></h3>
+            <p>パワーとスライドを調節！サークルの中心にストーンを滑り込ませろ！</p>
+          </div>
+        </div>
+
+        <!-- ゲーム36: メモリーライト -->
+        <div class="game-card" data-category="brain" onclick="startGame('memory')">
+          <div class="card-icon" style="background: rgba(244, 63, 94, 0.15); color: #fb7185;">💡</div>
+          <div class="card-info">
+            <h3>メモリーライト <span class="card-badge badge-2p">2人対戦</span></h3>
+            <p>光った色の順番を記憶して正確にタップ！脳の記憶力サバイバル！</p>
+          </div>
+        </div>
+
+        <!-- ゲーム37: スケボー・バランス -->
+        <div class="game-card" data-category="action" onclick="startGame('skate')">
+          <div class="card-icon" style="background: rgba(249, 115, 22, 0.15); color: #fb923c;">🛹</div>
+          <div class="card-info">
+            <h3>スケボー・バランス <span class="card-badge badge-2p">2人対戦</span></h3>
+            <p>傾くスケボーを左右タップで水平に保ち、より長く走り続けろ！</p>
+          </div>
+        </div>
+
+        <!-- ゲーム38: キャッチボール -->
+        <div class="game-card" data-category="action" onclick="startGame('catch')">
+          <div class="card-icon" style="background: rgba(239, 68, 68, 0.15); color: #ef4444;">⚾</div>
+          <div class="card-info">
+            <h3>キャッチボール・ラリー <span class="card-badge badge-2p">2人対面</span></h3>
+            <p>飛んでくるボールにグローブを合わせてキャッチ＆相手に返球！</p>
+          </div>
+        </div>
+
+        <!-- ゲーム39: ブロックテニス -->
+        <div class="game-card" data-category="action" onclick="startGame('blocktennis')">
+          <div class="card-icon" style="background: rgba(14, 165, 233, 0.15); color: #38bdf8;">🎾</div>
+          <div class="card-info">
+            <h3>ブロックテニス <span class="card-badge badge-2p">2人対戦</span></h3>
+            <p>動く障害物にボールを反射させて相手の意表を突く新感覚テニス！</p>
+          </div>
+        </div>
+
+        <!-- ゲーム40: シーソー・カタパルト -->
+        <div class="game-card" data-category="action" onclick="startGame('seesaw')">
+          <div class="card-icon" style="background: rgba(34, 197, 94, 0.15); color: #4ade80;">🎪</div>
+          <div class="card-info">
+            <h3>シーソー・カタパルト <span class="card-badge badge-2p">2人対戦</span></h3>
+            <p>シーソーに飛び乗って相手を高く打ち上げ、空中の星を奪い合え！</p>
           </div>
         </div>
       </div>
@@ -619,6 +709,65 @@
     <!-- 31. アーチェリー・エイム画面 -->
     <div id="screen-archery" class="screen">
       <canvas id="archery-canvas"></canvas>
+    </div>
+
+    <!-- 32. バッティング・スマッシュ画面 -->
+    <div id="screen-cricket" class="screen">
+      <canvas id="cricket-canvas"></canvas>
+    </div>
+
+    <!-- 33. ハードル走画面 -->
+    <div id="screen-hurdle" class="screen">
+      <canvas id="hurdle-canvas"></canvas>
+    </div>
+
+    <!-- 34. スネーク・デュエル画面 -->
+    <div id="screen-snake" class="screen">
+      <canvas id="snake-canvas"></canvas>
+    </div>
+
+    <!-- 35. スペースインベーダー画面 -->
+    <div id="screen-invaders" class="screen">
+      <canvas id="invaders-canvas"></canvas>
+    </div>
+
+    <!-- 36. カーリング・ストーン画面 -->
+    <div id="screen-curling" class="screen">
+      <canvas id="curling-canvas"></canvas>
+    </div>
+
+    <!-- 37. メモリーライト画面 -->
+    <div id="screen-memory" class="screen">
+      <div class="pass-play-container">
+        <h2 class="game-title-header">💡 メモリーライト</h2>
+        <div style="font-size: 16px; margin-bottom: 12px; color: #38bdf8;" id="memory-turn-label">光る順番を覚えろ！</div>
+        <div class="memory-grid" id="memory-grid">
+          <button class="memory-btn" id="mem-btn-0" style="background: #ef4444;" onclick="handleMemoryInput(0)"></button>
+          <button class="memory-btn" id="mem-btn-1" style="background: #3b82f6;" onclick="handleMemoryInput(1)"></button>
+          <button class="memory-btn" id="mem-btn-2" style="background: #eab308;" onclick="handleMemoryInput(2)"></button>
+          <button class="memory-btn" id="mem-btn-3" style="background: #10b981;" onclick="handleMemoryInput(3)"></button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 38. スケボー・バランス画面 -->
+    <div id="screen-skate" class="screen">
+      <canvas id="skate-canvas"></canvas>
+    </div>
+
+    <!-- 39. キャッチボール画面 -->
+    <div id="screen-catch" class="screen">
+      <canvas id="catch-canvas"></canvas>
+    </div>
+
+    <!-- 40. ブロックテニス画面 -->
+    <div id="screen-blocktennis" class="screen">
+      <canvas id="blocktennis-canvas"></canvas>
+    </div>
+
+    <!-- 41. シーソー・カタパルト画面 -->
+    <div id="screen-seesaw" class="screen">
+      <canvas id="seesaw-canvas"></canvas>
     </div>
 
     <!-- 結果・通知モーダル -->

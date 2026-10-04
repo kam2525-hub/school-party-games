@@ -537,10 +537,34 @@ html, body {
 
 /* 新キャンバス共通 */
 #pong-canvas, #penalty-canvas, #racer-canvas, #lumber-canvas, #jump-canvas, #fishing-canvas, #slash-canvas, #tank-canvas,
-#basket-canvas, #darts-canvas, #rope-canvas, #breakout-canvas, #ufo-canvas, #boxing-canvas, #highway-canvas, #rhythm-canvas, #archery-canvas {
+#basket-canvas, #darts-canvas, #rope-canvas, #breakout-canvas, #ufo-canvas, #boxing-canvas, #highway-canvas, #rhythm-canvas, #archery-canvas,
+#cricket-canvas, #hurdle-canvas, #snake-canvas, #invaders-canvas, #curling-canvas, #skate-canvas, #catch-canvas, #blocktennis-canvas, #seesaw-canvas {
   width: 100%;
   height: 100%;
   touch-action: none;
+}
+
+/* メモリーライト */
+.memory-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 14px;
+  width: 100%;
+  max-width: 280px;
+}
+
+.memory-btn {
+  aspect-ratio: 1;
+  border-radius: 20px;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  cursor: pointer;
+  transition: transform 0.1s, filter 0.15s;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+}
+
+.memory-btn:active, .memory-btn.lit {
+  transform: scale(0.95);
+  filter: brightness(1.6) drop-shadow(0 0 16px rgba(255, 255, 255, 0.8));
 }
 
 /* 地雷チキンレース (5x5グリッド) */
