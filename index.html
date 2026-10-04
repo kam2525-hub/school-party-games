@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#0f172a">
+  <title>休み時間パーティー！ - 1台で遊べるミニゲーム集</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="app-container">
+    <!-- 固定ヘッダーコントロール -->
+    <div class="header-bar">
+      <button id="btn-home" class="icon-btn" title="メニューへ戻る" style="display: none;">🏠</button>
+      <div style="flex: 1;"></div>
+      <button id="btn-sound" class="icon-btn" title="音のON/OFF">🔊</button>
+    </div>
+
+    <!-- 1. メインメニュー -->
+    <div id="screen-menu" class="screen active">
+      <div class="app-title">
+        <h1>🎮 休み時間パーティー</h1>
+        <p>1台のスマホでみんなで盛り上がろう！</p>
+      </div>
+
+      <div class="game-grid">
+        <!-- ゲーム1: 連打相撲 -->
+        <div class="game-card" onclick="startGame('sumo')">
+          <div class="card-icon" style="background: rgba(239, 68, 68, 0.15); color: #f87171;">💥</div>
+          <div class="card-info">
+            <h3>連打クラッシュ！ <span class="card-badge badge-2p">2人対面</span></h3>
+            <p>スマホを挟んで連打勝負！境界線を相手陣地に押し込め！</p>
+          </div>
+        </div>
+
+        <!-- ゲーム2: 早押しデュエル -->
+        <div class="game-card" onclick="startGame('reflex')">
+          <div class="card-icon" style="background: rgba(234, 179, 8, 0.15); color: #facc15;">⚡</div>
+          <div class="card-info">
+            <h3>早押しデュエル <span class="card-badge badge-2p">2人対面</span></h3>
+            <p>合図が出た瞬間にタップ！お手つき厳禁の反射神経バトル！</p>
+          </div>
+        </div>
+
+        <!-- ゲーム3: ワードウルフ -->
+        <div class="game-card" onclick="startGame('wolf')">
+          <div class="card-icon" style="background: rgba(168, 85, 247, 0.15); color: #c084fc;">🐺</div>
+          <div class="card-info">
+            <h3>ワードウルフ <span class="card-badge badge-multi">3〜8人</span></h3>
+            <p>スマホを回してお題確認！雑談して1人だけ違うウルフを見破れ！</p>
+          </div>
+        </div>
+
+        <!-- ゲーム4: 爆弾パニック -->
+        <div class="game-card" onclick="startGame('bomb')">
+          <div class="card-icon" style="background: rgba(249, 115, 22, 0.15); color: #fb923c;">💣</div>
+          <div class="card-info">
+            <h3>爆弾チキンレース <span class="card-badge badge-multi">2〜8人</span></h3>
+            <p>お題に答えてスマホをパス！いつ爆発するかドキドキ！</p>
+          </div>
+        </div>
+
+        <!-- ゲーム5: 指置きツイスター -->
+        <div class="game-card" onclick="startGame('twister')">
+          <div class="card-icon" style="background: rgba(16, 185, 129, 0.15); color: #34d399;">🖐️</div>
+          <div class="card-info">
+            <h3>フィンガーツイスター <span class="card-badge badge-2p">2人対戦</span></h3>
+            <p>画面に出る円に指を置き続けろ！指が離れたら脱落！</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. 連打相撲画面 -->
+    <div id="screen-sumo" class="screen">
+      <div class="split-battle">
+        <div id="sumo-p1" class="player-zone top-player">
+          <div class="zone-label">プレイヤー 1</div>
+          <div class="zone-sub">タップして押し込め！</div>
+          <div id="sumo-score-p1" class="zone-score">0</div>
+        </div>
+        <div id="sumo-divider" class="sumo-divider"></div>
+        <div id="sumo-p2" class="player-zone bottom-player">
+          <div class="zone-label">プレイヤー 2</div>
+          <div class="zone-sub">タップして押し込め！</div>
+          <div id="sumo-score-p2" class="zone-score">0</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3. 早押しデュエル画面 -->
+    <div id="screen-reflex" class="screen">
+      <div class="split-battle">
+        <div id="reflex-p1" class="player-zone top-player">
+          <div class="zone-label">プレイヤー 1</div>
+          <div class="zone-score" id="reflex-score-p1">0</div>
+        </div>
+        <div id="reflex-center" class="reflex-center-box">待機中...</div>
+        <div id="reflex-p2" class="player-zone bottom-player">
+          <div class="zone-label">プレイヤー 2</div>
+          <div class="zone-score" id="reflex-score-p2">0</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 4. ワードウルフ画面 -->
+    <div id="screen-wolf" class="screen">
+      <div class="pass-play-container" id="wolf-setup">
+        <h2 class="game-title-header">🐺 ワードウルフ</h2>
+        <p class="game-subtitle">1台を順番に回して遊ぶ心理戦</p>
+        
+        <div style="margin-bottom: 24px;">
+          <label style="font-size: 16px; font-weight: 600; display: block; margin-bottom: 8px;">参加人数</label>
+          <div style="display: flex; gap: 8px; justify-content: center; align-items: center;">
+            <button class="btn-secondary" onclick="adjustWolfPlayers(-1)">-</button>
+            <span id="wolf-player-count" style="font-size: 26px; font-weight: 800; min-width: 40px;">4</span>
+            <span style="font-size: 16px;">人</span>
+            <button class="btn-secondary" onclick="adjustWolfPlayers(1)">+</button>
+          </div>
+          <div style="font-size: 13px; color: var(--text-secondary); margin-top: 6px;">
+            (市民: <span id="wolf-citizen-count">3</span>人 / ウルフ: 1人)
+          </div>
+        </div>
+
+        <button class="btn-primary" onclick="initWordWolfGame()">ゲーム開始！</button>
+      </div>
+
+      <!-- お題確認ステップ -->
+      <div class="pass-play-container" id="wolf-reveal" style="display: none;">
+        <h2 id="wolf-turn-label" class="game-title-header">プレイヤー 1 さんの番</h2>
+        <p class="game-subtitle">スマホを渡してカードを長押ししてください</p>
+        
+        <div id="wolf-card" class="wolf-secret-card">
+          <div id="wolf-card-hidden">
+            <div style="font-size: 40px; margin-bottom: 8px;">🔒</div>
+            <div style="font-weight: 700;">指で長押ししてお題を見る</div>
+          </div>
+          <div id="wolf-card-visible" style="display: none;">
+            <div style="font-size: 14px; opacity: 0.8; margin-bottom: 6px;">あなたのお題</div>
+            <div id="wolf-topic-text" style="font-size: 28px; font-weight: 900; color: #34d399;">???</div>
+            <div style="font-size: 12px; margin-top: 10px; color: #a7f3d0;">指を離すと隠れます</div>
+          </div>
+        </div>
+
+        <button id="wolf-next-btn" class="btn-primary" style="margin-top: 16px;" onclick="nextWolfPlayer()">確認完了！次の人へ</button>
+      </div>
+
+      <!-- トーク・タイマー画面 -->
+      <div class="pass-play-container" id="wolf-talk" style="display: none;">
+        <h2 class="game-title-header">💬 話し合いタイム</h2>
+        <p class="game-subtitle">雑談しながら1人だけ違うお題の人を探せ！</p>
+        
+        <div id="wolf-timer" style="font-size: 64px; font-weight: 900; margin: 20px 0; color: #38bdf8;">03:00</div>
+        
+        <div style="display: flex; gap: 12px; margin-top: 12px;">
+          <button class="btn-secondary" onclick="toggleWolfTimer()" id="wolf-timer-btn">一時停止</button>
+          <button class="btn-danger" onclick="endWolfTalk()">投票へ進む</button>
+        </div>
+      </div>
+
+      <!-- 投票・結果発表画面 -->
+      <div class="pass-play-container" id="wolf-result" style="display: none;">
+        <h2 class="game-title-header">🏆 結果発表</h2>
+        <div id="wolf-result-details" style="margin: 20px 0; background: var(--card-bg); padding: 18px; border-radius: 16px; width: 100%; max-width: 360px;"></div>
+        <button class="btn-primary" onclick="startGame('wolf')">もう一度あそぶ</button>
+      </div>
+    </div>
+
+    <!-- 5. 爆弾パニック画面 -->
+    <div id="screen-bomb" class="screen">
+      <div class="pass-play-container">
+        <h2 class="game-title-header">💣 爆弾チキンレース</h2>
+        <div id="bomb-visual" class="bomb-visual">💣</div>
+        <div id="bomb-topic" class="bomb-topic-card">お題を準備中...</div>
+
+        <div style="margin-bottom: 24px;">
+          <button id="bomb-pass-btn" class="btn-primary" style="font-size: 24px; padding: 20px 48px;" onclick="passBomb()">
+            答えてPASS！ ⏩
+          </button>
+        </div>
+
+        <div id="bomb-pass-count" style="font-size: 15px; color: var(--text-secondary);">
+          パス回数: 0回
+        </div>
+      </div>
+    </div>
+
+    <!-- 6. フィンガーツイスター画面 -->
+    <div id="screen-twister" class="screen">
+      <canvas id="twister-canvas"></canvas>
+    </div>
+
+    <!-- 結果・通知モーダル -->
+    <div id="game-modal" class="overlay-modal" style="display: none;">
+      <div id="modal-title" class="overlay-title">勝者！</div>
+      <div id="modal-msg" class="overlay-msg">おめでとうございます！</div>
+      <div style="display: flex; gap: 14px;">
+        <button id="modal-btn-retry" class="btn-primary">もう一回！</button>
+        <button id="modal-btn-menu" class="btn-secondary" onclick="showScreen('screen-menu')">メニューへ</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="audio.js"></script>
+  <script src="words.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

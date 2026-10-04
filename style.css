@@ -1,0 +1,433 @@
+:root {
+  --bg-color: #0f172a;
+  --card-bg: #1e293b;
+  --accent-p1: #ef4444; /* 赤/ピンク系 P1 (上) */
+  --accent-p2: #3b82f6; /* 青系 P2 (下) */
+  --accent-yellow: #f59e0b;
+  --accent-green: #10b981;
+  --accent-purple: #8b5cf6;
+  --text-primary: #f8fafc;
+  --text-secondary: #94a3b8;
+  --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Hiragino Kaku Gothic ProN", "Yu Gothic", sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  height: 100dvh;
+  overflow: hidden;
+  background-color: var(--bg-color);
+  color: var(--text-primary);
+  font-family: var(--font-family);
+  touch-action: manipulation;
+}
+
+#app-container {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+/* ヘッダー・共通コントロール */
+.header-bar {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  right: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 100;
+  pointer-events: none;
+}
+
+.icon-btn {
+  pointer-events: auto;
+  background: rgba(30, 41, 59, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: var(--text-primary);
+  border-radius: 50%;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  cursor: pointer;
+  backdrop-filter: blur(8px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  transition: transform 0.1s, background-color 0.2s;
+}
+
+.icon-btn:active {
+  transform: scale(0.92);
+}
+
+/* 画面切り替え共通 */
+.screen {
+  position: absolute;
+  inset: 0;
+  display: none;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  background-color: var(--bg-color);
+}
+
+.screen.active {
+  display: flex;
+}
+
+/* メニュー画面 */
+#screen-menu {
+  overflow-y: auto;
+  padding: 68px 16px 24px;
+  background: radial-gradient(circle at 50% 10%, #1e293b, #0f172a 70%);
+}
+
+.app-title {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.app-title h1 {
+  font-size: 26px;
+  font-weight: 800;
+  background: linear-gradient(135deg, #38bdf8, #818cf8, #f43f5e);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  letter-spacing: 0.5px;
+}
+
+.app-title p {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin-top: 4px;
+}
+
+.game-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 14px;
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.game-card {
+  background: var(--card-bg);
+  border-radius: 18px;
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+  cursor: pointer;
+  transition: transform 0.15s, border-color 0.2s;
+}
+
+.game-card:active {
+  transform: scale(0.97);
+}
+
+.card-icon {
+  font-size: 38px;
+  width: 60px;
+  height: 60px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.05);
+  flex-shrink: 0;
+}
+
+.card-info {
+  flex: 1;
+}
+
+.card-info h3 {
+  font-size: 18px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.card-badge {
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 20px;
+  font-weight: 600;
+}
+
+.badge-2p { background: rgba(59, 130, 246, 0.25); color: #60a5fa; }
+.badge-multi { background: rgba(168, 85, 247, 0.25); color: #c084fc; }
+
+.card-info p {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin-top: 4px;
+  line-height: 1.35;
+}
+
+/* 2人対戦レイアウト（画面上下分割） */
+.split-battle {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+.player-zone {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  touch-action: none;
+}
+
+/* プレイヤー1（上側）は相手向き（180度回転） */
+.player-zone.top-player {
+  transform: rotate(180deg);
+  background: linear-gradient(180deg, #991b1b, #ef4444);
+}
+
+.player-zone.bottom-player {
+  background: linear-gradient(180deg, #1d4ed8, #3b82f6);
+}
+
+.zone-label {
+  font-size: 20px;
+  font-weight: 800;
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+}
+
+.zone-sub {
+  font-size: 14px;
+  opacity: 0.85;
+  margin-top: 4px;
+}
+
+.zone-score {
+  font-size: 40px;
+  font-weight: 900;
+  margin-top: 6px;
+}
+
+/* 連打相撲 */
+.sumo-divider {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 12px;
+  background: #ffffff;
+  transform: translateY(-50%);
+  z-index: 10;
+  box-shadow: 0 0 16px rgba(255, 255, 255, 0.8);
+  pointer-events: none;
+  transition: top 0.05s linear;
+}
+
+.sumo-meter {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 100%;
+  pointer-events: none;
+}
+
+/* 早押しデュエル */
+.reflex-center-box {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 20;
+  padding: 16px 28px;
+  background: #0f172a;
+  border: 3px solid #f8fafc;
+  border-radius: 40px;
+  font-size: 24px;
+  font-weight: 900;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.7);
+  pointer-events: none;
+  text-align: center;
+  min-width: 180px;
+}
+
+/* パス＆プレイ系（ワードウルフ、爆弾） */
+.pass-play-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  text-align: center;
+}
+
+.game-title-header {
+  font-size: 24px;
+  font-weight: 800;
+  margin-bottom: 8px;
+}
+
+.game-subtitle {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin-bottom: 24px;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  color: white;
+  border: none;
+  border-radius: 14px;
+  padding: 14px 28px;
+  font-size: 18px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 6px 18px rgba(99, 102, 241, 0.4);
+  transition: transform 0.1s;
+}
+
+.btn-primary:active {
+  transform: scale(0.95);
+}
+
+.btn-danger {
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  color: white;
+  border: none;
+  border-radius: 14px;
+  padding: 14px 28px;
+  font-size: 18px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 6px 18px rgba(239, 68, 68, 0.4);
+}
+
+.btn-secondary {
+  background: var(--card-bg);
+  color: var(--text-primary);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 14px;
+  padding: 10px 20px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* 爆弾グラフィック */
+.bomb-visual {
+  font-size: 80px;
+  margin: 16px 0;
+  animation: pulse-bomb 1s infinite alternate;
+}
+
+@keyframes pulse-bomb {
+  0% { transform: scale(1); }
+  100% { transform: scale(1.15); filter: drop-shadow(0 0 15px #ef4444); }
+}
+
+.bomb-topic-card {
+  background: var(--card-bg);
+  border: 2px solid var(--accent-yellow);
+  border-radius: 20px;
+  padding: 20px 24px;
+  font-size: 24px;
+  font-weight: 800;
+  color: #fbbf24;
+  margin-bottom: 24px;
+  box-shadow: 0 6px 20px rgba(245, 158, 11, 0.2);
+  width: 100%;
+  max-width: 340px;
+}
+
+/* ワードウルフ専用 */
+.wolf-secret-card {
+  width: 100%;
+  max-width: 320px;
+  height: 200px;
+  background: var(--card-bg);
+  border-radius: 20px;
+  border: 2px dashed rgba(255, 255, 255, 0.3);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  margin: 20px 0;
+  transition: all 0.2s;
+  touch-action: none;
+}
+
+.wolf-secret-card.revealed {
+  border: 2px solid var(--accent-green);
+  background: #064e3b;
+}
+
+/* 指置きツイスター用キャンバス */
+#twister-canvas {
+  width: 100%;
+  height: 100%;
+  touch-action: none;
+}
+
+/* モーダル / 結果表示オーバーレイ */
+.overlay-modal {
+  position: absolute;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.92);
+  backdrop-filter: blur(10px);
+  z-index: 120;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  text-align: center;
+  animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.overlay-title {
+  font-size: 32px;
+  font-weight: 900;
+  margin-bottom: 12px;
+}
+
+.overlay-msg {
+  font-size: 16px;
+  color: var(--text-secondary);
+  margin-bottom: 28px;
+  line-height: 1.5;
+  white-space: pre-line;
+}
+
+/* カウントダウン表示 */
+.countdown-big {
+  font-size: 72px;
+  font-weight: 900;
+  color: var(--accent-yellow);
+}
