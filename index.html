@@ -22,12 +22,12 @@
     <div id="screen-menu" class="screen active">
       <div class="app-title">
         <h1>🎮 休み時間パーティー</h1>
-        <p>1台のスマホでみんなで盛り上がろう！【全70ゲーム収録】</p>
+        <p>1台のスマホでみんなで盛り上がろう！【全80ゲーム収録】</p>
       </div>
 
       <!-- カテゴリタブ -->
       <div class="category-tabs">
-        <button class="tab-btn active" onclick="filterCategory('all')">すべて (70)</button>
+        <button class="tab-btn active" onclick="filterCategory('all')">すべて (80)</button>
         <button class="tab-btn" onclick="filterCategory('action')">💥 アクション</button>
         <button class="tab-btn" onclick="filterCategory('brain')">🧠 脳トレ・反射</button>
         <button class="tab-btn" onclick="filterCategory('party')">🎲 パーティー</button>
@@ -663,6 +663,96 @@
             <p>ポイが破れる前に金魚をすくい上げろ！屋台の熱狂をスマホ1台で！</p>
           </div>
         </div>
+
+        <!-- ゲーム71: 黒板消しダストバトル -->
+        <div class="game-card" data-category="action" onclick="startGame('chalkdust')">
+          <div class="card-icon" style="background: rgba(234, 179, 8, 0.15); color: #facc15;">🧹</div>
+          <div class="card-info">
+            <h3>黒板消しダストバトル <span class="card-badge badge-2p">2人対面</span></h3>
+            <p>黒板消しクリーナーを連打！チョークの粉を100%吸い尽くせ！</p>
+          </div>
+        </div>
+
+        <!-- ゲーム72: 輪ゴムパチンコ -->
+        <div class="game-card" data-category="action" onclick="startGame('rubberband')">
+          <div class="card-icon" style="background: rgba(239, 68, 68, 0.15); color: #ef4444;">🎯</div>
+          <div class="card-info">
+            <h3>輪ゴムパチンコ <span class="card-badge badge-2p">2人対戦</span></h3>
+            <p>指にかけた輪ゴムを引っ張ってスナイプ！机の上の的を撃ち抜け！</p>
+          </div>
+        </div>
+
+        <!-- ゲーム73: 教科書タワー -->
+        <div class="game-card" data-category="brain" onclick="startGame('booktower')">
+          <div class="card-icon" style="background: rgba(59, 130, 246, 0.15); color: #3b82f6;">📚</div>
+          <div class="card-info">
+            <h3>教科書タワー・グラビティ <span class="card-badge badge-2p">2人対面</span></h3>
+            <p>タイミングよく本を落として積み上げろ！崩した方の負け！</p>
+          </div>
+        </div>
+
+        <!-- ゲーム74: ペン回しスピン -->
+        <div class="game-card" data-category="brain" onclick="startGame('penspin')">
+          <div class="card-icon" style="background: rgba(16, 185, 129, 0.15); color: #10b981;">✒️</div>
+          <div class="card-info">
+            <h3>ペン回しスピンマスター <span class="card-badge badge-2p">2人対面</span></h3>
+            <p>指先スワイプで遠心力を与えろ！落とさずに10回転回し切れるか！？</p>
+          </div>
+        </div>
+
+        <!-- ゲーム75: 机上カーリング -->
+        <div class="game-card" data-category="action" onclick="startGame('deskcurling')">
+          <div class="card-icon" style="background: rgba(14, 165, 233, 0.15); color: #38bdf8;">🥌</div>
+          <div class="card-info">
+            <h3>机上キャップカーリング <span class="card-badge badge-2p">2人対面</span></h3>
+            <p>ペットボトルキャップをスライド！中心のサークルに最も寄せろ！</p>
+          </div>
+        </div>
+
+        <!-- ゲーム76: 早押し電卓100 -->
+        <div class="game-card" data-category="brain" onclick="startGame('calculator')">
+          <div class="card-icon" style="background: rgba(245, 158, 11, 0.15); color: #f59e0b;">🧮</div>
+          <div class="card-info">
+            <h3>早押し電卓フラッシュ <span class="card-badge badge-2p">2人対面</span></h3>
+            <p>瞬時に表示される計算式！答えを電卓テンキーで最速プッシュ！</p>
+          </div>
+        </div>
+
+        <!-- ゲーム77: 給食パン争奪戦 -->
+        <div class="game-card" data-category="brain" onclick="startGame('lunchbread')">
+          <div class="card-icon" style="background: rgba(234, 179, 8, 0.15); color: #facc15;">🥖</div>
+          <div class="card-info">
+            <h3>給食パン争奪バトル <span class="card-badge badge-2p">2人対面</span></h3>
+            <p>余った揚げパンが流れてきた瞬間に奪取！お手つき厳禁の早取り！</p>
+          </div>
+        </div>
+
+        <!-- ゲーム78: 目薬さしドロップ -->
+        <div class="game-card" data-category="action" onclick="startGame('eyedrops')">
+          <div class="card-icon" style="background: rgba(6, 182, 212, 0.15); color: #06b6d4;">💧</div>
+          <div class="card-info">
+            <h3>目薬さしドロップ <span class="card-badge badge-2p">2人対面</span></h3>
+            <p>まばたきする大きな瞳！目を見開いた一瞬に目薬を命中させろ！</p>
+          </div>
+        </div>
+
+        <!-- ゲーム79: ダブルダッチ縄跳び -->
+        <div class="game-card" data-category="action" onclick="startGame('doubledutch')">
+          <div class="card-icon" style="background: rgba(168, 85, 247, 0.15); color: #c084fc;">🪢</div>
+          <div class="card-info">
+            <h3>ダブルダッチ縄跳び <span class="card-badge badge-2p">2人対面</span></h3>
+            <p>2本の交差するロープをリズムよくタップジャンプ！連続跳躍対決！</p>
+          </div>
+        </div>
+
+        <!-- ゲーム80: ロケット打上バトル -->
+        <div class="game-card" data-category="action" onclick="startGame('rocketlaunch')">
+          <div class="card-icon" style="background: rgba(239, 68, 68, 0.15); color: #ef4444;">🚀</div>
+          <div class="card-info">
+            <h3>ロケット打上バトル <span class="card-badge badge-2p">2人対面</span></h3>
+            <p>カウントダウン後に猛連打で燃料チャージ！より高い宇宙へ飛ばせ！</p>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -1188,6 +1278,56 @@
     <!-- 71. 金魚すくいポイバトル画面 -->
     <div id="screen-goldfish" class="screen">
       <canvas id="goldfish-canvas"></canvas>
+    </div>
+
+    <!-- 72. 黒板消しダストバトル画面 -->
+    <div id="screen-chalkdust" class="screen">
+      <canvas id="chalkdust-canvas"></canvas>
+    </div>
+
+    <!-- 73. 輪ゴムパチンコ画面 -->
+    <div id="screen-rubberband" class="screen">
+      <canvas id="rubberband-canvas"></canvas>
+    </div>
+
+    <!-- 74. 教科書タワー画面 -->
+    <div id="screen-booktower" class="screen">
+      <canvas id="booktower-canvas"></canvas>
+    </div>
+
+    <!-- 75. ペン回しスピン画面 -->
+    <div id="screen-penspin" class="screen">
+      <canvas id="penspin-canvas"></canvas>
+    </div>
+
+    <!-- 76. 机上カーリング画面 -->
+    <div id="screen-deskcurling" class="screen">
+      <canvas id="deskcurling-canvas"></canvas>
+    </div>
+
+    <!-- 77. 早押し電卓画面 -->
+    <div id="screen-calculator" class="screen">
+      <canvas id="calculator-canvas"></canvas>
+    </div>
+
+    <!-- 78. 給食パン争奪戦画面 -->
+    <div id="screen-lunchbread" class="screen">
+      <canvas id="lunchbread-canvas"></canvas>
+    </div>
+
+    <!-- 79. 目薬さしドロップ画面 -->
+    <div id="screen-eyedrops" class="screen">
+      <canvas id="eyedrops-canvas"></canvas>
+    </div>
+
+    <!-- 80. ダブルダッチ縄跳び画面 -->
+    <div id="screen-doubledutch" class="screen">
+      <canvas id="doubledutch-canvas"></canvas>
+    </div>
+
+    <!-- 81. ロケット打上バトル画面 -->
+    <div id="screen-rocketlaunch" class="screen">
+      <canvas id="rocketlaunch-canvas"></canvas>
     </div>
 
     <!-- 結果・通知モーダル -->
