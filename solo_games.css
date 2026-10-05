@@ -1,0 +1,739 @@
+/* solo_games.css - 暇つぶし特選・1人用・カモフラージュゲーム用スタイル */
+
+/* ============================================================
+   共通コンポーネント & ツールバー
+   ============================================================ */
+.solo-game-container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.solo-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 16px;
+  background: rgba(15, 23, 42, 0.85);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  z-index: 10;
+}
+
+.solo-title {
+  font-size: 16px;
+  font-weight: 800;
+  color: #f8fafc;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.solo-stats {
+  display: flex;
+  gap: 12px;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.solo-badge {
+  background: rgba(56, 189, 248, 0.15);
+  color: #38bdf8;
+  padding: 3px 8px;
+  border-radius: 6px;
+  border: 1px solid rgba(56, 189, 248, 0.3);
+}
+
+/* ============================================================
+   1. 文房具スイカパズル (stationery_merge)
+   ============================================================ */
+#screen-stationery_merge {
+  background: #0f172a;
+}
+
+.merge-game-wrap {
+  flex: 1;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  touch-action: none;
+  overflow: hidden;
+}
+
+#merge-canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.merge-next-box {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: rgba(30, 41, 59, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 12px;
+  padding: 8px 12px;
+  text-align: center;
+  font-size: 11px;
+  color: #94a3b8;
+  pointer-events: none;
+  z-index: 5;
+}
+
+.merge-next-icon {
+  font-size: 28px;
+  margin-top: 4px;
+}
+
+/* ============================================================
+   2. カモフラージュ・スプレッドシート迷宮 (camo_sheet)
+   ============================================================ */
+#screen-camo_sheet {
+  background: #ffffff;
+  color: #1e293b;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+  overflow: auto;
+}
+
+.sheet-window {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  background: #ffffff;
+}
+
+.sheet-toolbar-top {
+  display: flex;
+  align-items: center;
+  background: #f8fafd;
+  border-bottom: 1px solid #e2e8f0;
+  padding: 6px 12px;
+  gap: 12px;
+}
+
+.sheet-logo {
+  font-weight: bold;
+  color: #0f9d58;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.sheet-filename {
+  font-size: 13px;
+  font-weight: 600;
+  color: #334155;
+  border: none;
+  background: transparent;
+}
+
+.btn-boss {
+  margin-left: auto;
+  background: #ef4444;
+  color: #ffffff;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-weight: bold;
+  font-size: 12px;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(239, 68, 68, 0.3);
+  animation: pulse-danger 2s infinite;
+}
+
+@keyframes pulse-danger {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.04); }
+  100% { transform: scale(1); }
+}
+
+.sheet-menubar {
+  display: flex;
+  gap: 12px;
+  padding: 4px 12px;
+  font-size: 12px;
+  color: #475569;
+  background: #f8fafd;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.sheet-formula-bar {
+  display: flex;
+  align-items: center;
+  padding: 4px 8px;
+  border-bottom: 1px solid #cbd5e1;
+  background: #ffffff;
+  gap: 8px;
+}
+
+.formula-label {
+  font-weight: bold;
+  color: #64748b;
+  font-style: italic;
+  font-size: 13px;
+}
+
+.formula-input {
+  flex: 1;
+  border: 1px solid #cbd5e1;
+  border-radius: 4px;
+  padding: 2px 6px;
+  font-size: 12px;
+  font-family: monospace;
+}
+
+.sheet-grid-container {
+  flex: 1;
+  overflow: auto;
+  position: relative;
+}
+
+.sheet-table {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: 12px;
+  user-select: none;
+}
+
+.sheet-table th, .sheet-table td {
+  border: 1px solid #e2e8f0;
+  padding: 6px 8px;
+  text-align: center;
+  min-width: 48px;
+  height: 28px;
+}
+
+.sheet-table th {
+  background: #f1f5f9;
+  color: #64748b;
+  font-weight: 600;
+}
+
+.sheet-cell-player {
+  background: #3b82f6 !important;
+  color: white !important;
+  font-weight: bold;
+  border-radius: 3px;
+}
+
+.sheet-cell-target {
+  background: #10b981 !important;
+  color: white !important;
+  font-weight: bold;
+  animation: bounce 0.8s infinite;
+}
+
+.sheet-cell-wall {
+  background: #64748b !important;
+}
+
+.sheet-controls {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  padding: 8px;
+  background: #f8fafd;
+  border-top: 1px solid #e2e8f0;
+}
+
+.sheet-ctrl-btn {
+  background: #e2e8f0;
+  color: #1e293b;
+  border: 1px solid #cbd5e1;
+  padding: 10px 18px;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+/* ============================================================
+   3. 放課後 Wordle (wordle_jp)
+   ============================================================ */
+#screen-wordle_jp {
+  background: #0f172a;
+  color: #f8fafc;
+}
+
+.wordle-board {
+  display: grid;
+  grid-template-rows: repeat(6, 1fr);
+  gap: 6px;
+  padding: 12px;
+  max-width: 320px;
+  margin: 0 auto;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.wordle-row {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 6px;
+}
+
+.wordle-tile {
+  aspect-ratio: 1;
+  border: 2px solid #334155;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  font-weight: 800;
+  background: rgba(30, 41, 59, 0.6);
+  text-transform: uppercase;
+  transition: transform 0.3s, background-color 0.4s;
+}
+
+.wordle-tile.correct {
+  background: #22c55e !important;
+  border-color: #22c55e !important;
+  color: white;
+}
+
+.wordle-tile.present {
+  background: #eab308 !important;
+  border-color: #eab308 !important;
+  color: white;
+}
+
+.wordle-tile.absent {
+  background: #334155 !important;
+  border-color: #334155 !important;
+  color: #94a3b8;
+}
+
+.wordle-keyboard {
+  max-width: 480px;
+  margin: auto auto 12px auto;
+  padding: 0 8px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.wordle-kb-row {
+  display: flex;
+  justify-content: center;
+  gap: 4px;
+  margin-bottom: 5px;
+  flex-wrap: wrap;
+}
+
+.wordle-key {
+  background: #1e293b;
+  color: #f8fafc;
+  border: 1px solid #334155;
+  border-radius: 6px;
+  min-width: 32px;
+  height: 38px;
+  padding: 2px 6px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  user-select: none;
+}
+
+.wordle-key:active {
+  transform: scale(0.92);
+}
+
+.wordle-key.wide {
+  min-width: 54px;
+  background: #3b82f6;
+  border-color: #2563eb;
+}
+
+.wordle-key.correct {
+  background: #22c55e !important;
+}
+
+.wordle-key.present {
+  background: #eab308 !important;
+}
+
+.wordle-key.absent {
+  background: #1e293b !important;
+  opacity: 0.4;
+}
+
+/* ============================================================
+   4. 授業中タイピング・マスター (school_typing)
+   ============================================================ */
+#screen-school_typing {
+  background: #1a382b; /* 黒板グリーン */
+  color: #f1f5f9;
+}
+
+.blackboard-frame {
+  margin: 12px;
+  padding: 20px;
+  border: 12px solid #8b5a2b; /* 木枠 */
+  border-radius: 12px;
+  background: #1b4332;
+  box-shadow: inset 0 0 20px rgba(0,0,0,0.6), 0 8px 16px rgba(0,0,0,0.4);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  flex: 1;
+}
+
+.typing-romaji {
+  font-size: 26px;
+  font-weight: 900;
+  color: #ffd166;
+  margin-bottom: 8px;
+  letter-spacing: 2px;
+}
+
+.typing-kanji {
+  font-size: 18px;
+  color: #e2e8f0;
+  margin-bottom: 24px;
+}
+
+.typing-progress {
+  font-size: 24px;
+  font-family: monospace;
+  letter-spacing: 3px;
+  background: rgba(0,0,0,0.3);
+  padding: 10px 18px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+
+.typing-typed {
+  color: #4ade80;
+}
+
+.typing-remain {
+  color: #94a3b8;
+}
+
+.typing-input-box {
+  opacity: 0;
+  position: absolute;
+  pointer-events: none;
+}
+
+/* ============================================================
+   5. 黒板消し＆落書きクリッカー (board_clicker)
+   ============================================================ */
+#screen-board_clicker {
+  background: #1b4332;
+  color: #ffffff;
+}
+
+.clicker-chalkboard {
+  position: relative;
+  flex: 1;
+  margin: 12px;
+  border: 10px solid #78350f;
+  border-radius: 12px;
+  background: radial-gradient(circle, #245842 0%, #17382a 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  user-select: none;
+  overflow: hidden;
+  box-shadow: inset 0 0 30px rgba(0,0,0,0.5);
+}
+
+.clicker-eraser-btn {
+  font-size: 80px;
+  transition: transform 0.1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.clicker-eraser-btn:active {
+  transform: scale(0.85) rotate(-10deg);
+}
+
+.clicker-stats-bar {
+  display: flex;
+  justify-content: space-around;
+  width: 100%;
+  padding: 10px;
+  background: rgba(15, 23, 42, 0.8);
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.clicker-upgrades {
+  display: flex;
+  gap: 8px;
+  padding: 10px 14px;
+  background: rgba(30, 41, 59, 0.9);
+  overflow-x: auto;
+  border-top: 1px solid rgba(255,255,255,0.1);
+}
+
+.upgrade-card {
+  min-width: 140px;
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 8px;
+  padding: 8px 10px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  text-align: left;
+}
+
+.upgrade-card:active {
+  background: #334155;
+}
+
+.upgrade-name {
+  font-size: 12px;
+  font-weight: bold;
+  color: #38bdf8;
+}
+
+.upgrade-cost {
+  font-size: 11px;
+  color: #facc15;
+}
+
+/* ============================================================
+   6. 10秒ピッタリ ＆ 反射神経テスト (time_reflex)
+   ============================================================ */
+#screen-time_reflex {
+  background: #090d16;
+  color: white;
+}
+
+.timer-display-huge {
+  font-size: 56px;
+  font-weight: 900;
+  font-family: monospace;
+  color: #38bdf8;
+  margin: 30px 0;
+  text-align: center;
+}
+
+.reflex-test-box {
+  width: 85%;
+  max-width: 360px;
+  height: 220px;
+  margin: 20px auto;
+  border-radius: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  font-weight: 900;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+  user-select: none;
+}
+
+.reflex-red {
+  background: #dc2626;
+  color: white;
+}
+
+.reflex-green {
+  background: #16a34a;
+  color: white;
+  animation: pulse-green 0.4s infinite alternate;
+}
+
+.reflex-blue {
+  background: #2563eb;
+  color: white;
+}
+
+@keyframes pulse-green {
+  from { transform: scale(1); }
+  to { transform: scale(1.03); }
+}
+
+/* ============================================================
+   7. 究極の2択 ＆ ネタガチャ (ultimate_choice)
+   ============================================================ */
+#screen-ultimate_choice {
+  background: #0f172a;
+  color: white;
+}
+
+.choice-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  gap: 16px;
+}
+
+.choice-card-btn {
+  width: 100%;
+  max-width: 400px;
+  padding: 24px 20px;
+  border-radius: 16px;
+  font-size: 18px;
+  font-weight: 800;
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: transform 0.15s, border-color 0.2s;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.choice-card-a {
+  background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%);
+  color: white;
+  box-shadow: 0 8px 20px rgba(239, 68, 68, 0.3);
+}
+
+.choice-card-b {
+  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+  color: white;
+  box-shadow: 0 8px 20px rgba(59, 130, 246, 0.3);
+}
+
+.choice-card-btn:active {
+  transform: scale(0.97);
+}
+
+.choice-ratio-bar {
+  height: 100%;
+  position: absolute;
+  left: 0;
+  top: 0;
+  background: rgba(255, 255, 255, 0.2);
+  transition: width 0.8s ease-out;
+  pointer-events: none;
+}
+
+/* ============================================================
+   8. 席替えシミュレーター (seat_shuffle)
+   ============================================================ */
+#screen-seat_shuffle {
+  background: #0f172a;
+  color: white;
+}
+
+.seat-blackboard {
+  background: #1e3a2b;
+  border: 4px solid #78350f;
+  border-radius: 8px;
+  padding: 8px;
+  text-align: center;
+  font-weight: bold;
+  color: #f1f5f9;
+  margin: 8px 12px;
+  font-size: 14px;
+}
+
+.seat-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 6px;
+  padding: 8px 12px;
+  flex: 1;
+  overflow-y: auto;
+}
+
+.seat-desk {
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 8px;
+  aspect-ratio: 1.1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  text-align: center;
+  font-size: 11px;
+  font-weight: 700;
+  transition: transform 0.2s, background-color 0.3s;
+}
+
+.seat-desk.hero-seat {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  color: black;
+  box-shadow: 0 0 10px rgba(245, 158, 11, 0.5);
+  font-weight: 900;
+}
+
+.seat-desk.teacher-front {
+  border-color: #ef4444;
+  color: #f87171;
+}
+
+/* ============================================================
+   9. うろ覚えお絵かきジャッジ (drawing_quiz)
+   ============================================================ */
+#screen-drawing_quiz {
+  background: #0f172a;
+  color: white;
+}
+
+.draw-prompt-banner {
+  background: linear-gradient(90deg, #ec4899, #8b5cf6);
+  padding: 12px 16px;
+  text-align: center;
+  font-size: 17px;
+  font-weight: 800;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
+.draw-canvas-wrap {
+  flex: 1;
+  position: relative;
+  margin: 10px;
+  background: white;
+  border-radius: 14px;
+  overflow: hidden;
+  touch-action: none;
+}
+
+#draw-canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.draw-palette {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  padding: 8px 12px;
+  background: #1e293b;
+  border-top: 1px solid #334155;
+  gap: 8px;
+}
+
+.color-dot {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  cursor: pointer;
+}
+
+.color-dot.active {
+  border-color: white;
+  transform: scale(1.15);
+}

@@ -16,6 +16,7 @@
   <link rel="apple-touch-icon" href="icons/icon-192.png">
   <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
   <link rel="stylesheet" href="style.css?v=4">
+  <link rel="stylesheet" href="solo_games.css">
 </head>
 <body>
   <div id="safe-area-probe" style="position:fixed;top:env(safe-area-inset-top,0px);height:0;visibility:hidden;pointer-events:none;"></div>
@@ -30,8 +31,8 @@
     <!-- 1. メインメニュー -->
     <div id="screen-menu" class="screen active">
       <div class="app-title">
-        <h1>🎮 休み時間パーティー</h1>
-        <p>1台のスマホでみんなで盛り上がろう！【全80ゲーム収録】 <span style="font-size: 11px; background: #ef4444; color: white; padding: 2px 6px; border-radius: 4px; font-weight: bold;">v4.0 対面対応</span></p>
+        <h1>🎮 休み時間パーティー＆ひまつぶし</h1>
+        <p>1人でも友達とでも！【全89ゲーム＆暇つぶし機能収録】 <span style="font-size: 11px; background: #ef4444; color: white; padding: 2px 6px; border-radius: 4px; font-weight: bold;">v5.0 暇つぶし特選</span></p>
       </div>
 
       <!-- アプリ化ボタン -->
@@ -43,13 +44,97 @@
 
       <!-- カテゴリタブ -->
       <div class="category-tabs">
-        <button class="tab-btn active" onclick="filterCategory('all')">すべて (80)</button>
-        <button class="tab-btn" onclick="filterCategory('action')">💥 アクション</button>
-        <button class="tab-btn" onclick="filterCategory('brain')">🧠 脳トレ・反射</button>
-        <button class="tab-btn" onclick="filterCategory('party')">🎲 パーティー</button>
+        <button class="tab-btn active" onclick="filterCategory('all', this)">すべて (89)</button>
+        <button class="tab-btn" onclick="filterCategory('special', this)">✨ 暇つぶし特選</button>
+        <button class="tab-btn" onclick="filterCategory('camo', this)">🤫 カモフラージュ</button>
+        <button class="tab-btn" onclick="filterCategory('solo', this)">👤 1人プレイ</button>
+        <button class="tab-btn" onclick="filterCategory('action', this)">💥 アクション</button>
+        <button class="tab-btn" onclick="filterCategory('brain', this)">🧠 脳トレ・反射</button>
+        <button class="tab-btn" onclick="filterCategory('party', this)">🎲 パーティー</button>
       </div>
 
       <div class="game-grid" id="game-grid">
+        <!-- 特選1: 文房具スイカパズル -->
+        <div class="game-card" data-category="solo special" onclick="startGame('stationery_merge')">
+          <div class="card-icon" style="background: rgba(234, 179, 8, 0.15); color: #facc15;">🎒</div>
+          <div class="card-info">
+            <h3>文房具スイカパズル <span class="card-badge" style="background:#8b5cf6;color:white;">✨ 特選 1人</span></h3>
+            <p>文房具を落としてマージ進化！消しゴム・定規をくっつけてランドセルを目指せ！</p>
+          </div>
+        </div>
+
+        <!-- 特選2: スプレッドシート迷宮 (Boss Key付き) -->
+        <div class="game-card" data-category="camo special solo" onclick="startGame('camo_sheet')">
+          <div class="card-icon" style="background: rgba(16, 185, 129, 0.15); color: #10b981;">📊</div>
+          <div class="card-info">
+            <h3>スプレッドシート迷宮 <span class="card-badge" style="background:#ef4444;color:white;">🤫 カモフラ</span></h3>
+            <p>見た目は完全にExcel！セル内でスネーク操作！「🚨先生が来た」ボタンで一瞬で成績表に！</p>
+          </div>
+        </div>
+
+        <!-- 特選3: 放課後 Wordle -->
+        <div class="game-card" data-category="brain solo special" onclick="startGame('wordle_jp')">
+          <div class="card-icon" style="background: rgba(56, 189, 248, 0.15); color: #38bdf8;">🔤</div>
+          <div class="card-info">
+            <h3>放課後 Wordle <span class="card-badge" style="background:#3b82f6;color:white;">✨ 特選 1人</span></h3>
+            <p>学校・日常の5文字言葉当て！色を手がかりに6手以内で正解を導き出せ！</p>
+          </div>
+        </div>
+
+        <!-- 特選4: 授業中タイピング -->
+        <div class="game-card" data-category="camo brain solo special" onclick="startGame('school_typing')">
+          <div class="card-icon" style="background: rgba(34, 197, 94, 0.15); color: #4ade80;">⌨️</div>
+          <div class="card-info">
+            <h3>授業中タイピング・マスター <span class="card-badge" style="background:#10b981;color:white;">🤫 勉強風</span></h3>
+            <p>黒板に現れる学校あるある単語を高速タイピング！WPMと打鍵速度を競え！</p>
+          </div>
+        </div>
+
+        <!-- 特選5: 黒板消し＆落書きクリッカー -->
+        <div class="game-card" data-category="solo special" onclick="startGame('board_clicker')">
+          <div class="card-icon" style="background: rgba(245, 158, 11, 0.15); color: #f59e0b;">🧹</div>
+          <div class="card-info">
+            <h3>黒板消しクリッカー <span class="card-badge" style="background:#f59e0b;color:white;">✨ 無心クリッカー</span></h3>
+            <p>落書きをタップして粉を集めろ！自動クリーナーや日直を雇って大富豪！</p>
+          </div>
+        </div>
+
+        <!-- 特選6: 10秒ピッタリ＆反射テスト -->
+        <div class="game-card" data-category="brain solo special" onclick="startGame('time_reflex')">
+          <div class="card-icon" style="background: rgba(239, 68, 68, 0.15); color: #f87171;">⏱️</div>
+          <div class="card-info">
+            <h3>10秒ピッタリ＆反射神経 <span class="card-badge" style="background:#06b6d4;color:white;">✨ 反射・体内時計</span></h3>
+            <p>3秒後に数字が消える10.000秒ストップウォッチ＆ミリ秒反射テスト！</p>
+          </div>
+        </div>
+
+        <!-- 特選7: 究極の2択＆ネタガチャ -->
+        <div class="game-card" data-category="party special" onclick="startGame('ultimate_choice')">
+          <div class="card-icon" style="background: rgba(236, 72, 153, 0.15); color: #ec4899;">🤔</div>
+          <div class="card-info">
+            <h3>究極の2択＆ネタガチャ <span class="card-badge" style="background:#ec4899;color:white;">🎲 友達と議論</span></h3>
+            <p>「給食の揚げパン vs カレーライス」など白熱する究極の質問！投票比率も公開！</p>
+          </div>
+        </div>
+
+        <!-- 特選8: 席替えシミュレーター -->
+        <div class="game-card" data-category="party special" onclick="startGame('seat_shuffle')">
+          <div class="card-icon" style="background: rgba(147, 51, 234, 0.15); color: #c084fc;">🏫</div>
+          <div class="card-info">
+            <h3>席替えシミュレーター <span class="card-badge" style="background:#8b5cf6;color:white;">🎲 クラス席替え</span></h3>
+            <p>ルーレットで30席を一斉シャッフル！窓際一番後ろの主人公席を引き当てろ！</p>
+          </div>
+        </div>
+
+        <!-- 特選9: うろ覚えお絵かきジャッジ -->
+        <div class="game-card" data-category="party special" onclick="startGame('drawing_quiz')">
+          <div class="card-icon" style="background: rgba(244, 63, 94, 0.15); color: #fb7185;">🎨</div>
+          <div class="card-info">
+            <h3>うろ覚えお絵かきジャッジ <span class="card-badge" style="background:#f43f5e;color:white;">🎲 友達と爆笑</span></h3>
+            <p>記憶を頼りに30秒でお題を描け！ピカチュウや非常口のマークを採点し合おう！</p>
+          </div>
+        </div>
+
         <!-- ゲーム1: 連打相撲 -->
         <div class="game-card" data-category="action" onclick="startGame('sumo')">
           <div class="card-icon" style="background: rgba(239, 68, 68, 0.15); color: #f87171;">💥</div>
@@ -1346,6 +1431,182 @@
       <canvas id="rocketlaunch-canvas"></canvas>
     </div>
 
+    <!-- 特選1: 文房具スイカパズル画面 -->
+    <div id="screen-stationery_merge" class="screen">
+      <div class="solo-game-container">
+        <div class="solo-header">
+          <div class="solo-title">🎒 文房具スイカパズル</div>
+          <div class="solo-stats">
+            <span class="solo-badge">スコア: <span id="merge-score">0</span></span>
+          </div>
+        </div>
+        <div class="merge-game-wrap">
+          <div class="merge-next-box">
+            NEXT
+            <div id="merge-next-icon" class="merge-next-icon">📌</div>
+          </div>
+          <canvas id="merge-canvas"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- 特選2: スプレッドシート迷宮 (Boss Key) 画面 -->
+    <div id="screen-camo_sheet" class="screen">
+      <div class="sheet-window">
+        <div class="sheet-toolbar-top">
+          <div class="sheet-logo">📊 Sheets</div>
+          <span class="sheet-filename">2学期_成績考査_集計表.xlsx</span>
+          <button id="btn-boss-mode" class="btn-boss" onclick="toggleBossKey()">🚨 先生が来た！</button>
+        </div>
+        <div class="sheet-menubar">
+          <span>ファイル</span><span>編集</span><span>表示</span><span>挿入</span><span>データ</span>
+        </div>
+        <div class="sheet-formula-bar">
+          <span class="formula-label">fx</span>
+          <input type="text" id="sheet-formula-input" class="formula-input" value="=SUM(A1:H12)" readonly>
+        </div>
+        <div id="sheet-grid-wrap" class="sheet-grid-container"></div>
+        <div class="sheet-controls">
+          <button class="sheet-ctrl-btn" onclick="setSheetDir(-1, 0)">⬆️</button>
+          <button class="sheet-ctrl-btn" onclick="setSheetDir(1, 0)">⬇️</button>
+          <button class="sheet-ctrl-btn" onclick="setSheetDir(0, -1)">⬅️</button>
+          <button class="sheet-ctrl-btn" onclick="setSheetDir(0, 1)">➡️</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 特選3: 放課後 Wordle 画面 -->
+    <div id="screen-wordle_jp" class="screen">
+      <div class="solo-game-container">
+        <div class="solo-header">
+          <div class="solo-title">🔤 放課後 Wordle</div>
+          <div class="solo-badge">学校・日常の5文字を当てろ！</div>
+        </div>
+        <div id="wordle-board" class="wordle-board"></div>
+        <div id="wordle-keyboard" class="wordle-keyboard"></div>
+      </div>
+    </div>
+
+    <!-- 特選4: 授業中タイピング画面 -->
+    <div id="screen-school_typing" class="screen">
+      <div class="solo-game-container">
+        <div class="solo-header">
+          <div class="solo-title">⌨️ 授業中タイピング</div>
+          <div class="solo-badge">スコア: <span id="typing-score">0</span></div>
+        </div>
+        <div class="blackboard-frame">
+          <div id="typing-kanji" class="typing-kanji">起立、礼、着席。</div>
+          <div class="typing-progress">
+            <span id="typing-typed" class="typing-typed"></span><span id="typing-remain" class="typing-remain"></span>
+          </div>
+          <div style="font-size:12px;color:#cbd5e1;margin-bottom:12px;">キーボード打鍵 または 下の候補文字をタップ！</div>
+          <div id="typing-vkeys" style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center;"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 特選5: 黒板消しクリッカー画面 -->
+    <div id="screen-board_clicker" class="screen">
+      <div class="solo-game-container">
+        <div class="clicker-stats-bar">
+          <div>💨 チョークの粉: <span id="clicker-dust" style="color:#fde047;">0</span></div>
+          <div>自動: +<span id="clicker-per-sec">0</span>/秒</div>
+        </div>
+        <div id="clicker-chalkboard" class="clicker-chalkboard" onclick="handleBoardClick(event)">
+          <div style="color:rgba(255,255,255,0.7);font-size:14px;margin-bottom:8px;">黒板の落書きをタップで消そう！</div>
+          <div class="clicker-eraser-btn">🧹</div>
+        </div>
+        <div style="padding:4px 12px;font-size:12px;font-weight:bold;color:#94a3b8;">強化ショップ（タップで購入）:</div>
+        <div id="clicker-upgrades" class="clicker-upgrades"></div>
+      </div>
+    </div>
+
+    <!-- 特選6: 10秒ピッタリ＆反射神経画面 -->
+    <div id="screen-time_reflex" class="screen">
+      <div class="solo-game-container">
+        <div class="category-tabs" style="padding: 8px 12px; margin-bottom: 0;">
+          <button id="tr-tab-stopwatch" class="tab-btn active" onclick="switchTimeReflexTab('stopwatch')">⏱️ 10秒ピッタリ</button>
+          <button id="tr-tab-reflex" class="tab-btn" onclick="switchTimeReflexTab('reflex')">⚡ 反射神経テスト</button>
+        </div>
+
+        <!-- 10秒ピッタリパネル -->
+        <div id="tr-panel-stopwatch" style="padding: 20px; text-align: center;">
+          <div style="font-size:14px;color:#94a3b8;margin-bottom:8px;">3秒経つと画面が隠れる！体内時計で10.000秒を狙え！</div>
+          <div id="stopwatch-display" class="timer-display-huge">0.000 秒</div>
+          <button id="btn-stopwatch-toggle" class="btn-primary" style="padding: 16px 32px; font-size: 18px;" onclick="handleStopwatchToggle()">▶️ 10秒ピッタリ スタート</button>
+          <div id="stopwatch-result"></div>
+        </div>
+
+        <!-- 反射神経テストパネル -->
+        <div id="tr-panel-reflex" style="display: none; padding: 20px; text-align: center;">
+          <div id="reflex-test-box" class="reflex-test-box reflex-blue" onclick="handleReflexBoxTap()">
+            タップして開始<br><span style="font-size:14px;font-weight:normal;">緑になったら即タップ！</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 特選7: 究極の2択画面 -->
+    <div id="screen-ultimate_choice" class="screen">
+      <div class="solo-game-container">
+        <div class="solo-header">
+          <div class="solo-title">🤔 究極の2択＆ネタガチャ</div>
+        </div>
+        <div class="choice-container">
+          <div id="choice-question" style="font-size: 20px; font-weight: 800; text-align: center; margin-bottom: 12px;">Q. どっちを選ぶ？</div>
+          
+          <div id="choice-btn-a" class="choice-card-btn choice-card-a" onclick="handleChooseOption('a')">
+            <div id="choice-bar-a" class="choice-ratio-bar"></div>
+            <div id="choice-text-a" style="position:relative;z-index:2;">選択肢 A</div>
+            <div id="choice-pct-a" style="position:relative;z-index:2;font-size:13px;margin-top:6px;font-weight:bold;"></div>
+          </div>
+
+          <div style="font-weight:900;font-size:20px;color:#94a3b8;">VS</div>
+
+          <div id="choice-btn-b" class="choice-card-btn choice-card-b" onclick="handleChooseOption('b')">
+            <div id="choice-bar-b" class="choice-ratio-bar"></div>
+            <div id="choice-text-b" style="position:relative;z-index:2;">選択肢 B</div>
+            <div id="choice-pct-b" style="position:relative;z-index:2;font-size:13px;margin-top:6px;font-weight:bold;"></div>
+          </div>
+
+          <button id="btn-choice-next" class="btn-primary" style="margin-top: 16px; padding: 12px 24px; font-size: 16px; display: none;" onclick="nextUltimateChoice()">次の2択へ ➡️</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 特選8: 席替えシミュレーター画面 -->
+    <div id="screen-seat_shuffle" class="screen">
+      <div class="solo-game-container">
+        <div class="solo-header">
+          <div class="solo-title">🏫 席替えシミュレーター</div>
+          <button id="btn-seat-shuffle" class="btn-primary" style="padding: 6px 14px; font-size: 13px;" onclick="startSeatShuffle()">🎲 席替え開始！</button>
+        </div>
+        <div class="seat-blackboard">━━━ 教室黒板・教卓 (前方) ━━━</div>
+        <div id="seat-grid" class="seat-grid"></div>
+      </div>
+    </div>
+
+    <!-- 特選9: うろ覚えお絵かき画面 -->
+    <div id="screen-drawing_quiz" class="screen">
+      <div class="solo-game-container">
+        <div class="draw-prompt-banner">
+          <span id="draw-prompt-text">お題: 「ピカチュウ」</span>
+          <span id="draw-timer" style="margin-left:12px;background:#1e293b;padding:2px 8px;border-radius:6px;">30s</span>
+        </div>
+        <div class="draw-canvas-wrap">
+          <canvas id="draw-canvas"></canvas>
+        </div>
+        <div class="draw-palette">
+          <div class="color-dot active" style="background:#000000;" onclick="setDrawColor('#000000', this)"></div>
+          <div class="color-dot" style="background:#ef4444;" onclick="setDrawColor('#ef4444', this)"></div>
+          <div class="color-dot" style="background:#3b82f6;" onclick="setDrawColor('#3b82f6', this)"></div>
+          <div class="color-dot" style="background:#22c55e;" onclick="setDrawColor('#22c55e', this)"></div>
+          <div class="color-dot" style="background:#eab308;" onclick="setDrawColor('#eab308', this)"></div>
+          <button class="btn-secondary" style="padding:6px 12px;font-size:12px;" onclick="clearDrawCanvas()">全消し 🗑️</button>
+        </div>
+      </div>
+    </div>
+
     <!-- PWAインストール案内モーダル -->
     <div id="modal-install" class="overlay-modal" style="display: none;">
       <div class="install-box">
@@ -1385,6 +1646,7 @@
 
   <script src="audio.js"></script>
   <script src="words.js"></script>
+  <script src="solo_games.js"></script>
   <script src="app.js?v=4"></script>
 </body>
 </html>

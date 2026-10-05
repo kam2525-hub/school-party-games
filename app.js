@@ -89,15 +89,20 @@ function closeModal() {
 }
 
 // カテゴリフィルター
-function filterCategory(cat) {
+function filterCategory(cat, targetBtn) {
   document.querySelectorAll('.tab-btn').forEach(btn => {
     btn.classList.remove('active');
   });
-  event.target.classList.add('active');
+  const btn = targetBtn || (window.event ? window.event.target : null);
+  if (btn && btn.classList) {
+    btn.classList.add('active');
+  }
 
   const cards = document.querySelectorAll('#game-grid .game-card');
   cards.forEach(card => {
-    if (cat === 'all' || card.getAttribute('data-category') === cat) {
+    const cardCat = card.getAttribute('data-category') || '';
+    const cats = cardCat.split(/\s+/);
+    if (cat === 'all' || cats.includes(cat)) {
       card.style.display = 'flex';
     } else {
       card.style.display = 'none';
@@ -430,6 +435,42 @@ function startGame(gameKey) {
     case 'rocketlaunch':
       showScreen('screen-rocketlaunch');
       initRocketLaunchGame();
+      break;
+    case 'stationery_merge':
+      showScreen('screen-stationery_merge');
+      initStationeryMergeGame();
+      break;
+    case 'camo_sheet':
+      showScreen('screen-camo_sheet');
+      initCamoSheetGame();
+      break;
+    case 'wordle_jp':
+      showScreen('screen-wordle_jp');
+      initWordleJpGame();
+      break;
+    case 'school_typing':
+      showScreen('screen-school_typing');
+      initSchoolTypingGame();
+      break;
+    case 'board_clicker':
+      showScreen('screen-board_clicker');
+      initBoardClickerGame();
+      break;
+    case 'time_reflex':
+      showScreen('screen-time_reflex');
+      initTimeReflexGame();
+      break;
+    case 'ultimate_choice':
+      showScreen('screen-ultimate_choice');
+      initUltimateChoiceGame();
+      break;
+    case 'seat_shuffle':
+      showScreen('screen-seat_shuffle');
+      initSeatShuffleGame();
+      break;
+    case 'drawing_quiz':
+      showScreen('screen-drawing_quiz');
+      initDrawingQuizGame();
       break;
   }
 }

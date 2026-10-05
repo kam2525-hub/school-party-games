@@ -5,6 +5,25 @@ import os
 # index.htmlに全30ゲームの初期化を自動実行してコンソールに出力するテストランナーを作成
 test_html_content = open('index.html', 'r', encoding='utf-8').read()
 
+# <head>にグローバルエラートラッカーを挿入
+error_tracker = """
+<script>
+window.addEventListener('error', (e) => {
+  const div = document.createElement('div');
+  div.id = 'fatal-script-error';
+  div.textContent = `FATAL SCRIPT ERROR: ${e.message} at ${e.filename}:${e.lineno}:${e.colno}`;
+  document.documentElement.appendChild(div);
+});
+</script>
+"""
+test_html_content = test_html_content.replace('<head>', '<head>\n' + error_tracker)
+
+# スクリプトをインライン化してCORSマスクを回避
+test_html_content = test_html_content.replace('<script src="audio.js"></script>', f"<script>\n{open('audio.js', encoding='utf-8').read()}\n</script>")
+test_html_content = test_html_content.replace('<script src="words.js"></script>', f"<script>\n{open('words.js', encoding='utf-8').read()}\n</script>")
+test_html_content = test_html_content.replace('<script src="solo_games.js"></script>', f"<script>\n{open('solo_games.js', encoding='utf-8').read()}\n</script>")
+test_html_content = test_html_content.replace('<script src="app.js?v=4"></script>', f"<script>\n{open('app.js', encoding='utf-8').read()}\n</script>")
+
 test_script = """
 <script>
 window.testResults = [];
@@ -25,7 +44,9 @@ window.addEventListener('load', () => {
     'snooze', 'ruler', 'flipbook', 'paperplane', 'thumbsumo',
     'cupshuffle', 'uforescue', 'pinball', 'hockeyshot', 'goldfish',
     'chalkdust', 'rubberband', 'booktower', 'penspin', 'deskcurling',
-    'calculator', 'lunchbread', 'eyedrops', 'doubledutch', 'rocketlaunch'
+    'calculator', 'lunchbread', 'eyedrops', 'doubledutch', 'rocketlaunch',
+    'stationery_merge', 'camo_sheet', 'wordle_jp', 'school_typing',
+    'board_clicker', 'time_reflex', 'ultimate_choice', 'seat_shuffle', 'drawing_quiz'
   ];
 
   let successCount = 0;
@@ -33,9 +54,11 @@ window.addEventListener('load', () => {
     try {
       startGame(g);
       successCount++;
-      console.log(`[TEST_OK] Game: ${g}`);
     } catch (e) {
-      console.error(`[TEST_ERR] Game: ${g} -> ${e.message} at ${e.stack}`);
+      const errDiv = document.createElement('div');
+      errDiv.className = 'test-error-log';
+      errDiv.textContent = `[ERR in ${g}]: ${e.message}`;
+      document.body.appendChild(errDiv);
     }
   }
 
@@ -63,11 +86,11 @@ cmd = [
     file_url
 ]
 
-print("Launching Edge to verify all 80 games...")
+print("Launching Edge to verify all 89 games...")
 result = subprocess.run(cmd, capture_output=True, text=True, encoding='utf-8', errors='ignore')
 
-if "RESULT: 80/80 GAMES INITIALIZED SUCCESSFULLY" in result.stdout:
-    print("\n[SUCCESS] All 80 mini-games successfully initialized in real Edge browser engine with zero errors!")
+if "RESULT: 89/89 GAMES INITIALIZED SUCCESSFULLY" in result.stdout:
+    print("\n[SUCCESS] All 89 mini-games successfully initialized in real Edge browser engine with zero errors!")
 else:
     print("Browser DOM Dump Output:")
     for line in result.stdout.splitlines()[-15:]:
