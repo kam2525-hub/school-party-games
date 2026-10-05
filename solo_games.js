@@ -1782,3 +1782,491 @@ function renderTalkPrejudice() {
     </div>
   `;
 }
+
+// ==============================================================================
+// 16. 「アニメ名言ダウトクイズ」(quote_doubt) - 実在？架空？全60問
+// ==============================================================================
+const QUOTE_DOUBT_DATA = [
+  // --- 実在する名言 (32問) ---
+  {
+    quote: "諦めたらそこで試合終了ですよ",
+    isReal: true,
+    work: "SLAM DUNK",
+    character: "安西先生",
+    desc: "中学時代の三井寿にかけた、漫画史に残る伝説の名言！"
+  },
+  {
+    quote: "背中の傷は剣士の恥だ",
+    isReal: true,
+    work: "ONE PIECE",
+    character: "ロロノア・ゾロ",
+    desc: "ミホークに斬られる際、逃げずに正面から受け止めた名シーン！"
+  },
+  {
+    quote: "大丈夫、僕 最強だから",
+    isReal: true,
+    work: "呪術廻戦",
+    character: "五条悟",
+    desc: "圧倒的な自信と実力を見せつけた五条先生の代名詞！"
+  },
+  {
+    quote: "生殺与奪の権を他人に握らせるな！",
+    isReal: true,
+    work: "鬼滅の刃",
+    character: "冨岡義勇",
+    desc: "炭治郎の甘さを一喝し、覚悟を決めさせた第1話の名言！"
+  },
+  {
+    quote: "逃げちゃダメだ、逃げちゃダメだ、逃げちゃダメだ",
+    isReal: true,
+    work: "新世紀エヴァンゲリオン",
+    character: "碇シンジ",
+    desc: "初号機に乗るプレッシャーと恐怖に打ち勝つための自己暗示。"
+  },
+  {
+    quote: "心臓を捧げよ！",
+    isReal: true,
+    work: "進撃の巨人",
+    character: "エルヴィン・スミス / 調査兵団",
+    desc: "人類の自由のために命を懸ける調査兵団の魂の敬礼！"
+  },
+  {
+    quote: "親父にもぶたれたことないのに！",
+    isReal: true,
+    work: "機動戦士ガンダム",
+    character: "アムロ・レイ",
+    desc: "ブライト艦長に平手打ちされた時のあまりにも有名なセリフ！"
+  },
+  {
+    quote: "見ろ！人がゴミのようだ！",
+    isReal: true,
+    work: "天空の城ラピュタ",
+    character: "ムスカ大佐",
+    desc: "ラピュタの雷を発動し、狂気と高揚感に包まれたムスカの名セリフ。"
+  },
+  {
+    quote: "だが断る",
+    isReal: true,
+    work: "ジョジョの奇妙な冒険 第4部",
+    character: "岸辺露伴",
+    desc: "「最も好きな事の1つは、自分で強いと思ってるやつに『NO』と断ってやる事だ」"
+  },
+  {
+    quote: "クリリンのことかーっ！",
+    isReal: true,
+    work: "ドラゴンボール",
+    character: "孫悟空",
+    desc: "フリーザの挑発に怒りを爆発させ、超サイヤ人として覚醒した瞬間！"
+  },
+  {
+    quote: "海賊王に俺はなる！",
+    isReal: true,
+    work: "ONE PIECE",
+    character: "モンキー・D・ルフィ",
+    desc: "第1話から叫び続けているルフィの揺るぎない夢と信念！"
+  },
+  {
+    quote: "オレは今なんだよ！",
+    isReal: true,
+    work: "SLAM DUNK",
+    character: "桜木花道",
+    desc: "山王戦で背中を負傷しながらも交代を拒否し放った魂の叫び！"
+  },
+  {
+    quote: "まっすぐ自分の言葉は曲げねぇ、それがオレの忍道だ",
+    isReal: true,
+    work: "NARUTO",
+    character: "うずまきナルト",
+    desc: "どんな逆境でも決して諦めないナルトの生き様！"
+  },
+  {
+    quote: "勝てば官軍、負ければ賊軍…そんなもの正義とは呼ばねぇ",
+    isReal: true,
+    work: "銀魂",
+    character: "坂田銀時",
+    desc: "普段はふざけている銀さんが戦場で見せる侍の真骨頂！"
+  },
+  {
+    quote: "計画通り",
+    isReal: true,
+    work: "DEATH NOTE",
+    character: "夜神月",
+    desc: "記憶を取り戻した瞬間の邪悪すぎるドヤ顔とともに放たれた名言！"
+  },
+  {
+    quote: "努力した者が全て報われるとは限らん。しかし、成功した者は皆すべからく努力しておる",
+    isReal: true,
+    work: "はじめの一歩",
+    character: "鴨川源二",
+    desc: "鷹村の世界前哨戦で贈られた、スポーツ漫画屈指の重みある言葉。"
+  },
+  {
+    quote: "お前は今まで食ったパンの枚数をおぼえているのか？",
+    isReal: true,
+    work: "ジョジョの奇妙な冒険 第1部",
+    character: "ディオ・ブランドー",
+    desc: "ツェペリ男爵に「何人の命を吸い取った」と問われた冷酷な返し！"
+  },
+  {
+    quote: "悔いなき選択を自分でしろ",
+    isReal: true,
+    work: "進撃の巨人",
+    character: "リヴァイ・アッカーマン",
+    desc: "結果は誰にもわからないからこそ、自分で選べとエレンに説く言葉。"
+  },
+  {
+    quote: "心を燃やせ",
+    isReal: true,
+    work: "鬼滅の刃 無限列車編",
+    character: "煉獄杏寿郎",
+    desc: "炭治郎たち後輩に託した炎柱の熱き意志！涙なしには見られない！"
+  },
+  {
+    quote: "クセになってんだ、音殺して動くの",
+    isReal: true,
+    work: "HUNTER×HUNTER",
+    character: "キルア＝ゾルディック",
+    desc: "暗殺一家で育ったキルアの恐ろしさと格好良さが滲み出るセリフ！"
+  },
+  {
+    quote: "オレの獲物に手ぇ出すな",
+    isReal: true,
+    work: "チェンソーマン",
+    character: "デンジ",
+    desc: "欲望に忠実なデンジが戦いで本能を剥き出しにする瞬間！"
+  },
+  {
+    quote: "君がッ 泣くまで 殴るのをやめないッ！",
+    isReal: true,
+    work: "ジョジョの奇妙な冒険 第1部",
+    character: "ジョナサン・ジョースター",
+    desc: "紳士のジョナサンがディオの非道にブチギレた激アツシーン！"
+  },
+  {
+    quote: "真実はいつもひとつ！",
+    isReal: true,
+    work: "名探偵コナン",
+    character: "江戸川コナン",
+    desc: "アニメOPでおなじみ！どんな難事件のトリックも暴く決めゼリフ！"
+  },
+  {
+    quote: "バーロー",
+    isReal: true,
+    work: "名探偵コナン",
+    character: "江戸川コナン",
+    desc: "呆れたときや照れ隠しに言うコナンの口癖！"
+  },
+  {
+    quote: "安西先生…!! バスケがしたいです……",
+    isReal: true,
+    work: "SLAM DUNK",
+    character: "三井寿",
+    desc: "不良グループを率いて体育館を襲撃した三井が涙で本音を吐露した名場面！"
+  },
+  {
+    quote: "撃っていいのは、撃たれる覚悟のある奴だけだ",
+    isReal: true,
+    work: "コードギアス 反逆のルルーシュ",
+    character: "ルルーシュ・ランペルージ",
+    desc: "第1話および最終回にも響く、ルルーシュの正義と覚悟を象徴する言葉！"
+  },
+  {
+    quote: "止まるんじゃねぇぞ…",
+    isReal: true,
+    work: "機動戦士ガンダム 鉄血のオルフェンズ",
+    character: "オルガ・イツカ",
+    desc: "凶弾に倒れながらも団員たちの未来を切り開くために前を指差した名シーン！"
+  },
+  {
+    quote: "人は、大切な何かを守りたいと思った時に、本当に強くなれる",
+    isReal: true,
+    work: "NARUTO",
+    character: "白（ハク）",
+    desc: "波の国編でナルトの心に深く刻まれた、強さの本質についての言葉。"
+  },
+  {
+    quote: "僕のヒーローアカデミア、これは僕が最高のヒーローになるまでの物語だ",
+    isReal: true,
+    work: "僕のヒーローアカデミア",
+    character: "緑谷出久",
+    desc: "無個性だったデクが夢へ駆け上がるオープニングナレーション！"
+  },
+  {
+    quote: "笑えよ、夏油",
+    isReal: true,
+    work: "劇場版 呪術廻戦 0",
+    character: "五条悟",
+    desc: "かつての唯一無二の親友に最後にかけた言葉。涙腺崩壊！"
+  },
+  {
+    quote: "ボールが落ちるまで、勝負は終わらねぇ！",
+    isReal: true,
+    work: "ハイキュー!!",
+    character: "烏野高校一同",
+    desc: "繋ぐスポーツであるバレーボールの真髄を叫ぶ熱き言葉！"
+  },
+  {
+    quote: "奇跡を待つより、捨て身の努力よ！",
+    isReal: true,
+    work: "新世紀エヴァンゲリオン",
+    character: "葛城ミサト",
+    desc: "ヤシマ作戦で勝ち筋の薄い作戦を指揮するミサトさんの力強い名言！"
+  },
+
+  // --- 嘘・存在しない架空の名言 (28問) ---
+  {
+    quote: "お前の弱点は、優しすぎることだ",
+    isReal: false,
+    desc: "少年漫画で100回くらい聞いた気がしますが、特定の誰も言ってませんw"
+  },
+  {
+    quote: "領域展開――無幻黒煙（むげんこくえん）",
+    isReal: false,
+    desc: "呪術廻戦にめちゃくちゃありそうですが、完全な架空の技ですw"
+  },
+  {
+    quote: "俺の心臓は、お前を倒すためだけに動いている",
+    isReal: false,
+    desc: "ダークヒーローやライバルが言ってそうですが、完全な創作セリフです！"
+  },
+  {
+    quote: "のび太くん、君は本当にダメなやつだな",
+    isReal: false,
+    desc: "ドラえもんが言いそうですが、実はこんな冷たい言い方はしていませんw"
+  },
+  {
+    quote: "全集中・影の呼吸 壱ノ型 闇夜斬り",
+    isReal: false,
+    desc: "鬼滅の刃にいそうですが、影の呼吸なんてありませんw"
+  },
+  {
+    quote: "天才だからこそ、努力の重さを知っているんだ",
+    isReal: false,
+    desc: "秀才ライバルが言ってそうですが、存在しないセリフです！"
+  },
+  {
+    quote: "オレの拳に、躊躇いという言葉はねぇ！",
+    isReal: false,
+    desc: "熱血格闘キャラのテンプレですが、誰のセリフでもありませんw"
+  },
+  {
+    quote: "負け犬の遠吠えほど、心地いい音楽はないね",
+    isReal: false,
+    desc: "冷酷なインテリ敵幹部がワイングラス片手に言ってそうですが偽物です！"
+  },
+  {
+    quote: "この瞳に映る未来に、お前の居場所はない",
+    isReal: false,
+    desc: "オッドアイのラスボスが言ってそうですが、中二病の妄想セリフですw"
+  },
+  {
+    quote: "約束したんだ、あいつとテッペン取るってな！",
+    isReal: false,
+    desc: "ヤンキー漫画に死ぬほどありそうですが、完全な架空です！"
+  },
+  {
+    quote: "計算通りだ。お前の思考回路は全て読めていた",
+    isReal: false,
+    desc: "眼鏡キャラが眼鏡をクイッとしながら言いそうですが架空ですw"
+  },
+  {
+    quote: "血が騒ぐぜ…久しぶりに本気を出せそうだ",
+    isReal: false,
+    desc: "バトルジャンキーが言ってそうですが、テンプレートの創作セリフです！"
+  },
+  {
+    quote: "本当の絶望は、希望が偽物だと知った瞬間だ",
+    isReal: false,
+    desc: "深い哲学的な悪役セリフっぽいですが、存在しませんw"
+  },
+  {
+    quote: "神が許しても、この俺が許さねぇ！",
+    isReal: false,
+    desc: "復讐に燃える主人公が叫びそうですが、誰の名言でもありません！"
+  },
+  {
+    quote: "お前の熱意は認める。だが、それだけでは勝てない",
+    isReal: false,
+    desc: "厳しい師匠が言ってそうですが、完全なオリジナルですw"
+  },
+  {
+    quote: "背中を預けられるのは、お前だけだ",
+    isReal: false,
+    desc: "王道バディものにありそうですが、テンプレ創作です！"
+  },
+  {
+    quote: "奇跡なんて言葉で片付けるな。俺たちの努力を侮辱するな",
+    isReal: false,
+    desc: "スポーツ漫画の熱血キャプテンが言いそうですが架空ですw"
+  },
+  {
+    quote: "この世界は、強い者だけが正義を語れるんだ",
+    isReal: false,
+    desc: "弱肉強食系の敵ボスが言いそうですが、どこにもないセリフです！"
+  },
+  {
+    quote: "お前の拳、軽すぎるぜ",
+    isReal: false,
+    desc: "パワータイプの強敵がニヤニヤしながら言いそうですが偽物ですw"
+  },
+  {
+    quote: "涙を拭け。戦士に涙は似合わない",
+    isReal: false,
+    desc: "ベテラン戦士が言ってそうですが、ありがちな架空セリフです！"
+  },
+  {
+    quote: "これ以上近づくな。俺の中の怪物が目を覚ます",
+    isReal: false,
+    desc: "腕を押さえながら言ってそうですが、ただの中二病全開セリフですw"
+  },
+  {
+    quote: "勝負は一瞬、だが絆は永遠だ",
+    isReal: false,
+    desc: "青春部活アニメのポスターに書いてありそうですが架空です！"
+  },
+  {
+    quote: "覚悟の重さが違うんだよ、お前とはな",
+    isReal: false,
+    desc: "ダークヒーローが言ってそうですが、誰のセリフでもありませんw"
+  },
+  {
+    quote: "仲間を傷つける奴は、たとえ神でもぶっ飛ばす！",
+    isReal: false,
+    desc: "ルフィやナルトが言いそうですが、実は言っていません！"
+  },
+  {
+    quote: "頭脳戦で俺に勝てると思ったのかい？",
+    isReal: false,
+    desc: "天才キャラの代名詞っぽいですが、創作されたセリフです！"
+  },
+  {
+    quote: "俺の右腕の封印が解けちまう前に失せな",
+    isReal: false,
+    desc: "幽白の飛影が言いそうですが、言ってませんw 完全な妄想です！"
+  },
+  {
+    quote: "授業中に寝るのも、立派な青春の1ページだ",
+    isReal: false,
+    desc: "日常アニメの主人公が言いそうですが、ただのサボりの言い訳ですw"
+  },
+  {
+    quote: "お前の魂の叫び、確かに受け取った！",
+    isReal: false,
+    desc: "熱血ロボットアニメでありそうですが、誰のセリフでもありませんw"
+  }
+];
+
+let doubtQuestions = [];
+let doubtCurrentIdx = 0;
+let doubtScore = 0;
+let doubtAnswered = false;
+
+function initQuoteDoubtGame() {
+  // 60問の中からランダムに10問を抽出
+  doubtQuestions = [...QUOTE_DOUBT_DATA].sort(() => 0.5 - Math.random()).slice(0, 10);
+  doubtCurrentIdx = 0;
+  doubtScore = 0;
+  doubtAnswered = false;
+  renderQuoteDoubt();
+}
+
+function answerQuoteDoubt(userGuessReal) {
+  if (doubtAnswered) return;
+  doubtAnswered = true;
+
+  const current = doubtQuestions[doubtCurrentIdx];
+  const isCorrect = (userGuessReal === current.isReal);
+
+  if (isCorrect) {
+    doubtScore++;
+    if (window.sounds) window.sounds.playSuccess();
+  } else {
+    if (window.sounds) window.sounds.playExplosion();
+  }
+
+  renderQuoteDoubt(isCorrect);
+}
+
+function nextQuoteDoubt() {
+  doubtCurrentIdx++;
+  doubtAnswered = false;
+
+  if (doubtCurrentIdx >= doubtQuestions.length) {
+    let rank = '';
+    if (doubtScore === 10) rank = '👑 神レベル！アニメの生き字引！';
+    else if (doubtScore >= 8) rank = '✨ アニメ・名言ソムリエ！';
+    else if (doubtScore >= 5) rank = '🙂 なかなか詳しい一般人！';
+    else rank = '😅 マンデラ効果に騙されまくり！？';
+
+    showModal(
+      '🏆 名言ダウト 結果発表！',
+      `正解数: ${doubtScore} / 10 問！\n評価: ${rank}`,
+      () => initQuoteDoubtGame()
+    );
+    return;
+  }
+
+  renderQuoteDoubt();
+}
+
+function renderQuoteDoubt(lastCorrect = null) {
+  const container = document.getElementById('screen-quote_doubt');
+  if (!container) return;
+
+  const current = doubtQuestions[doubtCurrentIdx];
+  if (!current) return;
+
+  let revealHtml = '';
+  if (doubtAnswered) {
+    revealHtml = `
+      <div class="quote-reveal-card">
+        <div style="font-size:18px;font-weight:900;margin-bottom:6px;">
+          ${lastCorrect ? '🎉 正解！！' : '❌ 不正解！！'}
+        </div>
+        <div class="quote-badge-status ${current.isReal ? 'is-real' : 'is-fake'}">
+          ${current.isReal ? '【実在する名言！】' : '【言ってない（架空）！】'}
+        </div>
+        ${current.isReal ? `
+          <div style="font-size:14px;font-weight:bold;color:#38bdf8;margin-bottom:4px;">
+            作品: 『${current.work}』 / キャラ: ${current.character}
+          </div>
+        ` : ''}
+        <div style="font-size:13px;color:#cbd5e1;line-height:1.5;">${current.desc}</div>
+        <button class="btn-primary" style="width:100%;margin-top:14px;padding:12px;font-size:16px;" onclick="nextQuoteDoubt()">
+          ${doubtCurrentIdx + 1 < doubtQuestions.length ? '次の問題へ ➡️' : '結果を見る 🏆'}
+        </button>
+      </div>
+    `;
+  }
+
+  container.innerHTML = `
+    <div class="solo-game-container">
+      <div class="solo-header">
+        <div class="solo-title">💬 アニメ名言ダウト！</div>
+        <div class="solo-stats">
+          <span class="solo-badge">第 ${doubtCurrentIdx + 1} / 10 問</span>
+          <span class="solo-badge" style="background:#22c55e22;color:#4ade80;">正解: ${doubtScore}</span>
+        </div>
+      </div>
+      <div class="talk-card-container">
+        <div class="quote-card-wrap">
+          <div style="font-size:12px;color:#94a3b8;font-weight:bold;">この名言、本当に言った？言ってない？</div>
+          <div class="quote-bubble-quote">${current.quote}</div>
+
+          ${!doubtAnswered ? `
+            <div style="display:flex;gap:12px;margin-top:20px;">
+              <button class="quote-btn-choice quote-btn-real" onclick="answerQuoteDoubt(true)">
+                ⭕ 実在する！<br><span style="font-size:12px;font-weight:normal;">(言った！)</span>
+              </button>
+              <button class="quote-btn-choice quote-btn-fake" onclick="answerQuoteDoubt(false)">
+                ❌ 言ってない！<br><span style="font-size:12px;font-weight:normal;">(嘘・架空)</span>
+              </button>
+            </div>
+          ` : ''}
+
+          ${revealHtml}
+        </div>
+      </div>
+    </div>
+  `;
+}

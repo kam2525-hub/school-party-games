@@ -496,6 +496,10 @@ function startGame(gameKey) {
       showScreen('screen-talk_prejudice');
       initTalkPrejudiceGame();
       break;
+    case 'quote_doubt':
+      showScreen('screen-quote_doubt');
+      initQuoteDoubtGame();
+      break;
   }
 }
 
@@ -9497,7 +9501,7 @@ function closeInstallGuide() {
 // サービスワーカー登録（オフラインプレイ＆PWA化）
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('./sw.js?v=6').then((reg) => {
+    navigator.serviceWorker.register('./sw.js?v=7').then((reg) => {
       reg.update();
       reg.addEventListener('updatefound', () => {
         const newWorker = reg.installing;

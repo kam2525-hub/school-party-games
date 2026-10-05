@@ -15,8 +15,8 @@
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="icons/icon-192.png">
   <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
-  <link rel="stylesheet" href="style.css?v=6">
-  <link rel="stylesheet" href="solo_games.css?v=6">
+  <link rel="stylesheet" href="style.css?v=7">
+  <link rel="stylesheet" href="solo_games.css?v=7">
   <script>
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.getRegistrations().then(regs => {
@@ -39,7 +39,7 @@
     <div id="screen-menu" class="screen active">
       <div class="app-title">
         <h1>🎮 休み時間パーティー＆ひまつぶし</h1>
-        <p>1人でも友達とでも！【全95ゲーム＆機能収録】 <span style="font-size: 11px; background: #ef4444; color: white; padding: 2px 6px; border-radius: 4px; font-weight: bold;">v6.0 会話トーク特選</span></p>
+        <p>1人でも友達とでも！【全96ゲーム＆機能収録】 <span style="font-size: 11px; background: #ef4444; color: white; padding: 2px 6px; border-radius: 4px; font-weight: bold;">v7.0 名言ダウト全60問</span></p>
       </div>
 
       <!-- アプリ化ボタン -->
@@ -51,7 +51,7 @@
 
       <!-- カテゴリタブ -->
       <div class="category-tabs">
-        <button class="tab-btn active" onclick="filterCategory('all', this)">すべて (95)</button>
+        <button class="tab-btn active" onclick="filterCategory('all', this)">すべて (96)</button>
         <button class="tab-btn" onclick="filterCategory('talk', this)">🗣️ 爆笑トーク</button>
         <button class="tab-btn" onclick="filterCategory('special', this)">✨ 暇つぶし特選</button>
         <button class="tab-btn" onclick="filterCategory('camo', this)">🤫 カモフラージュ</button>
@@ -62,6 +62,15 @@
       </div>
 
       <div class="game-grid" id="game-grid">
+        <!-- 注目新着: アニメ名言ダウト！ -->
+        <div class="game-card" data-category="talk special brain party" onclick="startGame('quote_doubt')">
+          <div class="card-icon" style="background: rgba(225, 29, 72, 0.15); color: #f43f5e;">💬</div>
+          <div class="card-info">
+            <h3>アニメ名言ダウト！ <span class="card-badge" style="background:#e11d48;color:white;">🔥 新着 全60問</span></h3>
+            <p>この名言、本当に言った？言ってない？実在の名セリフと巧妙な嘘セリフを見破れ！</p>
+          </div>
+        </div>
+
         <!-- 会話1: 数字で例えろ！ (ito風) -->
         <div class="game-card" data-category="talk special party" onclick="startGame('talk_ito')">
           <div class="card-icon" style="background: rgba(245, 158, 11, 0.15); color: #f59e0b;">🔢</div>
@@ -1687,6 +1696,9 @@
     <!-- 会話6: 偏見プロフィールメーカー画面 -->
     <div id="screen-talk_prejudice" class="screen"></div>
 
+    <!-- 注目新着: アニメ名言ダウト画面 -->
+    <div id="screen-quote_doubt" class="screen"></div>
+
     <!-- PWAインストール案内モーダル -->
     <div id="modal-install" class="overlay-modal" style="display: none;">
       <div class="install-box">
@@ -1724,9 +1736,9 @@
     </div>
   </div>
 
-  <script src="audio.js?v=6"></script>
-  <script src="words.js?v=6"></script>
-  <script src="solo_games.js?v=6"></script>
-  <script src="app.js?v=6"></script>
+  <script src="audio.js?v=7"></script>
+  <script src="words.js?v=7"></script>
+  <script src="solo_games.js?v=7"></script>
+  <script src="app.js?v=7"></script>
 </body>
 </html>
