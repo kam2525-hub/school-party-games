@@ -9497,7 +9497,8 @@ function closeInstallGuide() {
 // サービスワーカー登録（オフラインプレイ＆PWA化）
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('./sw.js?v=4').then((reg) => {
+    navigator.serviceWorker.register('./sw.js?v=6').then((reg) => {
+      reg.update();
       reg.addEventListener('updatefound', () => {
         const newWorker = reg.installing;
         if (newWorker) {

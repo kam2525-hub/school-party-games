@@ -15,8 +15,15 @@
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="icons/icon-192.png">
   <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
-  <link rel="stylesheet" href="style.css?v=4">
-  <link rel="stylesheet" href="solo_games.css">
+  <link rel="stylesheet" href="style.css?v=6">
+  <link rel="stylesheet" href="solo_games.css?v=6">
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistrations().then(regs => {
+        for (let r of regs) r.update();
+      });
+    }
+  </script>
 </head>
 <body>
   <div id="safe-area-probe" style="position:fixed;top:env(safe-area-inset-top,0px);height:0;visibility:hidden;pointer-events:none;"></div>
@@ -1717,9 +1724,9 @@
     </div>
   </div>
 
-  <script src="audio.js"></script>
-  <script src="words.js"></script>
-  <script src="solo_games.js"></script>
-  <script src="app.js?v=4"></script>
+  <script src="audio.js?v=6"></script>
+  <script src="words.js?v=6"></script>
+  <script src="solo_games.js?v=6"></script>
+  <script src="app.js?v=6"></script>
 </body>
 </html>

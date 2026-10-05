@@ -1,11 +1,13 @@
-const CACHE_NAME = 'school-party-v4';
+const CACHE_NAME = 'school-party-v6';
 const ASSETS_TO_CACHE = [
   './',
-  './index.html',
-  './style.css?v=4',
-  './app.js?v=4',
-  './audio.js',
-  './words.js',
+  './index.html?v=6',
+  './style.css?v=6',
+  './solo_games.css?v=6',
+  './app.js?v=6',
+  './solo_games.js?v=6',
+  './audio.js?v=6',
+  './words.js?v=6',
   './manifest.json',
   './icons/icon-192.png',
   './icons/icon-512.png'
