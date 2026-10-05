@@ -737,3 +737,156 @@
   border-color: white;
   transform: scale(1.15);
 }
+
+/* ============================================================
+   会話系ゲーム共通 & 専用スタイル
+   ============================================================ */
+.talk-card-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  flex: 1;
+  text-align: center;
+}
+
+.talk-prompt-box {
+  background: linear-gradient(135deg, rgba(30, 41, 59, 0.9), rgba(15, 23, 42, 0.95));
+  border: 2px solid rgba(255, 255, 255, 0.15);
+  border-radius: 16px;
+  padding: 24px 20px;
+  width: 90%;
+  max-width: 380px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+  margin-bottom: 20px;
+}
+
+.talk-badge-tag {
+  display: inline-block;
+  background: #3b82f6;
+  color: white;
+  font-size: 11px;
+  font-weight: 800;
+  padding: 3px 8px;
+  border-radius: 6px;
+  margin-bottom: 8px;
+}
+
+.talk-main-theme {
+  font-size: 22px;
+  font-weight: 900;
+  color: #f8fafc;
+  line-height: 1.4;
+  margin-bottom: 12px;
+}
+
+.talk-secret-card {
+  width: 85%;
+  max-width: 320px;
+  height: 180px;
+  background: #1e293b;
+  border: 3px dashed #64748b;
+  border-radius: 18px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  user-select: none;
+  touch-action: manipulation;
+  margin: 16px auto;
+  transition: all 0.2s;
+}
+
+.talk-secret-card.revealed {
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  border: 3px solid #60a5fa;
+  color: white;
+  transform: scale(1.02);
+}
+
+.talk-number-huge {
+  font-size: 64px;
+  font-weight: 900;
+  color: #fbbf24;
+}
+
+.talk-card-order-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+  max-width: 360px;
+  margin: 12px auto;
+}
+
+.talk-player-pill {
+  background: #334155;
+  color: white;
+  padding: 8px 14px;
+  border-radius: 10px;
+  font-weight: bold;
+  font-size: 14px;
+  cursor: grab;
+  border: 1px solid rgba(255,255,255,0.1);
+}
+
+/* カタカナーシ */
+.katakana-timer-huge {
+  font-size: 44px;
+  font-weight: 900;
+  font-family: monospace;
+  color: #ef4444;
+  margin: 8px 0;
+}
+
+.katakana-word-display {
+  font-size: 32px;
+  font-weight: 900;
+  color: #facc15;
+  background: rgba(0, 0, 0, 0.4);
+  padding: 16px 24px;
+  border-radius: 14px;
+  border: 2px solid #eab308;
+  letter-spacing: 2px;
+  margin-bottom: 20px;
+}
+
+/* 偏見プロフィール認定書 */
+.prejudice-certificate {
+  background: #fefce8;
+  color: #1e293b;
+  border: 4px solid #ca8a04;
+  border-radius: 16px;
+  padding: 20px;
+  width: 90%;
+  max-width: 360px;
+  box-shadow: 0 12px 30px rgba(0,0,0,0.5);
+  text-align: left;
+  position: relative;
+}
+
+.prejudice-title {
+  font-size: 16px;
+  font-weight: 900;
+  color: #854d0e;
+  border-bottom: 2px solid #ca8a04;
+  padding-bottom: 6px;
+  margin-bottom: 12px;
+  text-align: center;
+}
+
+.prejudice-item {
+  font-size: 14px;
+  font-weight: 700;
+  margin-bottom: 10px;
+  line-height: 1.5;
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+}
+
+.prejudice-item::before {
+  content: '👉';
+}

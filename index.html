@@ -32,7 +32,7 @@
     <div id="screen-menu" class="screen active">
       <div class="app-title">
         <h1>🎮 休み時間パーティー＆ひまつぶし</h1>
-        <p>1人でも友達とでも！【全89ゲーム＆暇つぶし機能収録】 <span style="font-size: 11px; background: #ef4444; color: white; padding: 2px 6px; border-radius: 4px; font-weight: bold;">v5.0 暇つぶし特選</span></p>
+        <p>1人でも友達とでも！【全95ゲーム＆機能収録】 <span style="font-size: 11px; background: #ef4444; color: white; padding: 2px 6px; border-radius: 4px; font-weight: bold;">v6.0 会話トーク特選</span></p>
       </div>
 
       <!-- アプリ化ボタン -->
@@ -44,16 +44,71 @@
 
       <!-- カテゴリタブ -->
       <div class="category-tabs">
-        <button class="tab-btn active" onclick="filterCategory('all', this)">すべて (89)</button>
+        <button class="tab-btn active" onclick="filterCategory('all', this)">すべて (95)</button>
+        <button class="tab-btn" onclick="filterCategory('talk', this)">🗣️ 爆笑トーク</button>
         <button class="tab-btn" onclick="filterCategory('special', this)">✨ 暇つぶし特選</button>
         <button class="tab-btn" onclick="filterCategory('camo', this)">🤫 カモフラージュ</button>
         <button class="tab-btn" onclick="filterCategory('solo', this)">👤 1人プレイ</button>
-        <button class="tab-btn" onclick="filterCategory('action', this)">💥 アクション</button>
-        <button class="tab-btn" onclick="filterCategory('brain', this)">🧠 脳トレ・反射</button>
         <button class="tab-btn" onclick="filterCategory('party', this)">🎲 パーティー</button>
+        <button class="tab-btn" onclick="filterCategory('brain', this)">🧠 脳トレ・反射</button>
+        <button class="tab-btn" onclick="filterCategory('action', this)">💥 アクション</button>
       </div>
 
       <div class="game-grid" id="game-grid">
+        <!-- 会話1: 数字で例えろ！ (ito風) -->
+        <div class="game-card" data-category="talk special party" onclick="startGame('talk_ito')">
+          <div class="card-icon" style="background: rgba(245, 158, 11, 0.15); color: #f59e0b;">🔢</div>
+          <div class="card-info">
+            <h3>数字で例えろ！ (ito風) <span class="card-badge" style="background:#f59e0b;color:white;">🗣️ 会話・協力</span></h3>
+            <p>数字を言わずに「言葉の例え」で話し合い！1〜100の数字を小さい順に並べ替えろ！</p>
+          </div>
+        </div>
+
+        <!-- 会話2: カタカナーシ -->
+        <div class="game-card" data-category="talk special party brain" onclick="startGame('talk_katakana')">
+          <div class="card-icon" style="background: rgba(239, 68, 68, 0.15); color: #f87171;">🚫</div>
+          <div class="card-info">
+            <h3>カタカナーシ <span class="card-badge" style="background:#ef4444;color:white;">🗣️ カタカナ禁止</span></h3>
+            <p>「スマホ」「ハンバーガー」をカタカナ語を一切使わずに説明！即自爆で大爆笑！</p>
+          </div>
+        </div>
+
+        <!-- 会話3: 言わせろ！NGワードバトル -->
+        <div class="game-card" data-category="talk special party" onclick="startGame('talk_ngword')">
+          <div class="card-icon" style="background: rgba(168, 85, 247, 0.15); color: #c084fc;">🤐</div>
+          <div class="card-info">
+            <h3>言わせろ！NGワード <span class="card-badge" style="background:#8b5cf6;color:white;">🗣️ 心理トーク</span></h3>
+            <p>「それな」「マジで？」など各自の秘密のNGワード。普通に雑談しながら言わせたら勝ち！</p>
+          </div>
+        </div>
+
+        <!-- 会話4: エピソードトークガチャ -->
+        <div class="game-card" data-category="talk special party" onclick="startGame('talk_story_roulette')">
+          <div class="card-icon" style="background: rgba(56, 189, 248, 0.15); color: #38bdf8;">🎤</div>
+          <div class="card-info">
+            <h3>エピソードトークガチャ <span class="card-badge" style="background:#0284c7;color:white;">🗣️ すべらない話</span></h3>
+            <p>「先生に怒られた伝説」「人生最悪の言い間違い」など友達の爆笑話を引き出すガチャ！</p>
+          </div>
+        </div>
+
+        <!-- 会話5: 2つの真実と1つの嘘 -->
+        <div class="game-card" data-category="talk special party brain" onclick="startGame('talk_two_truths')">
+          <div class="card-icon" style="background: rgba(16, 185, 129, 0.15); color: #10b981;">🕵️</div>
+          <div class="card-info">
+            <h3>2つの真実と1つの嘘 <span class="card-badge" style="background:#10b981;color:white;">🗣️ ライアー推理</span></h3>
+            <p>本当の話2つと嘘1つを語れ！質問攻めで真っ赤な作り話を見破る探偵ゲーム！</p>
+          </div>
+        </div>
+
+        <!-- 会話6: 偏見プロフィールメーカー -->
+        <div class="game-card" data-category="talk special party" onclick="startGame('talk_prejudice')">
+          <div class="card-icon" style="background: rgba(236, 72, 153, 0.15); color: #ec4899;">🏆</div>
+          <div class="card-info">
+            <h3>偏見プロフィールメーカー <span class="card-badge" style="background:#db2777;color:white;">🗣️ 勝手に鑑定</span></h3>
+            <p>友達の名前を入れると「前世はナマケモノ」など勝手な偏見が3連発で認定書出力！</p>
+          </div>
+        </div>
+
         <!-- 特選1: 文房具スイカパズル -->
         <div class="game-card" data-category="solo special" onclick="startGame('stationery_merge')">
           <div class="card-icon" style="background: rgba(234, 179, 8, 0.15); color: #facc15;">🎒</div>
@@ -1606,6 +1661,24 @@
         </div>
       </div>
     </div>
+
+    <!-- 会話1: 数字で例えろ！画面 -->
+    <div id="screen-talk_ito" class="screen"></div>
+
+    <!-- 会話2: カタカナーシ画面 -->
+    <div id="screen-talk_katakana" class="screen"></div>
+
+    <!-- 会話3: 言わせろ！NGワード画面 -->
+    <div id="screen-talk_ngword" class="screen"></div>
+
+    <!-- 会話4: エピソードトークガチャ画面 -->
+    <div id="screen-talk_story_roulette" class="screen"></div>
+
+    <!-- 会話5: 2つの真実と1つの嘘画面 -->
+    <div id="screen-talk_two_truths" class="screen"></div>
+
+    <!-- 会話6: 偏見プロフィールメーカー画面 -->
+    <div id="screen-talk_prejudice" class="screen"></div>
 
     <!-- PWAインストール案内モーダル -->
     <div id="modal-install" class="overlay-modal" style="display: none;">

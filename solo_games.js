@@ -1136,3 +1136,649 @@ function setDrawColor(color, el) {
   document.querySelectorAll('.color-dot').forEach(d => d.classList.remove('active'));
   if (el) el.classList.add('active');
 }
+
+// ==============================================================================
+// 10. 「数字で例えろ！」(talk_ito) - ito風・価値観協力ゲーム
+// ==============================================================================
+const ITO_THEMES = [
+  '最強の給食メニュー（1=まずい 〜 100=神メニュー）',
+  'カッコいい苗字（1=平凡 〜 100=アニメの主人公並み）',
+  '学校でされて嬉しいこと（1=微妙 〜 100=一生の思い出）',
+  '無人島に持っていきたいもの（1=ゴミ 〜 100=最強の脱出具）',
+  '怖いもの（1=そよ風 〜 100=トラウマ級の恐怖）',
+  'テンションが上がる瞬間（1=真顔 〜 100=叫んで飛び跳ねる）',
+  '持ってたらモテそうな特技（1=鼻毛抜き 〜 100=世界レベルのピアノ）',
+  '学校の嫌なシチュエーション（1=消しゴム落とす 〜 100=全校朝礼で盛大に転ぶ）'
+];
+
+let itoPlayerCount = 4;
+let itoCurrentPlayer = 0;
+let itoNumbers = [];
+let itoTheme = '';
+let itoStep = 'setup'; // setup, pass, talk, answer
+
+function initTalkItoGame() {
+  itoStep = 'setup';
+  itoPlayerCount = 4;
+  renderTalkIto();
+}
+
+function startItoGame(players) {
+  itoPlayerCount = players;
+  itoTheme = ITO_THEMES[Math.floor(Math.random() * ITO_THEMES.length)];
+  itoNumbers = [];
+  while (itoNumbers.length < itoPlayerCount) {
+    const r = Math.floor(Math.random() * 100) + 1;
+    if (!itoNumbers.includes(r)) itoNumbers.push(r);
+  }
+  itoCurrentPlayer = 0;
+  itoStep = 'pass';
+  renderTalkIto();
+  if (window.sounds) window.sounds.playTap();
+}
+
+function handleItoReveal(reveal) {
+  const card = document.getElementById('ito-secret-card');
+  if (!card) return;
+  if (reveal) {
+    card.classList.add('revealed');
+    card.innerHTML = `
+      <div style="font-size:12px;opacity:0.8;">あなたの秘密の数字</div>
+      <div class="talk-number-huge">${itoNumbers[itoCurrentPlayer]}</div>
+      <div style="font-size:12px;opacity:0.8;">指を離すと隠れます</div>
+    `;
+    if (window.sounds) window.sounds.playTap();
+  } else {
+    card.classList.remove('revealed');
+    card.innerHTML = `
+      <div style="font-size:36px;margin-bottom:8px;">🔒</div>
+      <div style="font-weight:bold;">長押しして数字を見る</div>
+      <div style="font-size:12px;color:#94a3b8;">他の人に見られないように！</div>
+    `;
+  }
+}
+
+function nextItoPlayer() {
+  itoCurrentPlayer++;
+  if (itoCurrentPlayer >= itoPlayerCount) {
+    itoStep = 'talk';
+  }
+  renderTalkIto();
+  if (window.sounds) window.sounds.playTap();
+}
+
+function finishItoAnswer() {
+  // 並び替え確認
+  const sorted = [...itoNumbers].sort((a, b) => a - b);
+  const correct = sorted.every((val, i) => val === itoNumbers[i]);
+
+  if (window.sounds) {
+    if (correct) window.sounds.playSuccess();
+    else window.sounds.playExplosion();
+  }
+
+  showModal(
+    correct ? '🎉 完全一致！大成功！' : '💥 惜しい！数字オープン！',
+    `数字の結果:\n${itoNumbers.map((n, i) => `P${i+1}: 【${n}】`).join(' ➔ ')}\n\n${correct ? '全員の価値観が奇跡のシンクロ！' : '価値観のズレを楽しもう！'}`,
+    () => initTalkItoGame()
+  );
+}
+
+function renderTalkIto() {
+  const container = document.getElementById('screen-talk_ito');
+  if (!container) return;
+
+  if (itoStep === 'setup') {
+    container.innerHTML = `
+      <div class="solo-game-container">
+        <div class="solo-header"><div class="solo-title">🔢 数字で例えろ！ (ito風)</div></div>
+        <div class="talk-card-container">
+          <div class="talk-prompt-box">
+            <span class="talk-badge-tag">参加人数を選んでね</span>
+            <div class="talk-main-theme">何人で遊びますか？</div>
+            <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:16px;">
+              <button class="btn-primary" style="padding:12px 20px;" onclick="startItoGame(2)">2人</button>
+              <button class="btn-primary" style="padding:12px 20px;" onclick="startItoGame(3)">3人</button>
+              <button class="btn-primary" style="padding:12px 20px;" onclick="startItoGame(4)">4人</button>
+              <button class="btn-primary" style="padding:12px 20px;" onclick="startItoGame(5)">5人</button>
+              <button class="btn-primary" style="padding:12px 20px;" onclick="startItoGame(6)">6人</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+  } else if (itoStep === 'pass') {
+    container.innerHTML = `
+      <div class="solo-game-container">
+        <div class="solo-header">
+          <div class="solo-title">🔢 プレイヤー ${itoCurrentPlayer + 1} の番</div>
+        </div>
+        <div class="talk-card-container">
+          <div class="talk-prompt-box">
+            <span class="talk-badge-tag">本日のお題</span>
+            <div class="talk-main-theme">${itoTheme}</div>
+          </div>
+          <div id="ito-secret-card" class="talk-secret-card"
+               onpointerdown="handleItoReveal(true)" onpointerup="handleItoReveal(false)">
+            <div style="font-size:36px;margin-bottom:8px;">🔒</div>
+            <div style="font-weight:bold;">長押しして数字を見る</div>
+            <div style="font-size:12px;color:#94a3b8;">他の人に見られないように！</div>
+          </div>
+          <button class="btn-primary" style="padding:12px 28px;margin-top:12px;" onclick="nextItoPlayer()">
+            確認した！${itoCurrentPlayer + 1 < itoPlayerCount ? '次の人へ ➡️' : '全員確認完了！会話へ 🗣️'}
+          </button>
+        </div>
+      </div>
+    `;
+  } else if (itoStep === 'talk') {
+    container.innerHTML = `
+      <div class="solo-game-container">
+        <div class="solo-header">
+          <div class="solo-title">🗣️ トーク＆すり合わせタイム！</div>
+        </div>
+        <div class="talk-card-container">
+          <div class="talk-prompt-box">
+            <span class="talk-badge-tag">お題</span>
+            <div class="talk-main-theme">${itoTheme}</div>
+            <p style="font-size:13px;color:#cbd5e1;line-height:1.5;">
+              ⚠️ <strong>数字を直接言うのは禁止！</strong><br>
+              「給食の揚げパン」「冷凍みかん」などの言葉で自分の数字を例え合い、小さい順を予想しよう！
+            </p>
+          </div>
+          <div style="font-size:14px;color:#94a3b8;margin-bottom:12px;">話し合いが終わったら答え合わせ！</div>
+          <button class="btn-primary" style="padding:14px 32px;font-size:18px;" onclick="finishItoAnswer()">
+            🎉 答え合わせ！数字オープン！
+          </button>
+        </div>
+      </div>
+    `;
+  }
+}
+
+// ==============================================================================
+// 11. 「カタカナーシ」(talk_katakana) - カタカナ語禁止トーク
+// ==============================================================================
+const KATAKANA_WORDS = [
+  'スマートフォン', 'シャーペン', 'ハンバーガー', 'サッカー', 'カラオケ',
+  'エレベーター', 'マクドナルド', 'チョコレート', 'イヤホン', 'プログラミング',
+  'ノートパソコン', 'バナナ', 'テレビ', 'クリスマス', 'ジェットコースター',
+  'コンビニ', 'スニーカー', 'ゲームセンター', 'タピオカ', 'インスタグラム',
+  'サングラス', 'マフラー', 'リコーダー', 'プール', 'リュックサック'
+];
+
+let katakanaCurrentWord = '';
+let katakanaScore = 0;
+let katakanaTimer = null;
+let katakanaTimeLeft = 60;
+let katakanaIsActive = false;
+
+function initTalkKatakanaGame() {
+  katakanaScore = 0;
+  katakanaTimeLeft = 60;
+  katakanaIsActive = false;
+  if (katakanaTimer) clearInterval(katakanaTimer);
+  renderTalkKatakana();
+}
+
+function startKatakanaGame() {
+  katakanaScore = 0;
+  katakanaTimeLeft = 60;
+  katakanaIsActive = true;
+  pickNewKatakanaWord();
+  renderTalkKatakana();
+
+  if (katakanaTimer) clearInterval(katakanaTimer);
+  katakanaTimer = setInterval(() => {
+    if (currentScreen !== 'screen-talk_katakana') return;
+    katakanaTimeLeft--;
+    const tEl = document.getElementById('katakana-timer');
+    if (tEl) tEl.textContent = `${katakanaTimeLeft}s`;
+
+    if (katakanaTimeLeft <= 0) {
+      clearInterval(katakanaTimer);
+      katakanaIsActive = false;
+      if (window.sounds) window.sounds.playSuccess();
+      showModal('⏱️ タイムアップ！', `正解数: ${katakanaScore} 問！\n見事な日本語力でした！`, () => {
+        initTalkKatakanaGame();
+      });
+    }
+  }, 1000);
+}
+
+function pickNewKatakanaWord() {
+  katakanaCurrentWord = KATAKANA_WORDS[Math.floor(Math.random() * KATAKANA_WORDS.length)];
+}
+
+function katakanaNext(success) {
+  if (!katakanaIsActive) return;
+  if (success) {
+    katakanaScore++;
+    if (window.sounds) window.sounds.playSuccess();
+  } else {
+    if (window.sounds) window.sounds.playExplosion();
+  }
+  pickNewKatakanaWord();
+  renderTalkKatakana();
+}
+
+function renderTalkKatakana() {
+  const container = document.getElementById('screen-talk_katakana');
+  if (!container) return;
+
+  if (!katakanaIsActive) {
+    container.innerHTML = `
+      <div class="solo-game-container">
+        <div class="solo-header"><div class="solo-title">🚫 カタカナーシ</div></div>
+        <div class="talk-card-container">
+          <div class="talk-prompt-box">
+            <span class="talk-badge-tag">ルール説明</span>
+            <div class="talk-main-theme">カタカナ語を一切使わずに説明せよ！</div>
+            <p style="font-size:13px;color:#cbd5e1;line-height:1.6;text-align:left;">
+              1. 画面にお題（例:「スマホ」）が出ます。<br>
+              2. 出題者はカタカナを一切喋らずに言葉で説明します。<br>
+              3. 友達が当てたら「正解！」ボタン！カタカナを言ったら「アウト（パス）」！<br>
+              4. 60秒間で何問正解できるか挑戦！
+            </p>
+          </div>
+          <button class="btn-primary" style="padding:14px 32px;font-size:18px;" onclick="startKatakanaGame()">
+            🔥 60秒ゲームスタート！
+          </button>
+        </div>
+      </div>
+    `;
+  } else {
+    container.innerHTML = `
+      <div class="solo-game-container">
+        <div class="solo-header">
+          <div class="solo-title">🚫 カタカナーシ</div>
+          <div class="solo-badge">スコア: ${katakanaScore}</div>
+        </div>
+        <div class="talk-card-container">
+          <div id="katakana-timer" class="katakana-timer-huge">${katakanaTimeLeft}s</div>
+          <div style="font-size:12px;color:#94a3b8;margin-bottom:8px;">出題者はお題をカタカナ抜きで説明してね！</div>
+          <div class="katakana-word-display">${katakanaCurrentWord}</div>
+          <div style="display:flex;gap:14px;justify-content:center;width:100%;max-width:320px;">
+            <button class="btn-primary" style="flex:1;padding:14px;font-size:16px;background:#22c55e;" onclick="katakanaNext(true)">
+              ⭕ 当たった！(+1)
+            </button>
+            <button class="btn-danger" style="flex:1;padding:14px;font-size:16px;background:#ef4444;" onclick="katakanaNext(false)">
+              ❌ カタカナ言った(パス)
+            </button>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+}
+
+// ==============================================================================
+// 12. 「言わせろ！NGワードバトル」(talk_ngword)
+// ==============================================================================
+const NG_WORDS_LIST = [
+  'それな', 'マジで？', '知らんけど', 'ヤバい', '宿題',
+  '先生', '眠い', '草', '無理', 'お腹すいた', 'だるい',
+  '可愛い', 'すごい', 'ほんとに？', 'ちょっと待って'
+];
+
+let ngPlayers = [];
+let ngPlayerCount = 3;
+let ngCurrentCheck = 0;
+let ngStep = 'setup';
+
+function initTalkNgWordGame() {
+  ngStep = 'setup';
+  renderTalkNgWord();
+}
+
+function startNgGame(count) {
+  ngPlayerCount = count;
+  const shuffled = [...NG_WORDS_LIST].sort(() => 0.5 - Math.random());
+  ngPlayers = [];
+  for (let i = 0; i < count; i++) {
+    ngPlayers.push({
+      id: i + 1,
+      word: shuffled[i % shuffled.length],
+      out: false
+    });
+  }
+  ngCurrentCheck = 0;
+  ngStep = 'view';
+  renderTalkNgWord();
+  if (window.sounds) window.sounds.playTap();
+}
+
+function handleNgReveal(reveal) {
+  const card = document.getElementById('ng-secret-card');
+  if (!card) return;
+  if (reveal) {
+    card.classList.add('revealed');
+    card.innerHTML = `
+      <div style="font-size:12px;opacity:0.8;">あなたのNGワード（言ったら負け！）</div>
+      <div class="talk-number-huge" style="font-size:36px;color:#f87171;">「${ngPlayers[ngCurrentCheck].word}」</div>
+      <div style="font-size:12px;opacity:0.8;">指を離すと隠れます</div>
+    `;
+    if (window.sounds) window.sounds.playTap();
+  } else {
+    card.classList.remove('revealed');
+    card.innerHTML = `
+      <div style="font-size:36px;margin-bottom:8px;">🔒</div>
+      <div style="font-weight:bold;">長押ししてNGワードを見る</div>
+      <div style="font-size:12px;color:#94a3b8;">他の人にバレないように！</div>
+    `;
+  }
+}
+
+function nextNgPlayer() {
+  ngCurrentCheck++;
+  if (ngCurrentCheck >= ngPlayerCount) {
+    ngStep = 'battle';
+  }
+  renderTalkNgWord();
+  if (window.sounds) window.sounds.playTap();
+}
+
+function triggerNgOut(idx) {
+  ngPlayers[idx].out = true;
+  if (window.sounds) window.sounds.playExplosion();
+  renderTalkNgWord();
+  alert(`💥 プレイヤー ${idx + 1} がNGワード「${ngPlayers[idx].word}」を言いました！脱落！`);
+}
+
+function renderTalkNgWord() {
+  const container = document.getElementById('screen-talk_ngword');
+  if (!container) return;
+
+  if (ngStep === 'setup') {
+    container.innerHTML = `
+      <div class="solo-game-container">
+        <div class="solo-header"><div class="solo-title">🤐 言わせろ！NGワードバトル</div></div>
+        <div class="talk-card-container">
+          <div class="talk-prompt-box">
+            <span class="talk-badge-tag">人数選択</span>
+            <div class="talk-main-theme">何人で遊びますか？</div>
+            <div style="display:flex;gap:10px;justify-content:center;margin-top:16px;">
+              <button class="btn-primary" style="padding:12px 20px;" onclick="startNgGame(2)">2人</button>
+              <button class="btn-primary" style="padding:12px 20px;" onclick="startNgGame(3)">3人</button>
+              <button class="btn-primary" style="padding:12px 20px;" onclick="startNgGame(4)">4人</button>
+              <button class="btn-primary" style="padding:12px 20px;" onclick="startNgGame(5)">5人</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+  } else if (ngStep === 'view') {
+    container.innerHTML = `
+      <div class="solo-game-container">
+        <div class="solo-header">
+          <div class="solo-title">🤐 プレイヤー ${ngCurrentCheck + 1} の番</div>
+        </div>
+        <div class="talk-card-container">
+          <div class="talk-prompt-box">
+            <div class="talk-main-theme">スマホを回してNGワードを確認！</div>
+            <p style="font-size:13px;color:#94a3b8;">会話中に自分がこの言葉を言ったら負けです！</p>
+          </div>
+          <div id="ng-secret-card" class="talk-secret-card"
+               onpointerdown="handleNgReveal(true)" onpointerup="handleNgReveal(false)">
+            <div style="font-size:36px;margin-bottom:8px;">🔒</div>
+            <div style="font-weight:bold;">長押ししてNGワードを見る</div>
+            <div style="font-size:12px;color:#94a3b8;">他の人にバレないように！</div>
+          </div>
+          <button class="btn-primary" style="padding:12px 28px;margin-top:12px;" onclick="nextNgPlayer()">
+            覚えた！${ngCurrentCheck + 1 < ngPlayerCount ? '次の人へ ➡️' : 'バトル開始！🗣️'}
+          </button>
+        </div>
+      </div>
+    `;
+  } else if (ngStep === 'battle') {
+    container.innerHTML = `
+      <div class="solo-game-container">
+        <div class="solo-header">
+          <div class="solo-title">🤐 バトル中！普通に雑談しよう</div>
+        </div>
+        <div class="talk-card-container">
+          <div class="talk-prompt-box">
+            <span class="talk-badge-tag">ルール</span>
+            <div style="font-size:15px;color:#e2e8f0;line-height:1.6;">
+              普通の会話をしつつ、相手にNGワードを言わせよう！<br>
+              言った人がいたら下のボタンをポチッ！
+            </div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:10px;width:100%;max-width:320px;">
+            ${ngPlayers.map((p, idx) => `
+              <button class="btn-primary" style="padding:12px;display:flex;justify-content:space-between;align-items:center;background:${p.out ? '#475569' : '#1e293b'};border:1px solid #334155;"
+                      ${p.out ? 'disabled' : ''} onclick="triggerNgOut(${idx})">
+                <span>プレイヤー ${p.id}</span>
+                <span>${p.out ? '💥 脱落！' : '言った！押す 🚨'}</span>
+              </button>
+            `).join('')}
+          </div>
+          <button class="btn-secondary" style="margin-top:20px;padding:8px 18px;" onclick="initTalkNgWordGame()">もう一回遊ぶ 🔄</button>
+        </div>
+      </div>
+    `;
+  }
+}
+
+// ==============================================================================
+// 13. 「すべらない話・エピソードトークガチャ」(talk_story_roulette)
+// ==============================================================================
+const STORY_TOPICS = [
+  '先生にガチで怒られた伝説の事件',
+  '今までで一番恥ずかしかった言い間違い・聞き間違い',
+  '実はまだクラスの誰にも言ってない秘密',
+  '小学生の頃に信じ込んでた変な思い込み',
+  '人生で一番痛かった瞬間',
+  'テスト中に起きた気まずいハプニング',
+  '家族にバレてめちゃくちゃ焦ったこと',
+  '今思い返しても謎すぎる自分の奇行',
+  '給食・弁当で起きた笑える事件',
+  '通学路で遭遇した怪しい出来事',
+  '夜中に一人でやってしまった黒歴史'
+];
+
+let storyIndex = 0;
+let storyTimer = null;
+let storyTimeLeft = 60;
+let storyTimerRunning = false;
+
+function initTalkStoryRouletteGame() {
+  storyIndex = Math.floor(Math.random() * STORY_TOPICS.length);
+  storyTimeLeft = 60;
+  storyTimerRunning = false;
+  if (storyTimer) clearInterval(storyTimer);
+  renderTalkStory();
+}
+
+function spinStoryTopic() {
+  if (window.sounds) window.sounds.playTap();
+  const box = document.getElementById('story-topic-text');
+  if (box) box.textContent = 'ルーレット回転中...🎲';
+
+  let count = 0;
+  const spinInterval = setInterval(() => {
+    count++;
+    storyIndex = (storyIndex + 1) % STORY_TOPICS.length;
+    if (box) box.textContent = STORY_TOPICS[storyIndex];
+
+    if (count > 10) {
+      clearInterval(spinInterval);
+      if (window.sounds) window.sounds.playSuccess();
+    }
+  }, 80);
+}
+
+function toggleStoryTimer() {
+  const btn = document.getElementById('btn-story-timer');
+  if (!storyTimerRunning) {
+    storyTimerRunning = true;
+    if (btn) btn.textContent = '⏹️ ストップ';
+    if (window.sounds) window.sounds.playTap();
+
+    storyTimer = setInterval(() => {
+      storyTimeLeft--;
+      const tEl = document.getElementById('story-timer-display');
+      if (tEl) tEl.textContent = `${storyTimeLeft}秒`;
+
+      if (storyTimeLeft <= 0) {
+        clearInterval(storyTimer);
+        storyTimerRunning = false;
+        if (btn) btn.textContent = '▶️ タイマースタート';
+        if (window.sounds) window.sounds.playSuccess();
+        alert('🔔 タイムアップ！面白い話をありがとう！');
+      }
+    }, 1000);
+  } else {
+    storyTimerRunning = false;
+    clearInterval(storyTimer);
+    if (btn) btn.textContent = '▶️ 再開';
+  }
+}
+
+function renderTalkStory() {
+  const container = document.getElementById('screen-talk_story_roulette');
+  if (!container) return;
+
+  container.innerHTML = `
+    <div class="solo-game-container">
+      <div class="solo-header"><div class="solo-title">🎤 エピソードトークガチャ</div></div>
+      <div class="talk-card-container">
+        <div class="talk-prompt-box">
+          <span class="talk-badge-tag">今日のお題トーク</span>
+          <div id="story-topic-text" class="talk-main-theme">${STORY_TOPICS[storyIndex]}</div>
+        </div>
+        <button class="btn-primary" style="padding:14px 28px;font-size:16px;margin-bottom:20px;" onclick="spinStoryTopic()">
+          🎲 別のお題を引く！
+        </button>
+
+        <div style="background:rgba(30,41,59,0.8);padding:14px 20px;border-radius:12px;border:1px solid #334155;max-width:320px;width:100%;">
+          <div style="font-size:12px;color:#94a3b8;">トークタイマー</div>
+          <div id="story-timer-display" style="font-size:32px;font-weight:900;color:#38bdf8;margin:6px 0;">60秒</div>
+          <button id="btn-story-timer" class="btn-primary" style="padding:8px 20px;font-size:14px;" onclick="toggleStoryTimer()">
+            ▶️ 1分タイマースタート
+          </button>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+// ==============================================================================
+// 14. 「2つの真実と1つの嘘」(talk_two_truths) - ライアーゲーム
+// ==============================================================================
+const TWO_TRUTHS_THEMES = [
+  'テーマ: 「子供の頃にやったヤバいこと」',
+  'テーマ: 「実は今苦手なもの・怖いもの」',
+  'テーマ: 「誰にも言ってない最近の小さな秘密」',
+  'テーマ: 「今までに会ったことのある有名人・変な人」',
+  'テーマ: 「自分の家族・ペットの伝説エピソード」'
+];
+
+let twoTruthsThemeIdx = 0;
+
+function initTalkTwoTruthsGame() {
+  twoTruthsThemeIdx = Math.floor(Math.random() * TWO_TRUTHS_THEMES.length);
+  renderTalkTwoTruths();
+}
+
+function nextTwoTruthsTheme() {
+  twoTruthsThemeIdx = (twoTruthsThemeIdx + 1) % TWO_TRUTHS_THEMES.length;
+  if (window.sounds) window.sounds.playTap();
+  renderTalkTwoTruths();
+}
+
+function renderTalkTwoTruths() {
+  const container = document.getElementById('screen-talk_two_truths');
+  if (!container) return;
+
+  container.innerHTML = `
+    <div class="solo-game-container">
+      <div class="solo-header"><div class="solo-title">🕵️ 2つの真実と1つの嘘</div></div>
+      <div class="talk-card-container">
+        <div class="talk-prompt-box">
+          <span class="talk-badge-tag">ルール説明</span>
+          <div class="talk-main-theme">本物2つと真っ赤な嘘1つを語れ！</div>
+          <p style="font-size:13px;color:#cbd5e1;line-height:1.6;text-align:left;">
+            1. 話し手は以下のテーマに沿って「本当にあった話2つ」と「嘘の話1つ」を喋ります。<br>
+            2. 聞き手は質問攻めにして、どれが作り話か暴いてください！
+          </p>
+        </div>
+
+        <div style="background:linear-gradient(135deg,#3b82f6,#1d4ed8);color:white;padding:16px 20px;border-radius:14px;font-size:18px;font-weight:900;margin-bottom:16px;box-shadow:0 8px 20px rgba(59,130,246,0.3);">
+          ${TWO_TRUTHS_THEMES[twoTruthsThemeIdx]}
+        </div>
+
+        <button class="btn-primary" style="padding:12px 24px;font-size:15px;" onclick="nextTwoTruthsTheme()">
+          🔄 次のテーマへ！
+        </button>
+      </div>
+    </div>
+  `;
+}
+
+// ==============================================================================
+// 15. 「偏見プロフィールメーカー」(talk_prejudice)
+// ==============================================================================
+const PREJUDICE_POOL = [
+  '家でYouTube見ながら絶対変なオリジナルダンス踊ってる',
+  '前世はたぶんナマケモノかコアラ',
+  'カバンの中に3ヶ月前のシワシワのプリントが化石化してる',
+  '休日は昼過ぎまで寝てて、起きた瞬間「腹減った」って言う',
+  '筆箱の中に使えない芯の折れた鉛筆が3本入ってる',
+  '目覚ましのアラームを3分おきに7個かけてるけど全部止めて二度寝する',
+  'テスト前日に「全然勉強してないわ〜」って言ってガチでしてないタイプ',
+  'コンビニで新しいアイスが出たら誰よりも早く買ってる',
+  '靴下の片方を部屋の隙間に吸い込まれがち',
+  '怒られた直後、誰も見てないところで絶対変な顔してる'
+];
+
+let prejudiceTargetName = '友達';
+let currentPrejudices = [];
+
+function initTalkPrejudiceGame() {
+  generatePrejudice('隣の友達');
+}
+
+function generatePrejudice(name) {
+  prejudiceTargetName = name || '隣の友達';
+  const shuffled = [...PREJUDICE_POOL].sort(() => 0.5 - Math.random());
+  currentPrejudices = shuffled.slice(0, 3);
+  if (window.sounds) window.sounds.playSuccess();
+  renderTalkPrejudice();
+}
+
+function handlePrejudiceCustom() {
+  const input = document.getElementById('prejudice-input-name');
+  if (input && input.value.trim()) {
+    generatePrejudice(input.value.trim());
+  }
+}
+
+function renderTalkPrejudice() {
+  const container = document.getElementById('screen-talk_prejudice');
+  if (!container) return;
+
+  container.innerHTML = `
+    <div class="solo-game-container">
+      <div class="solo-header"><div class="solo-title">🏆 偏見プロフィールメーカー</div></div>
+      <div class="talk-card-container">
+        <div style="display:flex;gap:8px;margin-bottom:16px;width:100%;max-width:340px;">
+          <input type="text" id="prejudice-input-name" placeholder="友達の名前を入力" class="formula-input" style="flex:1;padding:8px 12px;font-size:14px;border-radius:8px;" value="${prejudiceTargetName}">
+          <button class="btn-primary" style="padding:8px 16px;" onclick="handlePrejudiceCustom()">鑑定！🔍</button>
+        </div>
+
+        <div class="prejudice-certificate">
+          <div class="prejudice-title">📜 【公認】勝手な偏見鑑定書</div>
+          <div style="text-align:center;font-weight:900;font-size:18px;margin-bottom:12px;color:#854d0e;">対象: ${prejudiceTargetName} 殿</div>
+          ${currentPrejudices.map(p => `
+            <div class="prejudice-item">${p}</div>
+          `).join('')}
+          <div style="margin-top:14px;font-size:11px;color:#a16207;text-align:right;">※この判定は全自動AI（偏見100%）による妄想です</div>
+        </div>
+
+        <div style="display:flex;gap:10px;margin-top:20px;">
+          <button class="btn-primary" style="padding:10px 20px;" onclick="generatePrejudice('${prejudiceTargetName}')">もう一度鑑定 🎲</button>
+        </div>
+      </div>
+    </div>
+  `;
+}

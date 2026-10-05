@@ -472,6 +472,30 @@ function startGame(gameKey) {
       showScreen('screen-drawing_quiz');
       initDrawingQuizGame();
       break;
+    case 'talk_ito':
+      showScreen('screen-talk_ito');
+      initTalkItoGame();
+      break;
+    case 'talk_katakana':
+      showScreen('screen-talk_katakana');
+      initTalkKatakanaGame();
+      break;
+    case 'talk_ngword':
+      showScreen('screen-talk_ngword');
+      initTalkNgWordGame();
+      break;
+    case 'talk_story_roulette':
+      showScreen('screen-talk_story_roulette');
+      initTalkStoryRouletteGame();
+      break;
+    case 'talk_two_truths':
+      showScreen('screen-talk_two_truths');
+      initTalkTwoTruthsGame();
+      break;
+    case 'talk_prejudice':
+      showScreen('screen-talk_prejudice');
+      initTalkPrejudiceGame();
+      break;
   }
 }
 
